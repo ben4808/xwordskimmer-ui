@@ -5,7 +5,6 @@ export interface EntryBox {
 
 export enum EntryBoxState {
     Empty,
-    PreSolved,
     Correct,
     Incorrect,
 }
