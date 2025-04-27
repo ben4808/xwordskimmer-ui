@@ -1,5 +1,9 @@
 export interface Clue {
-    index: string;
-    cluesByLang: Map<string, string>;
-    phrasesByLang: Map<string, string>;
+    masterEntry: string;
+    entry: string;
+    lang: string;
+    clue: string;
+    responseTemplate?: string;
+    metadata1?: string;
+    metadata2?: string;
 };
