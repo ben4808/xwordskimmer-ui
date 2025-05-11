@@ -1,9 +1,10 @@
 import { Clue } from "./Clue";
 
-export interface Collection {
-    index: number;
+export interface ClueCollection {
+    id: string;
     name: string;
     authorID?: number;
+    source?: string;
     date: Date;
     metadata1?: string;
     metadata2?: string;
