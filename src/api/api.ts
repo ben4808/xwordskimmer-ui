@@ -1,10 +1,31 @@
-import { mapValues } from "../lib/utils";
-import { Entry } from "../models/Entry";
-import { ModifiedEntry } from "../models/ModifiedEntry";
+
+import { Clue } from "../models/Clue";
+import { ClueCollection } from "../models/ClueCollection";
 import settings from "../settings.json";
 
 const baseUrl = settings.api_base_url;
 
+export async function getCrosswordList(date: Date): Promise<ClueCollection[]> {
+  return null as any;
+}
+
+export async function getCollectionList(listId: string): Promise<ClueCollection[]> {
+  return null as any;
+}
+
+export async function getCrossword(source: string, date: Date): Promise<ClueCollection> {
+  return null as any;
+}
+
+export async function getCollection(collectionId: string): Promise<ClueCollection> {
+  return null as any;
+}
+
+export async function getClue(clueId: number): Promise<Clue> {
+  return null as any;
+}
+
+/*
 export async function exploredQuery(query: string): Promise<Entry[]> {
     try {
         let url = baseUrl + "/exploredQuery?query=" + query;
@@ -78,3 +99,5 @@ export async function getAllExplored(minQuality: number, minObscurity: number): 
         throw e;
     }
 }
+
+*/

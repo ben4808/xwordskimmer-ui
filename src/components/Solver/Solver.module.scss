@@ -1,0 +1,70 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  max-width: 100%;
+}
+
+.clue {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.inputContainer {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.letterBox {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: white;
+  border: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 640px) {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.revealProgress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #90EE90; // Light green
+  transition: height 0.1s linear;
+}
+
+.letterInput {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: bold;
+  border: none;
+  background: transparent;
+  position: relative;
+  z-index: 10;
+  outline: none;
+  text-transform: uppercase;
+
+  &.correct {
+    color: #1B5E20; // Dark green
+  }
+
+  &.incorrect {
+    color: #8B0000; // Dark red
+  }
+
+  &.focused {
+    box-shadow: 0 0 0 2px #3B82F6; // Blue ring
+  }
+}

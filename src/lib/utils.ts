@@ -34,3 +34,12 @@ export function mapKeys<TKey, TVal>(map: Map<TKey, TVal>): TKey[] {
 export function mapValues<TKey, TVal>(map: Map<TKey, TVal>): TVal[] {
     return Array.from(map.values()) || [];
 }
+
+export function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}

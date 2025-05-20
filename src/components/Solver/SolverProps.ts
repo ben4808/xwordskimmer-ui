@@ -1,3 +1,6 @@
+import { ClueCollection } from "../../models/ClueCollection";
+
 export interface SolverProps {
-    entry: string;
+    clueCollection: ClueCollection;
+    startIndex?: number;
 }
