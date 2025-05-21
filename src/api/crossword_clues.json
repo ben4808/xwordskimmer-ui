@@ -1,0 +1,372 @@
+[
+    {
+        "number": "1A",
+        "clue": "Pester",
+        "response": "ANNOY"
+    },
+    {
+        "number": "6A",
+        "clue": "Words to live by",
+        "response": "MOTTO"
+    },
+    {
+        "number": "11A",
+        "clue": "Legal ___ (writing paper)",
+        "response": "PAD"
+    },
+    {
+        "number": "14A",
+        "clue": "Undefeated boxer Ali",
+        "response": "LAILA"
+    },
+    {
+        "number": "15A",
+        "clue": "Stadium employee who checks your tickets",
+        "response": "USHER"
+    },
+    {
+        "number": "16A",
+        "clue": "Sports figure informally called a \"ribbie\"",
+        "response": "RBI"
+    },
+    {
+        "number": "17A",
+        "clue": "The DeLorean in \"Back to the Future,\" e.g.",
+        "response": "TIMEMACHINE"
+    },
+    {
+        "number": "19A",
+        "clue": "Hosp. surgery sites",
+        "response": "ORS"
+    },
+    {
+        "number": "20A",
+        "clue": "Nikon F2, for one",
+        "response": "SLR"
+    },
+    {
+        "number": "21A",
+        "clue": "Chicago airport named for a W.W. II ace",
+        "response": "OHARE"
+    },
+    {
+        "number": "22A",
+        "clue": "Apple desktop computer",
+        "response": "IMAC"
+    },
+    {
+        "number": "23A",
+        "clue": "More achy",
+        "response": "SORER"
+    },
+    {
+        "number": "26A",
+        "clue": "Farmers' market setups",
+        "response": "STANDS"
+    },
+    {
+        "number": "28A",
+        "clue": "Furniture item that's usually next to a drill",
+        "response": "DENTISTSCHAIR"
+    },
+    {
+        "number": "32A",
+        "clue": "Disney film featuring Dwayne Johnson as the voice of Maui",
+        "response": "MOANA"
+    },
+    {
+        "number": "33A",
+        "clue": "Had but didn't divulge, as information",
+        "response": "SATON"
+    },
+    {
+        "number": "34A",
+        "clue": "Purple \"superfood\"",
+        "response": "ACAI"
+    },
+    {
+        "number": "37A",
+        "clue": "What's left after chopping down a tree",
+        "response": "STUMP"
+    },
+    {
+        "number": "40A",
+        "clue": "The \"L\" of 20-Across",
+        "response": "LENS"
+    },
+    {
+        "number": "41A",
+        "clue": "Hoedown settings",
+        "response": "BARNS"
+    },
+    {
+        "number": "43A",
+        "clue": "Big name in farming equipment",
+        "response": "DEERE"
+    },
+    {
+        "number": "45A",
+        "clue": "Information for a loan officer",
+        "response": "CREDITHISTORY"
+    },
+    {
+        "number": "49A",
+        "clue": "___ de Lempicka, Art Deco painter",
+        "response": "TAMARA"
+    },
+    {
+        "number": "50A",
+        "clue": "\"Such a shame!\"",
+        "response": "SOSAD"
+    },
+    {
+        "number": "52A",
+        "clue": "China's most-grown crop",
+        "response": "RICE"
+    },
+    {
+        "number": "53A",
+        "clue": "Open, as a tube of toothpaste",
+        "response": "UNCAP"
+    },
+    {
+        "number": "56A",
+        "clue": "Got together",
+        "response": "MET"
+    },
+    {
+        "number": "58A",
+        "clue": "\"Who am ___ judge?\"",
+        "response": "ITO"
+    },
+    {
+        "number": "59A",
+        "clue": "\"I've known them forever!\"... or what 17-, 28- and 45-Across can collectively claim?",
+        "response": "WEGOWAYBACK"
+    },
+    {
+        "number": "62A",
+        "clue": "Up there in years",
+        "response": "OLD"
+    },
+    {
+        "number": "63A",
+        "clue": "Carne ___ (taqueria option)",
+        "response": "ASADA"
+    },
+    {
+        "number": "64A",
+        "clue": "Unwelcome sound in a crowded subway car",
+        "response": "ACHOO"
+    },
+    {
+        "number": "65A",
+        "clue": "Garment at a merch table",
+        "response": "TEE"
+    },
+    {
+        "number": "66A",
+        "clue": "Wander from the group",
+        "response": "STRAY"
+    },
+    {
+        "number": "67A",
+        "clue": "Considers, as a court case",
+        "response": "HEARS"
+    },
+    {
+        "number": "1D",
+        "clue": "Secondary social media accounts, informally",
+        "response": "ALTS"
+    },
+    {
+        "number": "2D",
+        "clue": "Nervous people might chew on them",
+        "response": "NAILS"
+    },
+    {
+        "number": "3D",
+        "clue": "Numbskull",
+        "response": "NIMROD"
+    },
+    {
+        "number": "4D",
+        "clue": "Cry at a soccer stadium",
+        "response": "OLE"
+    },
+    {
+        "number": "5D",
+        "clue": "Candied vegetable at Thanksgiving",
+        "response": "YAM"
+    },
+    {
+        "number": "6D",
+        "clue": "The \"M\" of T.M.I.",
+        "response": "MUCH"
+    },
+    {
+        "number": "7D",
+        "clue": "Govt. org. known for its constructive criticism?",
+        "response": "OSHA"
+    },
+    {
+        "number": "8D",
+        "clue": "Feeling while walking in a desert",
+        "response": "THIRST"
+    },
+    {
+        "number": "9D",
+        "clue": "Religious pillars",
+        "response": "TENETS"
+    },
+    {
+        "number": "10D",
+        "clue": "Unrefined metal",
+        "response": "ORE"
+    },
+    {
+        "number": "11D",
+        "clue": "Companion who might wear a corsage or boutonniere",
+        "response": "PROMDATE"
+    },
+    {
+        "number": "12D",
+        "clue": "Skin scrape",
+        "response": "ABRASION"
+    },
+    {
+        "number": "13D",
+        "clue": "___ golf (sport with baskets)",
+        "response": "DISC"
+    },
+    {
+        "number": "18D",
+        "clue": "Main arteries",
+        "response": "AORTAS"
+    },
+    {
+        "number": "22D",
+        "clue": "Asthmatics' devices",
+        "response": "INHALERS"
+    },
+    {
+        "number": "24D",
+        "clue": "\"Jog my memory ...\"",
+        "response": "REMINDME"
+    },
+    {
+        "number": "25D",
+        "clue": "Ambient music pioneer Brian",
+        "response": "ENO"
+    },
+    {
+        "number": "27D",
+        "clue": "Must-haves during heat waves, for short",
+        "response": "ACS"
+    },
+    {
+        "number": "29D",
+        "clue": "QB miscue: Abbr.",
+        "response": "INT"
+    },
+    {
+        "number": "30D",
+        "clue": "___ Arabia",
+        "response": "SAUDI"
+    },
+    {
+        "number": "31D",
+        "clue": "Some hosp. staffers",
+        "response": "RNS"
+    },
+    {
+        "number": "34D",
+        "clue": "As easy as ___",
+        "response": "ABC"
+    },
+    {
+        "number": "35D",
+        "clue": "Proof of purchase for an auto owner",
+        "response": "CARTITLE"
+    },
+    {
+        "number": "36D",
+        "clue": "406, for the entire state of Montana",
+        "response": "AREACODE"
+    },
+    {
+        "number": "38D",
+        "clue": "Enero o abril",
+        "response": "MES"
+    },
+    {
+        "number": "39D",
+        "clue": "Business that may offer \"pawdicures\"",
+        "response": "PETSPA"
+    },
+    {
+        "number": "42D",
+        "clue": "One-named singer of \"Chandelier,\" 2014",
+        "response": "SIA"
+    },
+    {
+        "number": "44D",
+        "clue": "Australian hopper, for short",
+        "response": "ROO"
+    },
+    {
+        "number": "46D",
+        "clue": "Most factual",
+        "response": "TRUEST"
+    },
+    {
+        "number": "47D",
+        "clue": "Plane's parking spot",
+        "response": "HANGAR"
+    },
+    {
+        "number": "48D",
+        "clue": "Manufacturer of pianos and motorcycles",
+        "response": "YAMAHA"
+    },
+    {
+        "number": "51D",
+        "clue": "Interior designer's focus",
+        "response": "DECOR"
+    },
+    {
+        "number": "52D",
+        "clue": "Prison outbreak",
+        "response": "RIOT"
+    },
+    {
+        "number": "sport with baskets54D",
+        "clue": "Final passage of a symphony",
+        "response": "CODA"
+    },
+    {
+        "number": "55D",
+        "clue": "Not at home",
+        "response": "AWAY"
+    },
+    {
+        "number": "57D",
+        "clue": "Some U.F.C. bout enders",
+        "response": "TKOS"
+    },
+    {
+        "number": "59D",
+        "clue": "Once existed",
+        "response": "WAS"
+    },
+    {
+        "number": "60D",
+        "clue": "\"Boo-___!\" (triumphant shout)",
+        "response": "YAH"
+    },
+    {
+        "number": "61D",
+        "clue": "Pre-A.D., in dating",
+        "response": "BCE"
+    }
+]

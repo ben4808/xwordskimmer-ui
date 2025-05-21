@@ -1,9 +1,9 @@
 import { Clue } from "../models/Clue";
-import * as fs from 'fs/promises';
 import { ClueCollection } from "../models/ClueCollection";
+import cluesData from "./crossword_clues.json";
 
 export async function getCrosswordList(date: Date): Promise<ClueCollection[]> {
-  let clues = await readCrosswordClues();
+  let clues = readCrosswordClues();
 
   let monday: ClueCollection = {
       id: "NYT-2025-05-05",
@@ -16,7 +16,7 @@ export async function getCrosswordList(date: Date): Promise<ClueCollection[]> {
 }
 
 export async function getCollectionList(listId: string): Promise<ClueCollection[]> {
-  let clues = await readCrosswordClues();
+  let clues = readCrosswordClues();
 
   let monday: ClueCollection = {
       id: listId,
@@ -29,7 +29,7 @@ export async function getCollectionList(listId: string): Promise<ClueCollection[
 }
 
 export async function getCrossword(source: string, date: Date): Promise<ClueCollection> {
-  let clues = await readCrosswordClues();
+  let clues = readCrosswordClues();
 
   let monday: ClueCollection = {
       id: "NYT-2025-05-05",
@@ -43,7 +43,7 @@ export async function getCrossword(source: string, date: Date): Promise<ClueColl
 }
 
 export async function getCollection(collectionId: string): Promise<ClueCollection> {
-  let clues = await readCrosswordClues();
+  let clues = readCrosswordClues();
 
   let monday: ClueCollection = {
     id: collectionId,
@@ -57,7 +57,7 @@ export async function getCollection(collectionId: string): Promise<ClueCollectio
 }
 
 export async function getClue(clueId: number): Promise<Clue> {
-  //let clues = await readCrosswordClues();
+  //let clues = readCrosswordClues();
 
   let clue: Clue = {
     masterEntry: "TIMEMACHINE",
@@ -70,29 +70,16 @@ export async function getClue(clueId: number): Promise<Clue> {
   return clue;
 }
 
-async function readCrosswordClues(): Promise<Clue[]> {
-  try {
-      let filePath = "C:/Users/ben_z/Downloads/crossword_clues.json";
+function readCrosswordClues(): Clue[] {
+  let results : Clue[] = cluesData.map((clue) => {
+    return {    
+        masterEntry: clue.response,
+        entry: clue.response,
+        lang: 'en-US',
+        clue: clue.clue,
+        metadata1: clue.number,
+    } as Clue;
+  });
 
-      // Read the JSON file
-      const fileContent = await fs.readFile(filePath, 'utf-8');
-      
-      // Parse the JSON content into an array of clues
-      const clues: any[] = JSON.parse(fileContent);
-
-      let results : Clue[] = clues.map((clue) => {
-          return {    
-              masterEntry: clue.response,
-              entry: clue.response,
-              lang: 'en-US',
-              clue: clue.clue,
-              metadata1: clue.number,
-          } as Clue;
-        });
-      
-      return results;
-  } catch (error) {
-      console.error('Error reading or parsing the JSON file:', error);
-      throw error;
-  }
+  return results;
 }

@@ -22,10 +22,6 @@ function CrosswordList(props: CrosswordListProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [crosswords, setCrosswords] = useState([] as ClueCollection[]);
 
-    if (isLoading) {
-        return <div className={styles.loading}>Loading...</div>;
-    }
-
     useEffect(() => {
         async function fetchData() {
             try {
@@ -40,6 +36,10 @@ function CrosswordList(props: CrosswordListProps) {
 
         fetchData();
     }, []);
+
+    if (isLoading) {
+      return <div className={styles.loading}>Loading...</div>;
+    } 
 
     return (
     <div className={styles.listContainer}>
