@@ -43,3 +43,14 @@ export function formatDate(date: Date): string {
     year: 'numeric'
   });
 }
+
+export function parseDateFromURL (date: string | null): Date {
+  if (!date) {
+    return new Date(); // Return current date if no date is provided
+  }
+  let parts = date.split('-');
+  let year = parseInt(parts[0]);
+  let month = parseInt(parts[1]) - 1; // Months are zero-based in JavaScript
+  let day = parseInt(parts[2]);
+  return new Date(year, month, day);
+}

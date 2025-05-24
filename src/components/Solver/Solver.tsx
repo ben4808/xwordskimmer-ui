@@ -13,10 +13,10 @@ In React, write a component that displays a single crossword clue with a input s
 
 import React, { useState, useRef, useEffect } from 'react';
 import { SolverProps } from './SolverProps';
-import styles from './CrosswordClue.module.scss';
+import styles from './Solver.module.scss';
 
 function Solver(props: SolverProps) {
-  const firstClue = props.clueCollection.clues[props.startIndex || 0];
+  const firstClue = props.clueCollection.clues[0];
   const [currentClue, setCurrentClue] = useState(firstClue);
   const [userInput, setUserInput] = useState<string[]>(Array(firstClue.entry.length).fill(''));
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);

@@ -47,7 +47,7 @@ function CrosswordList(props: CrosswordListProps) {
         <div
             key={crossword.id}
             className={styles.crosswordCard}
-            onClick={() => navigate(`/crossword/${crossword.id}`)}
+            onClick={() => navigate(`/crossword/NYT/2025-05-05`)}
         >
             <div className={styles.thumbnail} style={{ backgroundColor: 'lightgray' }} />
             <div className={styles.content}>

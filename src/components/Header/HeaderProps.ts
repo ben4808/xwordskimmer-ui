@@ -1,3 +1,3 @@
 export interface HeaderProps {
-    isInSolver: boolean;
+  showDashboardButton: boolean;
 }
