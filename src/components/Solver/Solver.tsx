@@ -14,10 +14,14 @@ In React, write a component that displays a single crossword clue with a input s
 import React, { useState, useRef, useEffect } from 'react';
 import { SolverProps } from './SolverProps';
 import styles from './Solver.module.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faList, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
 
 function Solver(props: SolverProps) {
   const firstClue = props.clueCollection.clues[0];
   const [currentClue, setCurrentClue] = useState(firstClue);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [language, setLanguage] = useState(currentClue.lang || 'en');
   const [userInput, setUserInput] = useState<string[]>(Array(firstClue.entry.length).fill(''));
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [revealProgress, setRevealProgress] = useState<number>(0);  // percentage
@@ -83,6 +87,26 @@ function Solver(props: SolverProps) {
     }
   };
 
+  const previousClue = () => {
+    const prevIndex = (currentIndex - 1 + props.clueCollection.clues.length) % props.clueCollection.clues.length;
+    setCurrentClue(props.clueCollection.clues[prevIndex]);
+    setCurrentIndex(prevIndex);
+    setUserInput(Array(props.clueCollection.clues[prevIndex].entry.length).fill(''));
+    setFocusedIndex(0);
+  }
+
+  const nextClue = () => {
+    const nextIndex = (currentIndex + 1) % props.clueCollection.clues.length;
+    setCurrentClue(props.clueCollection.clues[nextIndex]);
+    setCurrentIndex(nextIndex); 
+    setUserInput(Array(props.clueCollection.clues[nextIndex].entry.length).fill(''));
+    setFocusedIndex(0);
+  }
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'es' : 'en');
+  };
+
   useEffect(() => {
     return () => {
       // Cleanup timer on unmount
@@ -92,7 +116,27 @@ function Solver(props: SolverProps) {
 
   return (
     <div className={styles.container}>
+      <div className={styles.collectionInfo}>
+        <div className={styles.collectionName}>{props.clueCollection.name}</div>
+        <div className={styles.collectionLink}>
+          <FontAwesomeIcon icon={faList} size="2x" style={{ marginLeft: '10px' }} />
+        </div>
+      </div>
+      <div>
+        <button className={styles.prevNextButton} onClick={() => previousClue()}>&lt;</button>
+        <span className={styles.clueIndex}>{currentIndex + 1} of {props.clueCollection.clues.length}</span>
+        <button className={styles.prevNextButton} onClick={() => nextClue()}>&gt;</button>
+      </div>
       <div className={styles.clue}>{currentClue.clue}</div>
+      <div className={styles.languageSelector}>
+        <span className="language-label">'English'</span>
+        <FontAwesomeIcon
+          icon={language === 'en' ? faToggleOff : faToggleOn}
+          onClick={toggleLanguage}
+          className="toggle-icon"
+        />
+        <span className="language-label">'Spanish'</span>
+      </div>
       <div className={styles.inputContainer}>
         {currentClue.entry.split('').map((letter, index) => {
           const isCorrect = userInput[index] && userInput[index] === letter;
