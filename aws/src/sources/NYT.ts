@@ -1,14 +1,14 @@
-import { PuzzleSource, Sources } from "../models/PuzzleSource";
+import { PuzzleSource } from "../models/PuzzleSource";
 import { parse } from 'node-html-parser';
 import { Square } from "../models/Square";
 import { Puzzle } from "../models/Puzzle";
-import { newPuzzle } from "../lib/puzzle";
 import { PuzzleEntry } from "../models/PuzzleEntry";
 import { decode } from 'html-entities';
+import { newPuzzle } from "../lib/puzzle";
 
 export class NYTSource implements PuzzleSource {
-    public id = 1;
-    public name = "NYT";
+    public id = "NYT";
+    public name = "New York Times";
 
     public async getPuzzle(date: Date): Promise<Puzzle> {
         let url = `https://www.xwordinfo.com/Crossword?date=${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
@@ -19,16 +19,16 @@ export class NYTSource implements PuzzleSource {
         let jsonResponse = await response.json();
         let parsedHtml = parse(jsonResponse.contents);
 
-        let title = parsedHtml.querySelector("#PuzTitle").textContent;
+        let title = parsedHtml.querySelector("#PuzTitle")!.textContent;
         let authors = parsedHtml.querySelectorAll(".bbName > a").map(x => x.textContent);
         if (authors.length === 0) authors = parsedHtml.querySelectorAll(".bbName2 > a").map(x => x.textContent);
         let copyright = `© ${date.getFullYear()}, The New York Times`;
         let notes = parsedHtml.querySelector(".notepad")?.textContent.replace("<b>Notepad:</b>", "") || undefined;
         let puzDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        let source = Sources.NYT;
+        let source = this.id;
 
         let grid = [] as Square[][];
-        let puzTable = parsedHtml.querySelector("#PuzTable");
+        let puzTable = parsedHtml.querySelector("#PuzTable")!;
         let rows = puzTable.querySelectorAll("tr");
         let height = rows.length;
         let width = 0;
@@ -53,10 +53,10 @@ export class NYTSource implements PuzzleSource {
                     return;
                 }
 
-                square.number = +col.querySelector(".num")?.textContent || undefined;
-                square.content = col.querySelector(".letter")?.textContent;
-                if (!square.content) square.content = col.querySelector(".subst").textContent;
-                if (!square.content) square.content = col.querySelector(".subst2").textContent;
+                square.number = +col.querySelector(".num")!.textContent || undefined;
+                square.content = col.querySelector(".letter")!.textContent;
+                if (!square.content) square.content = col.querySelector(".subst")!.textContent;
+                if (!square.content) square.content = col.querySelector(".subst2")!.textContent;
 
                 if (col.getAttribute("class")?.includes("shade") || col.getAttribute("class")?.includes("bigcircle")) {
                     square.isCircled = true;
@@ -70,7 +70,7 @@ export class NYTSource implements PuzzleSource {
 
         let puzEntries = new Map<string, PuzzleEntry>();
 
-        let acrossClues = parsedHtml.querySelector("#ACluesPan .numclue").childNodes;
+        let acrossClues = parsedHtml.querySelector("#ACluesPan .numclue")!.childNodes;
         for (let i = 0; i < acrossClues.length; i += 2) {
             let number = +acrossClues[i].innerText;
             let clueText = acrossClues[i+1].innerText;
@@ -84,7 +84,7 @@ export class NYTSource implements PuzzleSource {
             } as PuzzleEntry);
         }
 
-        let downClues = parsedHtml.querySelector("#DCluesPan .numclue").childNodes;
+        let downClues = parsedHtml.querySelector("#DCluesPan .numclue")!.childNodes;
         for (let i = 0; i < downClues.length; i += 2) {
             let number = +downClues[i].innerText;
             let clueText = downClues[i+1].innerText;

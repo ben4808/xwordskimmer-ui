@@ -1,5 +1,5 @@
 import { PuzzleEntry } from "./PuzzleEntry";
-import { Sources } from "./PuzzleSource";
+import { Square } from "./Square";
 
 export interface Puzzle {
     title: string;
@@ -7,7 +7,10 @@ export interface Puzzle {
     copyright: string;
     notes?: string;
     date: Date;
-    source: Sources;
+    source: string;
+    width: number;
+    height: number;
 
+    grid: Square[][];
     entries: Map<string, PuzzleEntry>;
 }
