@@ -1,7 +1,6 @@
 import { Puzzle } from "../models/Puzzle";
 import { PuzzleEntry } from "../models/PuzzleEntry";
-import { numberizeGrid } from "./grid";
-import { newPuzzle } from "./puzzle";
+import { newPuzzle, numberizeGrid } from "./puzzle";
 import { deepClone, mapKeys } from "./utils";
 
 // https://code.google.com/archive/p/puz/wikis/FileFormat.wiki

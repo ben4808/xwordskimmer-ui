@@ -14,7 +14,6 @@ export class NYTSource implements PuzzleSource {
         let url = `https://www.xwordinfo.com/Crossword?date=${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
         //url = `https://www.xwordinfo.com/Crossword?date=12/17/2020`;
         let weoriginUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
-        let puzzle = newPuzzle(15, 15);
         let response = await fetch(weoriginUrl); 
         let jsonResponse = await response.json();
         let parsedHtml = parse(jsonResponse.contents);
@@ -98,7 +97,7 @@ export class NYTSource implements PuzzleSource {
             } as PuzzleEntry);
         }
 
-        puzzle = newPuzzle(width, height);
+        let puzzle = newPuzzle(width, height);
         puzzle.title = title;
         puzzle.authors = authors;
         puzzle.copyright = copyright;

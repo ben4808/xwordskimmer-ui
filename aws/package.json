@@ -2,9 +2,9 @@
   "name": "crossword-scraper",
   "version": "1.0.0",
   "description": "",
-  "main": "crosswordScraper.ts",
+  "main": "index.ts",
   "scripts": {
-    "start": "ts-node crosswordScraper.ts",
+    "start": "ts-node src\\index.ts",
     "debug": "SET SLS_DEBUG=* && node --inspect node_modules\\serverless\\bin\\serverless offline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -1,3 +1,4 @@
+import { NewsdaySource } from "../sources/Newsday";
 import { NYTSource } from "../sources/NYT";
 import { Puzzle } from "./Puzzle";
 
@@ -9,6 +10,7 @@ export interface PuzzleSource {
 
 export let Sources = {
     NYT: new NYTSource(),
+    Newsday: new NewsdaySource(),
     WSJ: null,
     LAT: null,
     USA: null,
