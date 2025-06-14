@@ -33,7 +33,7 @@ async function writeBlobToFile(blob: Blob, filePath: string): Promise<void> {
 
 export const scrapePuzzles = async () => {
   let scrapedPuzzles = [] as Puzzle[]
-  let sources = [Sources.Newsday] as PuzzleSource[]; // Add other sources as needed
+  let sources = [Sources.WSJ] as PuzzleSource[]; // Add other sources as needed
   let date = new Date(); // Use today's date or modify as needed
 
   sources.forEach(async (source) => {

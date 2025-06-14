@@ -133,5 +133,5 @@ export class NewsdaySource implements PuzzleSource {
             grid,
             entries
         };
-        }
+      }
     }
