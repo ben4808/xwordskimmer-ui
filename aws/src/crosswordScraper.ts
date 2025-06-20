@@ -6,10 +6,8 @@ import { writeFile } from 'fs/promises';
 let scrapePuzzle = async (source: PuzzleSource, date: Date): Promise<Puzzle> => {
   try {
     let puzzle = await source.getPuzzle(date);
-    console.log(`Scraped puzzle from ${source.name} for date ${date.toISOString()}`);
     return puzzle;
   } catch (error) {
-    console.error(`Error scraping puzzle from ${source.name} for date ${date.toISOString()}: `, error);
     throw error; // Re-throw to handle it in the calling function
   }
 }
@@ -31,7 +29,7 @@ async function writeBlobToFile(blob: Blob, filePath: string): Promise<void> {
   }
 }
 
-export const scrapePuzzles = async () => {
+export const scrapePuzzles = async (): Promise<Puzzle[]> => {
   let scrapedPuzzles = [] as Puzzle[]
   let sources = [Sources.WSJ] as PuzzleSource[]; // Add other sources as needed
   let date = new Date(); // Use today's date or modify as needed
@@ -47,7 +45,9 @@ export const scrapePuzzles = async () => {
 
         console.log(`Scraped puzzle from ${source.name} for date ${date.toISOString()}`);
     } catch (error) {
-        console.error(`Error scraping puzzle from ${source.name}:`, error);
+        console.error(`Error scraping puzzle from ${source.name} for date ${date.toISOString()}: `, error);
     }
   });
+
+  return scrapedPuzzles;
 }

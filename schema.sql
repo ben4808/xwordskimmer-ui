@@ -1,3 +1,10 @@
+/*
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+*/
+
 create table puzzle (
   id int not null primary key,
   publicationId text,
@@ -24,27 +31,32 @@ create table cluecollection (
 );
 
 create table "entry" (
-  "entry" text not null primary key,
-  "raw" text
+  "entry" text not null,
+  lang text not null,
+  "raw" text,
+  primary key("entry", lang)
 );
 
 create table clue (
   id int not null primary key,
   "entry" text not null,
-  clue text not null,
   lang text not null,
-  author text
+  clue text not null,
+  naturalClue text,
+  source text
 );
 
 create table collection_clue (
   collectionId int not null,
   clueId int not null,
   "order" int not null,
+  metadata1 text,
+  metadata2 text,
   primary key(collectionId, clueId)
 );
 
 create table clue_clue (
-  clue1Id int not null,
-  clue2Id int not null,
-  primary key(clue1Id, clue2Id)
+  primaryClue int not null,
+  secondaryClue int not null,
+  primary key(primaryClue, secondaryClue)
 );

@@ -11,10 +11,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@types/pg": "^8.15.4",
+    "axios": "^1.10.0",
     "html-entities": "^2.6.0",
     "node-html-parser": "^7.0.1",
-    "pg": "^8.16.0"
+    "pg": "^8.16.0",
+    "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",

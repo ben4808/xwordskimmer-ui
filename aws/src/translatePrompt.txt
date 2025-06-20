@@ -1,0 +1,28 @@
+For the following crossword clues and answers, translate both the clues and answers into Spanish.
+
+Instructions for the clues:
+Make two translations. Both should strive to make sense based on both the original clue and the original anaswer.
+The first should be as literal as possible, ideally word-for-word, even if the result doesn't make sense in Spanish. 
+The second should be a natural translation, as if the clue was being translated for a book.
+
+Instructions for the answers:
+Make two classes of translations. Both should strive to make sense based on both the original clue and the original anaswer, but they must be direct translations of only the answer. Both classes of translations should be ordered according to how closely they fit the original clue and the original answer. Where appropriate, verbs should include the prepositions that go along with them. Brand names should not be translated. Words should not be shortened with apostrophes. The tense of verbs should be preserved.
+The first class should include between 1 and 3 potential answers (preferring more answers to less) that naturally translate the original answer, as if it was being translated for a book.
+The second class should include between 1 and 3 potential answers (preferring more answers to less) that take on a more colloquial and/or slangy tone, as if it was being spoken in the wild.
+
+Output instructions:
+Output both the translated clues and answers written normally (i.e. NOT in all caps and with normal spacing unless it's an acronym or similar, even if the inputs are in all caps). Include tildes and accents where appropriate.
+
+Don't include any introductory or auxiliary text, and stick to the provided format.
+
+Output format for each clue/answer pair:
+
+<Original input line, copied from input>
+Literal: <literal clue translation>
+Natural: <natural clue translation>
+Natural answers: <first class of answers, separated by a semicolon>
+Colloquial answers: <second class of answers, separated by a semicolon>
+
+Clues and answers to translate are below:
+
+[[DATA]]

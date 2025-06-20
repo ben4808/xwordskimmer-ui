@@ -1,9 +1,20 @@
 import { scrapePuzzles } from './crosswordScraper';
+import { Puzzle } from './models/Puzzle';
 
-console.log("Starting crossword scraper...");
-scrapePuzzles().then(() => {
-  console.log("Crossword scraper finished successfully."); 
-}
-).catch((error) => {
-  console.error("Error in crossword scraper:", error);
-});
+
+let runCrosswordLoadingTasks = async () => {
+  let scrapedPuzzles = [] as Puzzle[];
+  let dao = require('./daos/LoaderDao');
+
+  console.log("Starting crossword loading tasks...");
+  try {
+    scrapedPuzzles = await scrapePuzzles();
+
+    
+
+    await dao.savePuzzles(scrapedPuzzles);
+  } catch (error) {
+    console.error("Error in crossword loading tasks: ", error);
+  }
+};
+
