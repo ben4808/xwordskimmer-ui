@@ -23,17 +23,26 @@ create table cluecollection (
   id int not null primary key,
   puzzleId int,
   title text not null,
-  author text,
+  authorID int,
   "description" text,
-  created timestamp not null,
-  metadata1 text,
+  createdDate timestamp not null,
+  metadata1 text, -- AI Score
   metadata2 text
 );
 
 create table "entry" (
   "entry" text not null,
   lang text not null,
-  "raw" text,
+  displayText text,
+  primary key("entry", lang)
+);
+
+create table entryscore (
+  "entry" text not null,
+  lang text not null,
+  obscurity_score int not null,
+  quality_score int not null,
+  source: text not null,
   primary key("entry", lang)
 );
 
@@ -42,21 +51,31 @@ create table clue (
   "entry" text not null,
   lang text not null,
   clue text not null,
-  naturalClue text,
-  source text
+  response_template text,
+  source text -- Book it came from? AI source?
 );
 
 create table collection_clue (
   collectionId int not null,
   clueId int not null,
   "order" int not null,
-  metadata1 text,
+  metadata1 text, -- Clue index in puzzle
   metadata2 text,
   primary key(collectionId, clueId)
 );
 
-create table clue_clue (
-  primaryClue int not null,
-  secondaryClue int not null,
-  primary key(primaryClue, secondaryClue)
+create table translatedclue (
+  id int not null primary key,
+  clueId int not null,
+  lang text not null,
+  literalClue text not null,
+  naturalClue text not null,
+  source text -- which AI
+);
+
+create table translatedentry (
+  "entry" text not null,
+  lang text not null,
+  translatedClueId int not null,
+  primary key("entry", translatedClueId)
 );

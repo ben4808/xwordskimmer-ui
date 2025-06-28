@@ -4,6 +4,7 @@ export interface ClueCollection {
     id: string;
     name: string;
     authorID?: number;
+    description?: string;
     source?: string;
     date: Date;
     metadata1?: string;

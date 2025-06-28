@@ -1,0 +1,63 @@
+Rank the provided words and phrases based on their familiarity to native English-speaking adults with a high school education or higher, familiar with common slang and colloquial speech. Base rankings on how widely recognized the term is in everyday or specialized contexts, not on corpus frequency.
+
+Input Handling:
+
+Input words/phrases will be in ALLCAPS and without spaces (e.g., "SNOWFORT"). Convert them to standard capitalization and spacing (e.g., "snow fort") for evaluation. Try a few different parsings and pick the best one. (e.g. "ITSAGO" as "it's a go" rather than "it's ago").
+
+Select the interpretation that yields the highest familiarity score while strictly using the exact letters provided in the input, allowing only changes in capitalization, spacing, or punctuation. Do not add, remove, or assume additional letters to form a different word or phrase, even if it results in a more familiar term.
+
+Evaluate words and phrases as:
+- Single words (e.g., "quixotic"). Consider all conjugations of verbs to be equal.
+- Multiword phrases (e.g., "give to" as a verb-preposition phrase, "snow fort", "Mr. Ed").
+- Names (rank based on familiarity of the name in common use, and/or the ease of recalling famous people with the name).
+- Proper Names / Brand Names
+- Acronyms (e.g., "espy" as ESPY award).
+- Abbreviations (e.g., "ctr" as "center". In this case, score based on the familiarity of "ctr" as an abbreviation. Other examples: "attn", "abbr").
+- Prefixes/suffixes (e.g., "ose" as a sugar-related suffix, "tri" as a prefix meaning 3, score based on the familiarity of the prefix/suffix itself).
+- Contractions, including plural acronyms or plural abbreviations. Score based on the particular given form. For example, "ATCs" might be less familiar than "ATC".
+
+Score incoherent words and phrases (e.g., "snow tag" as unrelated words) as 0. A phrase is incoherent unless it forms a recognized unit (e.g., "green thumb" is valid, "blue thumb" is not). Verb-preposition phrases are valid only if the preposition commonly pairs with the verb.
+
+Additionally, categorize each word or phrase into one of the following categories: (Word, Conjugated Verb, Phrase, Name, Brand Name, Proper Name, Acronym, Abbreviation, Prefix/Suffix, Contraction, Incoherent). Only use "Conjugated Verb" if the verb is not in its infinitive form. Don't use "Abbreviation" if the abbreviation is more common than the original (e.g. "amp").
+
+Stick to the output format and don't include any introductory or auxiliary text.
+
+Output Format:
+
+<original word/phrase> (<written naturally>) : <category> : <score>
+
+Rubric:
+
+0: Incoherent. Not a recognized word or phrase (e.g., "snow tag").
+1: Extremely rare. Known by almost nobody, barely exists in the language.
+1.5: Specialized. Known only within specific fields or communities (e.g., "eigenvector," "terpsichorean").
+2: Obscure. Recognized by a minority (< 30% of educated adults), often context-specific (e.g., "quixotic," "Mount Thor").
+2.5: Moderately common. Familiar to 30%-60% of educated adults, often taught in advanced high school/college (e.g., "ubiquitous," "event horizon").
+3: Common. Known by most adults in general contexts (e.g., "Tic Tac," "albatross").
+3.5: Very common. Widely used in everyday settings, still might trip up non-native speakers (e.g., "trench," "pay stub").
+4: Extremely common. Universally recognized in casual conversation (e.g., "be careful," "cereal").
+4.5: Among top 1000 most common words, no names or contractions here (e.g., "center," "company").
+5: Among top 300 most common words, no names or contractions here (e.g., "house," "walk," "good").
+
+Additional Notes:
+
+- If a term has multiple meanings, use the most familiar one.
+- If regional variations significantly affect familiarity, prioritize the region with the most common usage unless specified otherwise.
+
+Example Input:
+
+quixotic, SNOWFORT, GIVETO, snow tag, ATTN, diving, run
+
+Example Output:
+
+quixotic (quixotic) : Word : 2
+SNOWFORT (snow fort) : Phrase : 3
+GIVETO (give to) : Phrase : 3.5
+snow tag (snow tag) : Incoherent : 0
+ATTN (attn.) : Abbreviation: 2.5
+DIVING (diving) : Conjugated Verb : 4
+RUN (run) : Word : 5
+
+Words/phrases:
+
+[[DATA]]

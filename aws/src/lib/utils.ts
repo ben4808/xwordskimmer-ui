@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 // https://stackoverflow.com/questions/38416020/deep-copy-in-es6-using-the-spread-syntax
 export function deepClone(obj: any): any {
     if(typeof obj !== 'object' || obj === null) {
@@ -53,4 +55,22 @@ export function parseDateFromURL (date: string | null): Date {
   let month = parseInt(parts[1]) - 1; // Months are zero-based in JavaScript
   let day = parseInt(parts[2]);
   return new Date(year, month, day);
+}
+
+export function batchArray<T>(array: T[], batchSize: number): T[][] {
+  const batches: T[][] = [];
+  for (let i = 0; i < array.length; i += batchSize) {
+    batches.push(array.slice(i, i + batchSize));
+  }
+  return batches;
+}
+
+export async function loadPromptAsync(): Promise<string> {
+  try {
+    const content: string = await fs.promises.readFile('./translatePrompt.txt', 'utf-8');
+    return content;
+  } catch (err) {
+    console.error('Error reading file:', err);
+    throw err;
+  }
 }

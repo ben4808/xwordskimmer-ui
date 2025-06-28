@@ -1,7 +1,7 @@
 export interface Entry {
     entry: string;
     lang: string;
-    text: string;
-    context?: string;
-    description?: string;
+    displayText: string;
+    obscurityScore?: number;
+    qualityScore?: number;
 }
