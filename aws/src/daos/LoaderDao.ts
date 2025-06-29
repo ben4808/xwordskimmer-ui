@@ -1,73 +1,87 @@
-import { Entry } from "@entities/Entry";
-import { TYPES } from "tedious";
-import { sqlQuery } from "./sqlServer";
+import { sqlQuery } from "./postgres";
 import { ILoaderDao } from "./ILoaderDao";
+import { Clue } from "../models/Clue";
+import { TranslateResult } from "../models/TranslateResult";
+import { ObscurityResult } from "../models/ObscurityResult";
+import { QualityResult } from "../models/QualityResult";
+
 
 class LoaderDao implements ILoaderDao {
-    exploredQuery = async (query: string, userId: string) => {
-        let results = await sqlQuery(true, "ExploredQuery", [
-            {name: "Query", type: TYPES.NVarChar, value: query},
-            {name: "UserId", type: TYPES.NVarChar, value: userId},
-        ]) as any[];
-
-        return results.map(x => ({
-            entry: x.entry,
-            displayText: x.displayText,
-            qualityScore: +x.qualityScore,
-            obscurityScore: +x.obscurityScore,
-            breakfastTestFailure: x.breakfastTestFailure === 1,
-        }) as Entry);
-    }
-
-    frontierQuery = async (query: string, dataSource: string, page: number, recordsPerPage: number) => {
-        let results = await sqlQuery(true, "FrontierQuery", [
-            {name: "Query", type: TYPES.NVarChar, value: query},
-            {name: "DataSource", type: TYPES.NVarChar, value: dataSource},
-            {name: "Page", type: TYPES.Int, value: page},
-            {name: "RecordsPerPage", type: TYPES.Int, value: recordsPerPage},
-        ]) as Entry[];
-
-        return results;
-    }
-
-    discoverEntries = async (userId: string, entries: Entry[]) => {
-        await sqlQuery(true, "DiscoverEntries", [
-            {name: "UserId", type: TYPES.NVarChar, value: userId},
-            {name: "Entries", type: TYPES.TVP, value: {
-                columns: [
-                    { name: "entry", type: TYPES.NVarChar },
-                    { name: "displayText", type: TYPES.NVarChar },
-                    { name: "qualityScore", type: TYPES.Decimal, precision: 3, scale: 2 },
-                    { name: "obscurityScore", type: TYPES.Decimal, precision: 3, scale: 2 },
-                    { name: "breakfastTestFailure", type: TYPES.TinyInt },
-                ],
-                rows: entries.map(entry => [
-                    entry.entry.toUpperCase().replace(/[^A-Z]/g, ""),
-                    entry.displayText,
-                    entry.qualityScore,
-                    entry.obscurityScore,
-                    entry.breakfastTestFailure,
-                ]),
-            }}
+    savePuzzle = async (puzzle: any) => {
+        await sqlQuery(true, "SavePuzzle", [
+            {name: "p_puzzleId", value: puzzle.id},
+            {name: "p_publicationId", value: puzzle.publicationId},
+            {name: "p_date", value: puzzle.date},
+            {name: "p_author", value: puzzle.authors.join(", ")},
+            {name: "p_title", value: puzzle.title},
+            {name: "p_copyright", value: puzzle.copyright},
+            {name: "p_notes", value: puzzle.notes},
+            {name: "p_width", value: puzzle.width},
+            {name: "p_height", value: puzzle.height},
+            {name: "p_sourceLink", value: puzzle.sourceLink},
+            {name: "p_puzData", value: puzzle.puzData},
         ]);
-
-        return "Done";
     }
 
-    getAllExplored = async (userId: string, minQuality: string, minObscurity: string) => {
-        let results = await sqlQuery(true, "GetAllExplored", [
-            {name: "UserId", type: TYPES.NVarChar, value: userId},
-            {name: "MinQuality", type: TYPES.Int, value: minQuality},
-            {name: "MinObscurity", type: TYPES.Int, value: minObscurity},
-        ]) as any[];
+    saveClueCollection = async (clueCollection: any) => {
+        await sqlQuery(true, "SaveClueCollection", [
+            {name: "p_CollectionId", value: clueCollection.id},
+            {name: "p_PuzzleId", value: clueCollection.puzzleId},
+            {name: "p_Title", value: clueCollection.name},
+            {name: "p_AuthorID", value: clueCollection.authorId},
+            {name: "p_Description", value: clueCollection.description},
+            {name: "p_CreatedDate", value: clueCollection.createdDate},
+            {name: "p_Metadata1", value: clueCollection.metadata1},
+            {name: "p_Metadata2", value: clueCollection.metadata2},
+        ]);
+    }
 
-        return results.map(x => ({
-            entry: x.entry,
-            displayText: x.displayText,
-            qualityScore: +x.qualityScore,
-            obscurityScore: +x.obscurityScore,
-            breakfastTestFailure: x.breakfastTestFailure === 1,
-        }) as Entry);
+    saveClues = async (collectionId: string, clues: Clue[]) => {
+        let order = 1;
+
+        let cluesValue = clues.map(clue => {
+            return {
+                clueId: clue.id,
+                order: order++,
+                metadata1: clue.metadata1,
+                entry: clue.entry,
+                lang: clue.lang,
+                clue: clue.clue,
+                response_template: clue.responseTemplate || null,
+                source: clue.source || null,
+            };
+        });
+
+        await sqlQuery(true, "AddCluesToCollection", [
+            {name: "p_CollectionId", value: collectionId},
+            {name: "p_Clues", value: JSON.stringify(cluesValue)},
+        ]);
+    }
+
+    saveAIData = async (
+      translatedResults : TranslateResult[],
+      obscurityResults: ObscurityResult[], 
+      qualityResults: QualityResult[]
+    ) => {;
+        let order = 1;
+
+        let cluesValue = clues.map(clue => {
+            return {
+                clueId: clue.id,
+                order: order++,
+                metadata1: clue.metadata1,
+                entry: clue.entry,
+                lang: clue.lang,
+                clue: clue.clue,
+                response_template: clue.responseTemplate || null,
+                source: clue.source || null,
+            };
+        });
+
+        await sqlQuery(true, "load_data_source_table", [
+            {name: "p_CollectionId", value: collectionId},
+            {name: "p_Clues", value: JSON.stringify(cluesValue)},
+        ]);
     }
 }
 

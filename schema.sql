@@ -6,7 +6,7 @@ GRANT ALL ON SCHEMA public TO public;
 */
 
 create table puzzle (
-  id int not null primary key,
+  id text not null primary key,
   publicationId text,
   "date" date not null,
   author text,
@@ -20,10 +20,10 @@ create table puzzle (
 );
 
 create table cluecollection (
-  id int not null primary key,
-  puzzleId int,
+  id text not null primary key,
+  puzzleId text,
   title text not null,
-  authorID int,
+  authorID text,
   "description" text,
   createdDate timestamp not null,
   metadata1 text, -- AI Score
@@ -47,7 +47,7 @@ create table entryscore (
 );
 
 create table clue (
-  id int not null primary key,
+  id text not null primary key,
   "entry" text not null,
   lang text not null,
   clue text not null,
@@ -56,8 +56,8 @@ create table clue (
 );
 
 create table collection_clue (
-  collectionId int not null,
-  clueId int not null,
+  collectionId text not null,
+  clueId text not null,
   "order" int not null,
   metadata1 text, -- Clue index in puzzle
   metadata2 text,
@@ -65,8 +65,8 @@ create table collection_clue (
 );
 
 create table translatedclue (
-  id int not null primary key,
-  clueId int not null,
+  id text not null primary key,
+  clueId text not null,
   lang text not null,
   literalClue text not null,
   naturalClue text not null,

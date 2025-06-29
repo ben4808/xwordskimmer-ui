@@ -74,3 +74,16 @@ export async function loadPromptAsync(): Promise<string> {
     throw err;
   }
 }
+
+export function getRandomInt(max: number) {
+    return Math.floor(Math.random() * max);
+}
+
+export function generateId(): string {
+    let charPool = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
+    let id = "";
+    for (let i=0; i<11; i++) {
+        id += charPool[getRandomInt(64)];
+    }
+    return id;
+}

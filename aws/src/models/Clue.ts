@@ -4,6 +4,7 @@ export interface Clue {
     lang: string;
     clue: string;
     responseTemplate?: string;
+    source?: string;
     metadata1?: string;
     metadata2?: string;
 

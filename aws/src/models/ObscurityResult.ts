@@ -1,4 +1,4 @@
-export interface ObscurityeResult {
+export interface ObscurityResult {
     entry: string;
     displayText: string;
     entryType: string;
