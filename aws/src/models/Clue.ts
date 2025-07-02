@@ -1,13 +1,14 @@
+import { TranslateResult } from "./TranslateResult";
+
 export interface Clue {
-    id?: number;
+    id: string;
     entry: string;
     lang: string;
     clue: string;
     responseTemplate?: string;
     source?: string;
-    metadata1?: string;
+    metadata1?: string;  // puzzle index
     metadata2?: string;
 
-    translatedClues: Map<string, string>; // <land, clue>
-    translatedEntries: Map<string, string[]>; // <lang, entry[]>
+    translateResults: Map<string, TranslateResult>; // <lang, TranslateResult>
 };

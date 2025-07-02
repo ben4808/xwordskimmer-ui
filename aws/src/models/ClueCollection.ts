@@ -1,10 +1,10 @@
 import { Clue } from "./Clue";
 
 export interface ClueCollection {
-    id: number;
+    id: string;
     name: string;
-    puzzleID?: number;
-    authorID?: number;
+    puzzleId?: string;
+    authorId?: string;
     description?: string;
     createdDate: Date;
     metadata1?: string;

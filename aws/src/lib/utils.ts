@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 // https://stackoverflow.com/questions/38416020/deep-copy-in-es6-using-the-spread-syntax
 export function deepClone(obj: any): any {
     if(typeof obj !== 'object' || obj === null) {
@@ -63,16 +61,6 @@ export function batchArray<T>(array: T[], batchSize: number): T[][] {
     batches.push(array.slice(i, i + batchSize));
   }
   return batches;
-}
-
-export async function loadPromptAsync(): Promise<string> {
-  try {
-    const content: string = await fs.promises.readFile('./translatePrompt.txt', 'utf-8');
-    return content;
-  } catch (err) {
-    console.error('Error reading file:', err);
-    throw err;
-  }
 }
 
 export function getRandomInt(max: number) {

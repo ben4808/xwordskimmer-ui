@@ -2,7 +2,7 @@ import { PuzzleEntry } from "./PuzzleEntry";
 import { Square } from "./Square";
 
 export interface Puzzle {
-    id?: number;
+    id: string
     title: string;
     authors: string[];
     copyright: string;
