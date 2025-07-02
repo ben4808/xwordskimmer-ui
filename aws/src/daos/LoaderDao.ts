@@ -4,13 +4,14 @@ import { Clue } from "../models/Clue";
 import { TranslateResult } from "../models/TranslateResult";
 import { ObscurityResult } from "../models/ObscurityResult";
 import { QualityResult } from "../models/QualityResult";
+import { entryToAllCaps, generateId, zipArraysFlat } from "../lib/utils";
 
 
 class LoaderDao implements ILoaderDao {
     savePuzzle = async (puzzle: any) => {
-        await sqlQuery(true, "SavePuzzle", [
-            {name: "p_puzzleId", value: puzzle.id},
-            {name: "p_publicationId", value: puzzle.publicationId},
+        await sqlQuery(true, "add_puzzle", [
+            {name: "p_puzzle_id", value: puzzle.id},
+            {name: "p_publication_id", value: puzzle.publicationId},
             {name: "p_date", value: puzzle.date},
             {name: "p_author", value: puzzle.authors.join(", ")},
             {name: "p_title", value: puzzle.title},
@@ -18,21 +19,21 @@ class LoaderDao implements ILoaderDao {
             {name: "p_notes", value: puzzle.notes},
             {name: "p_width", value: puzzle.width},
             {name: "p_height", value: puzzle.height},
-            {name: "p_sourceLink", value: puzzle.sourceLink},
-            {name: "p_puzData", value: puzzle.puzData},
+            {name: "p_source_link", value: puzzle.sourceLink},
+            {name: "p_puz_data", value: puzzle.puzData},
         ]);
     }
 
     saveClueCollection = async (clueCollection: any) => {
-        await sqlQuery(true, "SaveClueCollection", [
-            {name: "p_CollectionId", value: clueCollection.id},
-            {name: "p_PuzzleId", value: clueCollection.puzzleId},
-            {name: "p_Title", value: clueCollection.name},
-            {name: "p_AuthorID", value: clueCollection.authorId},
-            {name: "p_Description", value: clueCollection.description},
-            {name: "p_CreatedDate", value: clueCollection.createdDate},
-            {name: "p_Metadata1", value: clueCollection.metadata1},
-            {name: "p_Metadata2", value: clueCollection.metadata2},
+        await sqlQuery(true, "add_clue_collection", [
+            {name: "p_collection_id", value: clueCollection.id},
+            {name: "p_puzzle_id", value: clueCollection.puzzleId},
+            {name: "p_title", value: clueCollection.name},
+            {name: "p_author_id", value: clueCollection.authorId},
+            {name: "p_description", value: clueCollection.description},
+            {name: "p_created_date", value: clueCollection.createdDate},
+            {name: "p_metadata1", value: clueCollection.metadata1},
+            {name: "p_metadata2", value: clueCollection.metadata2},
         ]);
     }
 
@@ -41,7 +42,7 @@ class LoaderDao implements ILoaderDao {
 
         let cluesValue = clues.map(clue => {
             return {
-                clueId: clue.id,
+                clue_id: clue.id,
                 order: order++,
                 metadata1: clue.metadata1,
                 entry: clue.entry,
@@ -52,9 +53,9 @@ class LoaderDao implements ILoaderDao {
             };
         });
 
-        await sqlQuery(true, "AddCluesToCollection", [
-            {name: "p_CollectionId", value: collectionId},
-            {name: "p_Clues", value: JSON.stringify(cluesValue)},
+        await sqlQuery(true, "add_clues_to_collection", [
+            {name: "p_collection_id", value: collectionId},
+            {name: "p_clues", value: JSON.stringify(cluesValue)},
         ]);
     }
 
@@ -63,24 +64,54 @@ class LoaderDao implements ILoaderDao {
       obscurityResults: ObscurityResult[], 
       qualityResults: QualityResult[]
     ) => {;
-        let order = 1;
-
-        let cluesValue = clues.map(clue => {
+        let entriesValue = obscurityResults.map(result => {
             return {
-                clueId: clue.id,
-                order: order++,
-                metadata1: clue.metadata1,
-                entry: clue.entry,
-                lang: clue.lang,
-                clue: clue.clue,
-                response_template: clue.responseTemplate || null,
-                source: clue.source || null,
+                entry: result.entry,
+                lang: result.lang,
+                display_text: result.displayText,
+                entry_type: result.entryType,
             };
         });
 
-        await sqlQuery(true, "load_data_source_table", [
-            {name: "p_CollectionId", value: collectionId},
-            {name: "p_Clues", value: JSON.stringify(cluesValue)},
+        await sqlQuery(true, "add_entries_to_clues", [
+            {name: "p_entries", value: JSON.stringify(entriesValue)},
+        ]);
+
+        translatedResults.forEach(result => {
+            if (!result.translatedClueId) {
+                result.translatedClueId = generateId();
+            }
+        });
+
+        let translationsValue = translatedResults.map(result => {
+            return {
+                translated_clue_id: result.translatedClueId,
+                clueId: result.originalClue.id,
+                lang: result.originalClue.lang,
+                literal_translation: result.literalTranslation,
+                natural_translation: result.naturalTranslation,
+                natural_answers: zipArraysFlat(result.naturalAnswers.map(x => entryToAllCaps(x)), result.naturalAnswers).join(";"),
+                colloquial_answers: zipArraysFlat(result.colloquialAnswers.map(x => entryToAllCaps(x)), result.colloquialAnswers).join(";"),
+                source_ai: result.sourceAI,
+            };
+        });
+
+        await sqlQuery(true, "add_translated_clues", [
+            {name: "p_translated_clues", value: JSON.stringify(translationsValue)},
+        ]);
+
+        let obscurityQualityValue = obscurityResults.map(result => {
+            return {
+                entry: result.entry,
+                lang: result.lang,
+                obscurity_score: result.obscurityScore,
+                quality_score: qualityResults.find(q => q.entry === result.entry && q.lang === result.lang)?.qualityScore || 0,
+                source_ai: result.sourceAI,
+            };
+        });
+
+        await sqlQuery(true, "add_obscurity_quality_scores", [
+            {name: "p_scores", value: JSON.stringify(obscurityQualityValue)},
         ]);
     }
 }

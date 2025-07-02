@@ -87,3 +87,18 @@ export function generateId(): string {
     }
     return id;
 }
+
+export function entryToAllCaps(entry: string): string {
+    return entry.toUpperCase().replace(/[^A-Z0-9]/g, '');
+};
+
+export function zipArraysFlat<T, U>(arr1: T[], arr2: U[]): (T | U)[] {
+    const result: (T | U)[] = [];
+    const minLength = Math.min(arr1.length, arr2.length);
+    
+    for (let i = 0; i < minLength; i++) {
+        result.push(arr1[i], arr2[i]);
+    }
+    
+    return result;
+}

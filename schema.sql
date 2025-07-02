@@ -7,7 +7,7 @@ GRANT ALL ON SCHEMA public TO public;
 
 create table puzzle (
   id text not null primary key,
-  publicationId text,
+  publication_id text,
   "date" date not null,
   author text,
   title text not null,
@@ -15,17 +15,17 @@ create table puzzle (
   notes text,
   width int not null,
   height int not null,
-  sourceLink text,
-  puzData bytea not null
+  source_link text,
+  puz_data bytea not null
 );
 
-create table cluecollection (
+create table clue_collection (
   id text not null primary key,
-  puzzleId text,
+  puzzle_id text,
   title text not null,
-  authorID text,
+  author_id text,
   "description" text,
-  createdDate timestamp not null,
+  created_date timestamp not null,
   metadata1 text, -- AI Score
   metadata2 text
 );
@@ -33,16 +33,17 @@ create table cluecollection (
 create table "entry" (
   "entry" text not null,
   lang text not null,
-  displayText text,
+  display_text text,
+  entry_type text,
   primary key("entry", lang)
 );
 
-create table entryscore (
+create table entry_score (
   "entry" text not null,
   lang text not null,
   obscurity_score int not null,
   quality_score int not null,
-  source: text not null,
+  source_ai: text not null,
   primary key("entry", lang)
 );
 
@@ -55,27 +56,28 @@ create table clue (
   source text -- Book it came from? AI source?
 );
 
-create table collection_clue (
-  collectionId text not null,
-  clueId text not null,
+create table collection__clue (
+  collection_id text not null,
+  clue_id text not null,
   "order" int not null,
   metadata1 text, -- Clue index in puzzle
   metadata2 text,
-  primary key(collectionId, clueId)
+  primary key(collection_id, clue_id)
 );
 
-create table translatedclue (
-  id text not null primary key,
-  clueId text not null,
+create table translated_clue (
+  clue_id text not null,
   lang text not null,
-  literalClue text not null,
-  naturalClue text not null,
-  source text -- which AI
+  literal_clue text not null,
+  natural_clue text not null,
+  source_ai text not null,
+  primary key(clue_id, lang, soruce)
 );
 
-create table translatedentry (
+create table translated_entry (
   "entry" text not null,
   lang text not null,
-  translatedClueId int not null,
-  primary key("entry", translatedClueId)
+  display_text text not null,
+  translated_clue_id int not null,
+  primary key("entry", translated_clue_id)
 );
