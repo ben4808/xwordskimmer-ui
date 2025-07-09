@@ -31,23 +31,27 @@ async function writeBlobToFile(blob: Blob, filePath: string): Promise<void> {
 
 export const scrapePuzzles = async (): Promise<Puzzle[]> => {
   let scrapedPuzzles = [] as Puzzle[]
-  let sources = [Sources.NYT, Sources.WSJ, Sources.Newsday] as PuzzleSource[]; // Add other sources as needed
+  let sources = [
+    Sources.NYT, 
+    //Sources.WSJ, 
+    //Sources.Newsday
+  ] as PuzzleSource[]; // Add other sources as needed
   let date = new Date(); // Use today's date or modify as needed
 
-  sources.forEach(async (source) => {
+  await Promise.all(sources.map(async (source) => {
     try {
         let puzzle = await scrapePuzzle(source, date);
         scrapedPuzzles.push(puzzle);
 
         let directory = "C:\\Users\\ben_z\\Desktop\\puzzles";
         let fileName = `${source.id}-${date.toISOString().split('T')[0]}.puz`;
-        savePuzzle(puzzle, directory, fileName);
+        await savePuzzle(puzzle, directory, fileName);
 
         console.log(`Scraped puzzle from ${source.name} for date ${date.toISOString()}`);
     } catch (error) {
         console.error(`Error scraping puzzle from ${source.name} for date ${date.toISOString()}: `, error);
     }
-  });
+  }));
 
   return scrapedPuzzles;
 }

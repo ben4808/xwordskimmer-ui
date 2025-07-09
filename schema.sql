@@ -15,8 +15,7 @@ create table puzzle (
   notes text,
   width int not null,
   height int not null,
-  source_link text,
-  puz_data bytea not null
+  source_link text
 );
 
 create table clue_collection (

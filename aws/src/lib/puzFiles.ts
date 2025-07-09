@@ -160,7 +160,7 @@ export async function processPuzData(data: Blob): Promise<Puzzle | undefined> {
             square.content = rebusValues.get(v)!;
         });
     }
-
+    
     return puzzle;
 }
 

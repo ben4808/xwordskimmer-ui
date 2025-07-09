@@ -3,7 +3,7 @@
 
     "db_host": "localhost",
     "db_user": "postgres",
-    "db_password": "postgres",
+    "db_password": "",
 
     "gemini_api_key": ""
 }

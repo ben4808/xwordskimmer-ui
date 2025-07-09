@@ -2,6 +2,7 @@ import { PuzzleSource } from "../models/PuzzleSource";
 import { Square } from "../models/Square";
 import { Puzzle } from "../models/Puzzle";
 import { PuzzleEntry } from "../models/PuzzleEntry";
+import { generatePuzFile } from "../lib/puzFiles";
 
 export class NewsdaySource implements PuzzleSource {
     public id = "Newsday";
@@ -122,7 +123,7 @@ export class NewsdaySource implements PuzzleSource {
             }
         }
         
-        return {
+        let puzzle: Puzzle = {
             title: title,
             authors: authorLine.split(',').map(s => s.trim()),
             copyright: "",
@@ -131,7 +132,10 @@ export class NewsdaySource implements PuzzleSource {
             width,
             height,
             grid,
-            entries
+            entries,
+            lang: "en",
         };
+
+        return puzzle;
       }
     }

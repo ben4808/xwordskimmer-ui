@@ -18,6 +18,7 @@ export class WSJSource implements PuzzleSource {
         throw new Error("Failed to parse WSJ puzzle data.");
       }
 
+      puzzle.lang = "en";
       return puzzle;
     }
 }

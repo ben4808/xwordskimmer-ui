@@ -40,7 +40,7 @@ CREATE TYPE obscurity_quality_type AS (
     source text -- which AI
 );
 
-CREATE OR REPLACE PROCEDURE add_puzzle (
+CREATE OR REPLACE FUNCTION add_puzzle (
     p_puzzle_id text,
     p_publication_id text,
     p_date date,
@@ -50,9 +50,9 @@ CREATE OR REPLACE PROCEDURE add_puzzle (
     p_notes text,
     p_width integer,
     p_height integer,
-    p_source_link text,
-    p_puz_data bytea
+    p_source_link text
 )
+RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -72,8 +72,7 @@ BEGIN
             notes,
             width,
             height,
-            source_link,
-            puz_data
+            source_link
         )
         VALUES (
             p_puzzle_id,
@@ -85,14 +84,13 @@ BEGIN
             p_notes,
             p_width,
             p_height,
-            p_source_link,
-            p_puz_data
+            p_source_link
         );
     END IF;
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE add_clue_collection (
+CREATE OR REPLACE FUNCTION add_clue_collection (
     p_collection_id text,
     p_puzzle_id text,
     p_title text,
@@ -102,6 +100,7 @@ CREATE OR REPLACE PROCEDURE add_clue_collection (
     p_metadata1 text,
     p_metadata2 text
 )
+RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -124,7 +123,7 @@ BEGIN
             p_puzzle_id,
             p_title,
             p_author_id,
-            p_dscription,
+            p_description,
             p_created_date,
             p_metadata1,
             p_metadata2
@@ -133,10 +132,11 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE add_clues_to_collection (
+CREATE OR REPLACE FUNCTION add_clues_to_collection (
     p_collection_id text,
     p_clues clue_type[]
 )
+RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -152,9 +152,10 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE add_entries (
+CREATE OR REPLACE FUNCTION add_entries (
     p_entries entry_type[]
 )
+RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -166,9 +167,10 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE add_translate_results (
+CREATE OR REPLACE FUNCTION add_translate_results (
     p_translate_results translated_type[]
 )
+RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -236,8 +238,16 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE add_obscurity_quality_scores (
+CREATE OR REPLACE FUNCTION add_obscurity_quality_scores (
     p_scores obscurity_quality_type[]
+)
+RETURNS TABLE (
+    "entry" text,
+    lang text,
+    display_text text,
+    entry_type text,
+    obscurity_score integer,
+    quality_score integer
 )
 LANGUAGE plpgsql
 AS $$

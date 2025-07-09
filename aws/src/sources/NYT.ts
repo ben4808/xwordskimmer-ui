@@ -5,6 +5,7 @@ import { Puzzle } from "../models/Puzzle";
 import { PuzzleEntry } from "../models/PuzzleEntry";
 import { decode } from 'html-entities';
 import { newPuzzle } from "../lib/puzzle";
+import { generatePuzFile } from "../lib/puzFiles";
 
 export class NYTSource implements PuzzleSource {
     public id = "NYT";
@@ -106,6 +107,7 @@ export class NYTSource implements PuzzleSource {
         puzzle.source = source;
         puzzle.grid = grid;
         puzzle.entries = puzEntries;
+        puzzle.lang = "en"; // NYT puzzles are always in English
 
         return puzzle;
     }
