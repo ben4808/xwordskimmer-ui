@@ -1,7 +1,9 @@
 {
     "api_base_url": "",
-    "db_user": "",
-    "db_password": "",
+
+    "db_host": "localhost",
+    "db_user": "postgres",
+    "db_password": "postgres",
 
     "gemini_api_key": ""
 }

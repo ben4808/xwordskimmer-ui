@@ -1,10 +1,10 @@
 import  { Pool } from 'pg';
 import { PostgresParameter } from './PostgresParameter';
-import settings from '../settings.json';
+import settings from '../../settings.json';
 
 let pool = new Pool({
     user: settings.db_user,
-    host: settings.api_base_url,
+    host: settings.db_host,
     database: 'cruzi',
     password: settings.db_password,
     port: 5432,

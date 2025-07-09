@@ -5,12 +5,13 @@ import { TranslateResult } from "../models/TranslateResult";
 import { ObscurityResult } from "../models/ObscurityResult";
 import { QualityResult } from "../models/QualityResult";
 import { entryToAllCaps, generateId, zipArraysFlat } from "../lib/utils";
+import { Entry } from "../models/Entry";
 
 
 class LoaderDao implements ILoaderDao {
     savePuzzle = async (puzzle: any) => {
         await sqlQuery(true, "add_puzzle", [
-            {name: "p_puzzle_id", value: puzzle.id},
+            {name: "p_puzzle_id", value: puzzle.id || generateId()},
             {name: "p_publication_id", value: puzzle.publicationId},
             {name: "p_date", value: puzzle.date},
             {name: "p_author", value: puzzle.authors.join(", ")},
@@ -26,7 +27,7 @@ class LoaderDao implements ILoaderDao {
 
     saveClueCollection = async (clueCollection: any) => {
         await sqlQuery(true, "add_clue_collection", [
-            {name: "p_collection_id", value: clueCollection.id},
+            {name: "p_collection_id", value: clueCollection.id || generateId()},
             {name: "p_puzzle_id", value: clueCollection.puzzleId},
             {name: "p_title", value: clueCollection.name},
             {name: "p_author_id", value: clueCollection.authorId},
@@ -37,12 +38,12 @@ class LoaderDao implements ILoaderDao {
         ]);
     }
 
-    saveClues = async (collectionId: string, clues: Clue[]) => {
+    addCluesToCollection = async (collectionId: string, clues: Clue[]) => {
         let order = 1;
 
         let cluesValue = clues.map(clue => {
             return {
-                clue_id: clue.id,
+                clue_id: clue.id || generateId(),
                 order: order++,
                 metadata1: clue.metadata1,
                 entry: clue.entry,
@@ -57,37 +58,28 @@ class LoaderDao implements ILoaderDao {
             {name: "p_collection_id", value: collectionId},
             {name: "p_clues", value: JSON.stringify(cluesValue)},
         ]);
-    }
 
-    saveAIData = async (
-      translatedResults : TranslateResult[],
-      obscurityResults: ObscurityResult[], 
-      qualityResults: QualityResult[]
-    ) => {;
-        let entriesValue = obscurityResults.map(result => {
+        let entriesValue = clues.map(clue => {
+            let entry = clue.entry.get(clue.lang)!;
             return {
-                entry: result.entry,
-                lang: result.lang,
-                display_text: result.displayText,
-                entry_type: result.entryType,
+                entry: entry.entry,
+                lang: entry.lang,
             };
         });
 
-        await sqlQuery(true, "add_entries_to_clues", [
+        await sqlQuery(true, "add_entries", [
             {name: "p_entries", value: JSON.stringify(entriesValue)},
         ]);
+    }
 
-        translatedResults.forEach(result => {
-            if (!result.translatedClueId) {
-                result.translatedClueId = generateId();
-            }
-        });
-
+    addTranslateResults = async (
+      translatedResults : TranslateResult[]
+    ) => {
         let translationsValue = translatedResults.map(result => {
             return {
-                translated_clue_id: result.translatedClueId,
-                clueId: result.originalClue.id,
-                lang: result.originalClue.lang,
+                translated_clue_id: result.translatedClueId || generateId(),
+                clueId: result.clueId,
+                lang: result.lang,
                 literal_translation: result.literalTranslation,
                 natural_translation: result.naturalTranslation,
                 natural_answers: zipArraysFlat(result.naturalAnswers.map(x => entryToAllCaps(x)), result.naturalAnswers).join(";"),
@@ -96,23 +88,39 @@ class LoaderDao implements ILoaderDao {
             };
         });
 
-        await sqlQuery(true, "add_translated_clues", [
-            {name: "p_translated_clues", value: JSON.stringify(translationsValue)},
+        await sqlQuery(true, "add_translate_results", [
+            {name: "p_translate_results", value: JSON.stringify(translationsValue)},
         ]);
+    }
 
+    addObscurityQualityResults = async (
+      obscurityResults: ObscurityResult[], 
+      qualityResults: QualityResult[]
+    ) => {;
         let obscurityQualityValue = obscurityResults.map(result => {
             return {
                 entry: result.entry,
                 lang: result.lang,
+                display_text: result.displayText,
+                entry_type: result.entryType,
                 obscurity_score: result.obscurityScore,
                 quality_score: qualityResults.find(q => q.entry === result.entry && q.lang === result.lang)?.qualityScore || 0,
                 source_ai: result.sourceAI,
             };
         });
 
-        await sqlQuery(true, "add_obscurity_quality_scores", [
+        let returnedEntries = await sqlQuery(true, "add_obscurity_quality_scores", [
             {name: "p_scores", value: JSON.stringify(obscurityQualityValue)},
         ]);
+
+        return returnedEntries.map(row => ({
+            entry: row.entry,
+            lang: row.lang,
+            displayText: row.display_text,
+            entryType: row.entry_type,
+            obscurityScore: row.obscurity_score,
+            qualityScore: row.quality_score,
+        }) as Entry);
     }
 }
 

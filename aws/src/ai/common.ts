@@ -23,13 +23,14 @@ export async function getTranslateResults(provider: IAiProvider, clues: Clue[], 
 
       for (let i=0; i < parsed.length; i++) {
         const clue = batch[i];
-        clue.translateResults.set(lang, ({
-          sourceAI: provider.sourceAI,
+        results.push(({
+          clueId: clue.id,
           lang: lang,
           literalTranslation: parsed[i].literalTranslation,
           naturalTranslation: parsed[i].naturalTranslation,
           naturalAnswers: parsed[i].naturalAnswers,
           colloquialAnswers: parsed[i].colloquialAnswers,
+          sourceAI: provider.sourceAI,
         }) as TranslateResult);
       }
     }

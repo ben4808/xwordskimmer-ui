@@ -35,15 +35,17 @@ create table "entry" (
   lang text not null,
   display_text text,
   entry_type text,
+  obscurity_score int,
+  quality_score int,
   primary key("entry", lang)
 );
 
 create table entry_score (
   "entry" text not null,
   lang text not null,
-  obscurity_score int not null,
-  quality_score int not null,
-  source_ai: text not null,
+  obscurity_score int,
+  quality_score int,
+  source_ai text not null,
   primary key("entry", lang)
 );
 
@@ -71,7 +73,7 @@ create table translated_clue (
   literal_clue text not null,
   natural_clue text not null,
   source_ai text not null,
-  primary key(clue_id, lang, soruce)
+  primary key(clue_id, lang, source_ai)
 );
 
 create table translated_entry (

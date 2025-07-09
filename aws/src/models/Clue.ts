@@ -1,8 +1,9 @@
+import { Entry } from "./Entry";
 import { TranslateResult } from "./TranslateResult";
 
 export interface Clue {
-    id: string;
-    entry: string;
+    id?: string;
+    entry: Map<string, Entry>; // <entry, Entry>
     lang: string;
     clue: string;
     responseTemplate?: string;
@@ -10,5 +11,5 @@ export interface Clue {
     metadata1?: string;  // puzzle index
     metadata2?: string;
 
-    translateResults: Map<string, TranslateResult>; // <lang, TranslateResult>
+    translateResults?: Map<string, TranslateResult>; // <lang, TranslateResult>
 };
