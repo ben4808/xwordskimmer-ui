@@ -1,10 +1,11 @@
 export interface TranslateResult {
-  translatedClueId?: string, // Optional, generated if not provided
   clueId: string,
-  lang: string,
+  originalLang: string,
+  translatedLang: string,
   literalTranslation: string,
   naturalTranslation: string,
   naturalAnswers: string[],
   colloquialAnswers: string[],
+  alternativeEnglishAnswers: string[],
   sourceAI: string,
 }

@@ -124,6 +124,7 @@ export class NewsdaySource implements PuzzleSource {
         }
         
         let puzzle: Puzzle = {
+            publicationId: this.id,
             title: title,
             authors: authorLine.split(',').map(s => s.trim()),
             copyright: "",
@@ -134,6 +135,7 @@ export class NewsdaySource implements PuzzleSource {
             grid,
             entries,
             lang: "en",
+            sourceLink: url,
         };
 
         return puzzle;

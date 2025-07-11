@@ -1,0 +1,279 @@
+Major-league team known as the "North Siders," locally : CUBS
+Literal: Equipo de liga-mayor conocido como los "Lado Nortes," localmente.
+Natural: Equipo de Grandes Ligas conocido como los "North Siders" en el ámbito local.
+Natural answers: Cachorros; Oseznos; Crías
+Colloquial answers: Cachorritos; Los Cachorros
+Alternative English answers: Cubs baseball team; Chicago Cubs; The Cubbies
+
+Curve that gives one pause? : COMMA
+Literal: Curva que da a uno pausa?
+Natural: ¿Signo de puntuación que provoca una pausa?; ¿Curva que te hace dudar?
+Natural answers: Coma
+Colloquial answers: Comita; Pausa corta
+Alternative English answers: Pause mark; Break mark; Punctuation mark
+
+German war vessel : UBOAT
+Literal: Alemán guerra vaso.
+Natural: Embarcación de guerra alemana; Buque de guerra alemán.
+Natural answers: U-Boot; Submarino alemán; Sumarino de combate
+Colloquial answers: Submarino de guerra; Nave sumergible
+Alternative English answers: Submarine; Unterseeboot; German sub
+
+What a stepstool provides : BOOST
+Literal: Qué un taburete-escalera provee.
+Natural: ¿Qué proporciona un taburete?; Lo que ofrece un taburete de escalón.
+Natural answers: Elevación; Impulso; Ayuda
+Colloquial answers: Subidón; Un empujón; Un alzamiento
+Alternative English answers: Lift; Leg-up; Step-up
+
+Mood : SENTIMENT
+Literal: Humor.
+Natural: Estado de ánimo; Temple.
+Natural answers: Sentimiento; Emoción; Estado de ánimo
+Colloquial answers: Pálpito; Vibe; Onda
+Alternative English answers: Feeling; Emotion; Vibe
+
+I.R.S. fig. : SSN
+Literal: I.R.S. fig.
+Natural: Cifra del S.R.I.; Dato del IRS.
+Natural answers: Número de Seguro Social; NSS; N.S.S.
+Colloquial answers: Número de identidad; Número de la seguridad
+Alternative English answers: Tax ID; SIN; Taxpayer ID
+
+Reminder of a past fight, maybe : SCAR
+Literal: Recordatorio de un pasado pelea, tal vez.
+Natural: ¿Un recordatorio de una pelea pasada, quizás?; Cicatriz de una pelea, tal vez.
+Natural answers: Cicatriz; Marca; Huella
+Colloquial answers: Señal; Marca de guerra
+Alternative English answers: Mark; Wound mark; Remnant
+
+Karaoke choice : SONG
+Literal: Karaoke elección.
+Natural: Opción de karaoke; Canción para karaoke.
+Natural answers: Canción; Tema musical; Pieza musical
+Colloquial answers: Rolita; Tonada; Melodía
+Alternative English answers: Tune; Track; Number
+
+For real, to Gen Z : NOCAP
+Literal: Para real, a Generación Z.
+Natural: En serio, según la Generación Z; De verdad, para la Generación Z.
+Natural answers: En serio; De verdad; Sin mentiras
+Colloquial answers: Es neta; De pana; Sin gorra
+Alternative English answers: For sure; Legit; Seriously
+
+Playbill bits : BIOS
+Literal: Programa de teatro trozos.
+Natural: Pequeñas biografías en el programa de mano; Fragmentos de Playbill.
+Natural answers: Biografías; Datos biográficos; Reseñas biográficas
+Colloquial answers: Perfiles; Vidas cortas
+Alternative English answers: Biographies; Profiles; Info
+
+Happened to : BEFELL
+Literal: Sucedió a.
+Natural: Le ocurrió a; Aconteció a.
+Natural answers: Le sobrevino; Le acaeció; Le ocurrió
+Colloquial answers: Le pasó; Le cayó encima; Le sucedió
+Alternative English answers: Occurred to; Came upon; Transpired for
+
+Glazer of "Broad City" : ILANA
+Literal: Glazer de "Broad City."
+Natural: Glazer, actriz de "Broad City"; Ilana Glazer de "Broad City."
+Natural answers: Ilana
+Colloquial answers: Ila
+Alternative English answers: (None)
+
+Like Stonehenge vis-à-vis the Parthenon : OLDER
+Literal: Como Stonehenge vis-à-vis el Partenón.
+Natural: Como Stonehenge en relación con el Partenón; Más antiguo que el Partenón, como Stonehenge.
+Natural answers: Más antiguo; De mayor antigüedad; Más viejo
+Colloquial answers: Más viejo; De más años; De hace mucho
+Alternative English answers: More ancient; Pre-dates; Earlier
+
+Sibyls : SEERS
+Literal: Sibilas.
+Natural: Sibilas; Profetisas antiguas.
+Natural answers: Videntes; Profetas; Adivinos
+Colloquial answers: Clarividentes; Los que ven
+Alternative English answers: Oracles; Prophets; Soothsayers
+
+Heckelphone relative : OBOE
+Literal: Heckelphone pariente.
+Natural: Pariente del heckelphone; Instrumento similar al heckelphone.
+Natural answers: Oboe; Instrumento de viento-madera
+Colloquial answers: (None)
+Alternative English answers: English horn; Bassoon; Clarinet
+
+Urban housing option : COOP
+Literal: Urbano vivienda opción.
+Natural: Opción de vivienda urbana; Tipo de vivienda en la ciudad.
+Natural answers: Cooperativa de vivienda; Apartamento cooperativo; Vivienda cooperativa
+Colloquial answers: Cooperativa; Piso cooperativo
+Alternative English answers: Condo; Apartment; Flat
+
+"End of story!" : PERIOD
+Literal: Fin de historia!
+Natural: ¡Fin de la historia!; ¡Y punto!
+Natural answers: Punto; Fin; Punto final
+Colloquial answers: ¡Y punto!; Se acabó
+Alternative English answers: Full stop; That's it; Conclusive
+
+Marie Claire competitor : ELLE
+Literal: Marie Claire competidor.
+Natural: Competidor de Marie Claire; Una revista que compite con Marie Claire.
+Natural answers: Elle; Revista Elle
+Colloquial answers: (None)
+Alternative English answers: Vogue; Harper's Bazaar; Cosmopolitan
+
+1970 Van Morrison title track : MOONDANCE
+Literal: 1970 Van Morrison título canción.
+Natural: Canción principal de Van Morrison de 1970; Pista del álbum homónimo de Van Morrison de 1970.
+Natural answers: Moondance
+Colloquial answers: (None)
+Alternative English answers: Brown Eyed Girl; Astral Weeks; Into the Mystic
+
+Part of a restaurant's ambience : DECOR
+Literal: Parte de un restaurante ambiente.
+Natural: Parte del ambiente de un restaurante; Decoración de un restaurante.
+Natural answers: Decoración; Ambiente; Diseño interior
+Colloquial answers: La pinta; El arreglo; El aspecto
+Alternative English answers: Ambiance; Interior design; Setting
+
+Barbershop choice : FADE
+Literal: Peluquería elección.
+Natural: Opción en la barbería; Un tipo de corte en la barbería.
+Natural answers: Degradado; Corte desvanecido; Desvanecimiento
+Colloquial answers: Fade; Desvanecido; Rapado
+Alternative English answers: Taper; Buzzcut; Undercut
+
+A\` : MASTERGARDENER
+Literal: A\`.
+Natural: Grado A.
+Natural answers: Maestro jardinero; Jardinero experto; Horticultor certificado
+Colloquial answers: Jardinero pro; Mano verde; Amo del jardín
+Alternative English answers: Expert gardener; Head gardener; Horticulturalist
+
+"Kathy Griffin: My Life on the ___" (Bravo show) : DLIST
+Literal: Kathy Griffin: Mi Vida en el ___ (Bravo programa).
+Natural: "Kathy Griffin: Mi vida en la lista ___" (programa de Bravo).
+Natural answers: Lista D; Categoría D; Cuarto nivel
+Colloquial answers: Los de abajo; Famosos de cuarta; Lista de cuarta
+Alternative English answers: Z-list; Bottom tier; Low-rent
+
+Part of the house in which Kevin is left behind in "Home Alone" : ATTIC
+Literal: Parte de la casa en que Kevin es dejado detrás en "Solo en Casa."
+Natural: Parte de la casa donde Kevin es olvidado en "Solo en Casa"; El lugar de la casa donde se olvidan a Kevin en "Solo en Casa."
+Natural answers: Ático; Buhardilla; Desván
+Colloquial answers: La parte de arriba; El trastero de arriba; El cuartito del techo
+Alternative English answers: Loft; Garret; Storage room
+
+Fundamental precepts : PILLARS
+Literal: Fundamental preceptos.
+Natural: Preceptos fundamentales; Pilares fundamentales.
+Natural answers: Pilares; Fundamentos; Principios
+Colloquial answers: Bases; Columnas; Soportes
+Alternative English answers: Foundations; Cornerstones; Tenets
+
+How some points end up : MOOT
+Literal: Cómo algunos puntos terminan.
+Natural: Cómo algunos puntos resultan; La manera en que algunos puntos quedan.
+Natural answers: Irrelevante; Discutible; Académico
+Colloquial answers: Sin importancia; No importa; Sin caso
+Alternative English answers: Irrelevant; Academic; Debatable
+
+Possess : OWN
+Literal: Poseer.
+Natural: Poseer; Ser dueño de.
+Natural answers: Poseer; Tener; Ser dueño de
+Colloquial answers: Tenerlo; Ser el amo de
+Alternative English answers: Have; Hold; Keep
+
+A best man may make one : TOAST
+Literal: Un mejor hombre puede hacer uno.
+Natural: Un padrino de boda puede hacer uno; Un padrino puede ofrecer un brindis.
+Natural answers: Brindis; Proposición de brindis; Homenaje
+Colloquial answers: Copa; Salud
+Alternative English answers: Speech; Salutation; Dedication
+
+Common fossil fuel : OIL
+Literal: Común fósil combustible.
+Natural: Combustible fósil común; Un tipo de combustible fósil.
+Natural answers: Petróleo; Crudo; Aceite
+Colloquial answers: Oro negro; Combustible
+Alternative English answers: Petroleum; Crude; Gas
+
+Kc : TIGERWOODS
+Literal: Kc.
+Natural: Iniciales Kc.
+Natural answers: Tiger Woods
+Colloquial answers: El Tigre; Woods
+Alternative English answers: Eldrick Woods; Golfer Woods; The Tiger
+
+Part of a brass band : TUBA
+Literal: Parte de un latón banda.
+Natural: Parte de una banda de metales; Instrumento de una banda de metales.
+Natural answers: Tuba; Instrumento de viento metal
+Colloquial answers: Tubita; El "bombo" grande
+Alternative English answers: Trombone; Trumpet; French horn
+
+Checked like a bouncer, for short : IDED
+Literal: Chequeado como un gorila, para corto.
+Natural: Verificado por un portero, en resumen; Pedido de identificación por un guardia de seguridad, en abreviatura.
+Natural answers: Identificado; Se le pidió identificación; Verificado
+Colloquial answers: Le pidieron el carné; Revisaron su identidad; Chequearon la identificación
+Alternative English answers: Carded; Verified; Screened
+
+Blotto : GONE
+Literal: Borracho.
+Natural: Completamente borracho; Ebrio.
+Natural answers: Borracho; Ebrio; Perdido
+Colloquial answers: Curdo; Mamado; Hecho polvo
+Alternative English answers: Drunk; Wasted; Hammered
+
+Not straight up, in a way : ONICE
+Literal: No derecho arriba, en una manera.
+Natural: No puro, de alguna manera; Con hielo, en cierto modo.
+Natural answers: Con hielo; En las rocas; Refrescado
+Colloquial answers: Con cubitos; Frío
+Alternative English answers: On the rocks; With ice; Chilled
+
+A/C meas. : BTU
+Literal: A/C medida.
+Natural: Medida de A/C; Unidad de medida de aire acondicionado.
+Natural answers: BTU; Unidad térmica británica; Unidad de energía
+Colloquial answers: (None)
+Alternative English answers: Kilowatt; Calorie; Ton
+
+Give orders loudly and curtly : BARK
+Literal: Dar órdenes ruidosamente y cortésmente.
+Natural: Dar órdenes a voz en grito y bruscamente; Ladrar órdenes.
+Natural answers: Ladrar; Gritar; Dar órdenes bruscamente
+Colloquial answers: Mandar a gritos; Reñir
+Alternative English answers: Shout; Yell; Snap
+
+Corner : TREE
+Literal: Acorralar.
+Natural: Acorralar; Arrinconar.
+Natural answers: Arbolar; Subir al árbol; Acorralar en un árbol
+Colloquial answers: Subir al palo; Meter en el árbol
+Alternative English answers: Trap; Lodge; Bush
+
+See 36-Across : USSR
+Literal: Ver 36-Transversal.
+Natural: Ver 36 horizontal; Consultar la pista 36 horizontal.
+Natural answers: URSS; Unión Soviética; Rusia
+Colloquial answers: La Unión; Los soviéticos
+Alternative English answers: Soviet Union; Russian Federation; CCCP
+
+Yaki ___ (Japanese stir-fry) : UDON
+Literal: Yaki ___ (Japonés salteado).
+Natural: Yaki ___ (salteado japonés); Yaki ___ (un plato salteado japonés).
+Natural answers: Udon; Fideos udon; Tipo de fideo japonés
+Colloquial answers: (None)
+Alternative English answers: Soba; Ramen; Noodles
+
+Photographer Goldin : NAN
+Literal: Fotógrafa Goldin.
+Natural: La fotógrafa Goldin; Nan Goldin, fotógrafa.
+Natural answers: Nan
+Colloquial answers: Nancy; Annie
+Alternative English answers: Nancy; Anne; Nanny

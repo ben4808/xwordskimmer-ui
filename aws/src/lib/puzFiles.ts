@@ -160,13 +160,12 @@ export async function processPuzData(data: Blob): Promise<Puzzle | undefined> {
             square.content = rebusValues.get(v)!;
         });
     }
-    
+
     return puzzle;
 }
 
 async function blobToText(blob: Blob): Promise<string> {
-    let arr = Array.from(new Uint8Array(await blob.arrayBuffer()));
-    return arr.map(x => String.fromCharCode(x)).join("");
+    return await blob.text();
 }
 
 function getNextString(data: string, i: number): [string, number] {

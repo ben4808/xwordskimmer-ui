@@ -1,4 +1,4 @@
 export interface PostgresParameter {
     name: string;
-    value: any;
+    value: string | Date | number | boolean | Array<any> | null;
 }

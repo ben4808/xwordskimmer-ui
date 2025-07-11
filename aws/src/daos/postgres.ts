@@ -10,28 +10,35 @@ let pool = new Pool({
     port: 5432,
 });
 
-export async function sqlQuery(isSP: boolean, sqlOrSP: string, parameters?: PostgresParameter[]): Promise<any[]> {
-    let sqlText = "";
-    let paramsArray = [] as any[];
-    if (parameters)
-        paramsArray = parameters.map(p => p.value);
-
-    if (isSP) {
-        let paramsStr = paramsArray.map(x => {
-          if (x === undefined || x === null) return "null";
-          if (x instanceof Date) return `'${x.toISOString()}'`;
-          if (typeof x === "number" || typeof x === "boolean") return x.toString();
-          return "'" + x.replace(/'/g, "''") + "'";
-        }).join(", ");
-        paramsArray = [];
-        sqlText = `select * from ${sqlOrSP}(${paramsStr})`;
-    }
-
+export async function sqlQuery(isFunction: boolean, queryOrFunctionName: string, parameters?: PostgresParameter[]): Promise<any[]> {
     try {
-        const res = await pool.query(sqlText, paramsArray);
-        return res.rows;
-    } catch (err: any) {
-        console.log("Postgres error: " + err.stack);
-        return [];
+        // Prepare the query text and parameter values
+        let queryText: string;
+        const paramValues: (string | Date | number | boolean | any[] | null)[] = 
+            parameters ? parameters.map(param => {
+                // If the parameter value is an array, stringify it for jsonb
+                if (Array.isArray(param.value)) {
+                    return JSON.stringify(param.value);
+                }
+                return param.value;
+            }) : [];
+
+        if (isFunction) {
+            // For function calls, format as SELECT * FROM function_name($1, $2, ...)
+            const placeholders = parameters ? parameters.map((_, index) => `$${index + 1}`).join(', ') : '';
+            queryText = `SELECT * FROM ${queryOrFunctionName}(${placeholders})`;
+        } else {
+            // For regular queries, use the provided query text
+            queryText = queryOrFunctionName;
+        }
+
+        // Execute the query with parameters
+        const result = await pool.query(queryText, paramValues);
+
+        // Return the rows as an array
+        return result.rows;
+    } catch (err) {
+        console.error('SQL query error:', err);
+        throw err; // Re-throw to allow the caller to handle the error
     }
 }

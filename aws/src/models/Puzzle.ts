@@ -3,6 +3,7 @@ import { Square } from "./Square";
 
 export interface Puzzle {
     id?: string
+    publicationId?: string;
     title: string;
     authors: string[];
     copyright: string;
@@ -12,6 +13,7 @@ export interface Puzzle {
     lang?: string;
     width: number;
     height: number;
+    sourceLink?: string; // Link to the source of the puzzle
 
     grid: Square[][];
     entries: Map<string, PuzzleEntry>;

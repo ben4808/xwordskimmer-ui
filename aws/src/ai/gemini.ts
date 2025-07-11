@@ -13,8 +13,8 @@ export class GeminiAiProvider implements IAiProvider {
   static model = GeminiAiProvider.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   sourceAI = 'gemini';
 
-  async getTranslateResultsAsync(clues: Clue[], lang: string): Promise<TranslateResult[]> {
-    return await getTranslateResults(this, clues, lang);
+  async getTranslateResultsAsync(clues: Clue[], originalLang: string, translatedLang: string): Promise<TranslateResult[]> {
+    return await getTranslateResults(this, clues, originalLang, translatedLang);
   }
 
   async getObscurityResultsAsync(entries: Entry[], lang: string): Promise<ObscurityResult[]> {

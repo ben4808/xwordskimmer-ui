@@ -32,6 +32,7 @@ create table clue_collection (
 create table "entry" (
   "entry" text not null,
   lang text not null,
+  "length" int not null,
   display_text text,
   entry_type text,
   obscurity_score int,
@@ -69,8 +70,8 @@ create table collection__clue (
 create table translated_clue (
   clue_id text not null,
   lang text not null,
-  literal_clue text not null,
-  natural_clue text not null,
+  literal_translation text not null,
+  natural_translation text not null,
   source_ai text not null,
   primary key(clue_id, lang, source_ai)
 );

@@ -5,7 +5,6 @@ import { Puzzle } from "../models/Puzzle";
 import { PuzzleEntry } from "../models/PuzzleEntry";
 import { decode } from 'html-entities';
 import { newPuzzle } from "../lib/puzzle";
-import { generatePuzFile } from "../lib/puzFiles";
 
 export class NYTSource implements PuzzleSource {
     public id = "NYT";
@@ -15,9 +14,23 @@ export class NYTSource implements PuzzleSource {
         let url = `https://www.xwordinfo.com/Crossword?date=${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
         //url = `https://www.xwordinfo.com/Crossword?date=12/17/2020`;
         let weoriginUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
-        let response = await fetch(weoriginUrl); 
-        let jsonResponse = await response.json();
-        let parsedHtml = parse(jsonResponse.contents);
+
+        let parsedHtml;
+        let success = false;
+        while(!success) {
+          try {
+            let response = await fetch(weoriginUrl); 
+            let jsonResponse = await response.json();
+            parsedHtml = parse(jsonResponse.contents);
+            success = true;
+          } catch (error) {
+              console.log(`Failed to fetch or parse NYT puzzle: ${error}`);
+          }
+        }
+
+        if (!parsedHtml) {
+            throw new Error("Failed to parse NYT puzzle HTML.");
+        }
 
         let title = parsedHtml.querySelector("#PuzTitle")!.textContent;
         let authors = parsedHtml.querySelectorAll(".bbName > a").map(x => x.textContent);
@@ -99,6 +112,7 @@ export class NYTSource implements PuzzleSource {
         }
 
         let puzzle = newPuzzle(width, height);
+        puzzle.publicationId = this.id;
         puzzle.title = title;
         puzzle.authors = authors;
         puzzle.copyright = copyright;
@@ -108,6 +122,7 @@ export class NYTSource implements PuzzleSource {
         puzzle.grid = grid;
         puzzle.entries = puzEntries;
         puzzle.lang = "en"; // NYT puzzles are always in English
+        puzzle.sourceLink = url; // Link to the source of the puzzle
 
         return puzzle;
     }

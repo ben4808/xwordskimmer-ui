@@ -7,7 +7,7 @@ import { TranslateResult } from "../models/TranslateResult";
 export interface IAiProvider {
     sourceAI: string;
 
-    getTranslateResultsAsync(clues: Clue[], lang: string): Promise<TranslateResult[]>;
+    getTranslateResultsAsync(clues: Clue[], originalLang: string, translatedLang: string): Promise<TranslateResult[]>;
     getObscurityResultsAsync(entries: Entry[], lang: string): Promise<ObscurityResult[]>;
     getQualityResultsAsync(entries: Entry[], lang: string): Promise<QualityResult[]>;
 

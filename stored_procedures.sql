@@ -1,45 +1,3 @@
-
-CREATE TYPE str_type AS (
-    str1 text
-);
-
-CREATE TYPE clue_type AS (
-    clue_id text,
-    "order" int,
-    metadata1 text, -- Clue index in puzzle
-    "entry" text,
-    lang text,
-    clue text,
-    response_template text,
-    source text -- Book it came from? AI source?
-);
-
-CREATE TYPE entry_type AS (
-    "entry" text,
-    lang text
-);
-
-CREATE TYPE translated_type AS (
-    translated_clue_id text,
-    clue_id text,
-    lang text,
-    literal_translation text,
-    natural_translation text,
-    natural_answers text,
-    colloquial_answers text,
-    source_ai text -- Which AI provided the translation
-);
-
-CREATE TYPE obscurity_quality_type AS (
-    "entry" text,
-    lang text,
-    display_text text,
-    entry_type text,
-    obscurity_score integer,
-    quality_score integer,
-    source text -- which AI
-);
-
 CREATE OR REPLACE FUNCTION add_puzzle (
     p_puzzle_id text,
     p_publication_id text,
@@ -134,7 +92,7 @@ $$;
 
 CREATE OR REPLACE FUNCTION add_clues_to_collection (
     p_collection_id text,
-    p_clues clue_type[]
+    p_clues jsonb
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -142,104 +100,143 @@ AS $$
 BEGIN
     -- Insert new clues
     INSERT INTO clue (id, "entry", lang, clue, response_template, source)
-    SELECT cl.clue_id, cl."entry", cl.lang, cl.clue, cl.response_template, cl.source 
-    FROM unnest(p_clues) AS cl;
+    SELECT
+        (cl->>'clue_id')::text,
+        (cl->>'entry')::text,
+        (cl->>'lang')::text,
+        (cl->>'clue')::text,
+        (cl->>'response_template')::text,
+        (cl->>'source')::text
+    FROM jsonb_array_elements(p_clues) AS cl;
 
-    -- Insert puzzle-clue relationships
+    -- Insert collection-clue relationships
     INSERT INTO collection__clue (collection_id, clue_id, "order", metadata1)
-    SELECT p_collection_id, cl.clue_id, cl."order", cl.metadata1
-    FROM unnest(p_clues) AS cl;
+    SELECT
+        p_collection_id,
+        (cl->>'clue_id')::text,
+        (cl->>'order')::integer,
+        (cl->>'metadata1')::text
+    FROM jsonb_array_elements(p_clues) AS cl;
 END;
 $$;
 
 CREATE OR REPLACE FUNCTION add_entries (
-    p_entries entry_type[]
+    p_entries jsonb
 )
 RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Insert new entries
-    INSERT INTO "entry" ("entry", lang)
-    SELECT e."entry", e.lang
-    FROM unnest(p_entries) AS e
+    INSERT INTO "entry" ("entry", lang, "length")
+    SELECT
+      (e->>'entry')::text,
+      (e->>'lang')::text,
+      (e->>'length')::integer
+    FROM jsonb_array_elements(p_entries) AS e
     ON CONFLICT ("entry", lang) DO NOTHING;
 END;
 $$;
 
 CREATE OR REPLACE FUNCTION add_translate_results (
-    p_translate_results translated_type[]
+    p_translate_results jsonb
 )
 RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Insert natural answers using UNNEST to process arrays in bulk
-    INSERT INTO translated_clue (id, clue_id, lang, literal_clue, natural_clue, source_ai)
+    INSERT INTO translated_clue (clue_id, lang, literal_translation, natural_translation, source_ai)
     SELECT
-        trans.translated_clue_id,
-        trans.clue_id,
-        trans.lang,
-        trans.literal_clue,
-        trans.natural_clue,
-        trans.source_ai
-    FROM unnest(p_translate_results) AS trans
-    ON CONFLICT (clue_id, lang, source) DO UPDATE
-    SET literal_clue = EXCLUDED.literal_clue,
-        natural_clue = EXCLUDED.natural_clue;
+        (trans->>'clue_id')::text,
+        (trans->>'translated_lang')::text,
+        (trans->>'literal_translation')::text,
+        (trans->>'natural_translation')::text,
+        (trans->>'source_ai')::text
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    ON CONFLICT (clue_id, lang, source_ai) DO UPDATE -- Note: changed 'source' to 'source_ai' based on the input function
+    SET literal_translation = EXCLUDED.literal_translation,
+        natural_translation = EXCLUDED.natural_translation;
 
     -- Insert natural answers using UNNEST to process arrays in bulk
     INSERT INTO translated_entry ("entry", lang, display_text, translated_clue_id)
     SELECT
         unnest_answer[1],
-        trans.lang,
+        (trans->>'translated_lang')::text,
         unnest_answer[2],
-        trans.translated_clue_id
-    FROM unnest(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array(trans.natural_answers, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
+        (trans->>'translated_clue_id')::text
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL unnest(string_to_array((trans->>'natural_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(allcaps, answer)
     WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array(trans.natural_answers, ';'), 1) >= unnest_answer.idx + 1
+    AND array_length(string_to_array((trans->>'natural_answers')::text, ';'), 1) >= unnest_answer.idx + 1
     ON CONFLICT ("entry", translated_clue_id) DO NOTHING;
 
     -- Insert colloquial answers using UNNEST to process arrays in bulk
     INSERT INTO translated_entry ("entry", lang, display_text, translated_clue_id)
     SELECT
         unnest_answer[1],
-        trans.lang,
+        (trans->>'translated_lang')::text,
         unnest_answer[2],
-        trans.translated_clue_id
-    FROM unnest(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array(trans.colloquial_answers, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
+        (trans->>'translated_clue_id')::text
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL unnest(string_to_array((trans->>'colloquial_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
     WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array(trans.colloquial_answers, ';'), 1) >= unnest_answer.idx + 1
+    AND array_length(string_to_array((trans->>'colloquial_answers')::text, ';'), 1) >= unnest_answer.idx + 1
+    ON CONFLICT ("entry", translated_clue_id) DO NOTHING;
+
+    -- Alternative English answers using UNNEST to process arrays in bulk
+    INSERT INTO translated_entry ("entry", lang, display_text, translated_clue_id)
+    SELECT
+        unnest_answer[1],
+        (trans->>'original_lang')::text,
+        unnest_answer[2],
+        (trans->>'translated_clue_id')::text
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL unnest(string_to_array((trans->>'alternative_english_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
+    WHERE unnest_answer.idx % 2 = 1
+    AND array_length(string_to_array((trans->>'alternative_english_answers')::text, ';'), 1) >= unnest_answer.idx + 1
     ON CONFLICT ("entry", translated_clue_id) DO NOTHING;
 
     -- Insert natural translations as entries
-    INSERT INTO "entry" ("entry", lang)
+    INSERT INTO "entry" ("entry", lang, "display_text")
     SELECT
         unnest_answer[1],
-        trans.lang
-    FROM unnest(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array(trans.natural_answers, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
+        (trans->>'translated_lang')::text,
+        unnest_answer[2]
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL unnest(string_to_array((trans->>'natural_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
     WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array(trans.natural_answers, ';'), 1) >= unnest_answer.idx + 1
+    AND array_length(string_to_array((trans->>'natural_answers')::text, ';'), 1) >= unnest_answer.idx + 1
     ON CONFLICT ("entry", lang) DO NOTHING;
 
     -- Insert colloquial translations as entries
-    INSERT INTO "entry" ("entry", lang)
+    INSERT INTO "entry" ("entry", lang, "display_text")
     SELECT
         unnest_answer[1],
-        trans.lang
-    FROM unnest(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array(trans.colloquial_answers, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
+        (trans->>'translated_lang')::text,
+        unnest_answer[2]
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL unnest(string_to_array((trans->>'colloquial_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
     WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array(trans.colloquial_answers, ';'), 1) >= unnest_answer.idx + 1
+    AND array_length(string_to_array((trans->>'colloquial_answers')::text, ';'), 1) >= unnest_answer.idx + 1
+    ON CONFLICT ("entry", lang) DO NOTHING;
+
+    -- Insert alternative English answers as entries
+    INSERT INTO "entry" ("entry", lang, "display_text")
+    SELECT
+        unnest_answer[1],
+        (trans->>'original_lang')::text,
+        unnest_answer[2]
+    FROM jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL unnest(string_to_array((trans->>'alternative_english_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
+    WHERE unnest_answer.idx % 2 = 1
+    AND array_length(string_to_array((trans->>'alternative_english_answers')::text, ';'), 1) >= unnest_answer.idx + 1
     ON CONFLICT ("entry", lang) DO NOTHING;
 END;
 $$;
 
 CREATE OR REPLACE FUNCTION add_obscurity_quality_scores (
-    p_scores obscurity_quality_type[]
+    p_scores jsonb
 )
 RETURNS TABLE (
     "entry" text,
@@ -253,41 +250,47 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Insert entry scores
-    INSERT INTO entry_score ("entry", lang, obscurity_score, quality_score, source_ai) 
-    SELECT e."entry", e.lang, e.obscurity_score, e.quality_score, e.source_ai
-    FROM unnest(p_scores) AS e
+    INSERT INTO entry_score ("entry", lang, obscurity_score, quality_score, source_ai)
+    SELECT
+        (e->>'entry')::text,
+        (e->>'lang')::text,
+        (e->>'obscurity_score')::integer,
+        (e->>'quality_score')::integer,
+        (e->>'source_ai')::text
+    FROM jsonb_array_elements(p_scores) AS e
     ON CONFLICT ("entry", lang) DO UPDATE
     SET obscurity_score = EXCLUDED.obscurity_score,
         quality_score = EXCLUDED.quality_score,
-        source = EXCLUDED.source;
+        source_ai = EXCLUDED.source_ai; -- Corrected 'source' to 'source_ai'
 
     WITH avg_scores AS (
-      SELECT 
-          es.entry,
-          es.lang,
-          CAST(ROUND(AVG(es.obscurity_score)) AS INTEGER) AS avg_obscurity_score,
-          CAST(ROUND(AVG(es.quality_score)) AS INTEGER) AS avg_quality_score
-      FROM entry_score es
-      JOIN unnest(p_scores) AS p ON es.entry = p.entry AND es.lang = p.lang
-      GROUP BY es.entry, es.lang
+        SELECT
+            es.entry,
+            es.lang,
+            CAST(ROUND(AVG(es.obscurity_score)) AS INTEGER) AS avg_obscurity_score,
+            CAST(ROUND(AVG(es.quality_score)) AS INTEGER) AS avg_quality_score
+        FROM entry_score es
+        -- Join with the unnested JSON array to filter for relevant entries
+        JOIN jsonb_array_elements(p_scores) AS p ON es.entry = (p->>'entry')::text AND es.lang = (p->>'lang')::text
+        GROUP BY es.entry, es.lang
     )
-
     UPDATE entry e
-    SET 
-        display_text = COALESCE(p.display_text, e.display_text),
-        entry_type = COALESCE(p.entry_type, e.entry_type),
+    SET
+        display_text = COALESCE((p->>'display_text')::text, e.display_text),
+        entry_type = COALESCE((p->>'entry_type')::text, e.entry_type),
         obscurity_score = COALESCE(a.avg_obscurity_score, e.obscurity_score),
         quality_score = COALESCE(a.avg_quality_score, e.quality_score)
-    FROM unnest(p_scores) AS p
-    LEFT JOIN avg_scores a ON p.entry = a.entry AND p.lang = a.lang
-    WHERE e.entry = p.entry 
-    AND e.lang = p.lang;
+    FROM jsonb_array_elements(p_scores) AS p
+    LEFT JOIN avg_scores a ON (p->>'entry')::text = a.entry AND (p->>'lang')::text = a.lang
+    WHERE e.entry = (p->>'entry')::text
+    AND e.lang = (p->>'lang')::text;
 
+    RETURN QUERY
     SELECT "entry", lang, display_text, entry_type, obscurity_score, quality_score
     FROM entry
     WHERE ("entry", lang) IN (
-        SELECT "entry", lang
-        FROM unnest(p_scores) AS p
+        SELECT (p->>'entry')::text, (p->>'lang')::text
+        FROM jsonb_array_elements(p_scores) AS p
     );
 END;
 $$;
