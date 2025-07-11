@@ -99,16 +99,16 @@ export async function getObscurityResults(provider: IAiProvider, entries: Entry[
       let batchPrompt = prompt.replace('[[DATA]]', promptData);
       
       let resultText = await provider.generateResultsAsync(batchPrompt);
-      const parsed = parseTranslateResponse(resultText);
+      const parsed = parseObscurityResponse(resultText);
 
       for (let i=0; i < parsed.length; i++) {
         const entry = batch[i];
         results.push(({
           entry: entry.entry,
           lang: lang,
-          displayText: entry.displayText,
-          entryType: entry.entryType,
-          obscurityScore: entry.obscurityScore,
+          displayText: parsed[i].displayText,
+          entryType: parsed[i].entryType,
+          obscurityScore: parsed[i].obscurityScore,
           sourceAI: provider.sourceAI,
         }) as ObscurityResult);
       }
@@ -136,8 +136,9 @@ export const parseObscurityResponse = (response: string): any[] => {
   const results: any[] = [];
   const lines = response.split('\n').filter(line => line.trim() !== '');
 
-  for (let i = 0; i < lines.length; i+=5) {
-    const parts = lines.slice(i, i + 5);
+  for (let line of lines) {
+    let parts = line.split(' : ').map(part => part.trim());
+    const regex = /^\s*([A-Za-z\s]+)\s*\(([^)]+)\)\s*$/;
     results.push({
       literalTranslation: parts[1].split(':')[1].trim(),
       naturalTranslation: parts[2].split(':')[1].trim(),
@@ -161,7 +162,7 @@ export async function getQualityResults(provider: IAiProvider, entries: Entry[],
       let batchPrompt = prompt.replace('[[DATA]]', promptData);
       
       let resultText = await provider.generateResultsAsync(batchPrompt);
-      const parsed = parseTranslateResponse(resultText);
+      const parsed = parseQualityResponse(resultText);
 
       for (let i=0; i < parsed.length; i++) {
         const entry = batch[i];

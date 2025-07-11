@@ -1,63 +1,62 @@
-Rank the provided words and phrases based on their familiarity to native English-speaking adults with a high school education or higher, familiar with common slang and colloquial speech. Base rankings on how widely recognized the term is in everyday or specialized contexts, not on corpus frequency.
+Evaluate Familiarity and Categorize Words and Phrases
 
-Input Handling:
+For each input word or phrase, which will likely be in ALLCAPS and without spaces (e.g., "SNOWFORT"), perform the following steps:
 
-Input words/phrases will be in ALLCAPS and without spaces (e.g., "SNOWFORT"). Convert them to standard capitalization and spacing (e.g., "snow fort") for evaluation. Try a few different parsings and pick the best one. (e.g. "ITSAGO" as "it's a go" rather than "it's ago").
+Step 1: Parse and Normalize
+- Convert the input to standard capitalization and spacing (e.g., "SNOWFORT" becomes "snow fort").
+- Attempt multiple parsings if ambiguous (e.g., "ITSAGO" could be "it's a go" or "it's ago", "AMSTEREO" could be "AM stereo").
+- Crucially, select the interpretation that yields the highest familiarity score while strictly using the exact letters provided. You can only change capitalization, spacing, and punctuation. Do not add, remove, or assume additional letters.
 
-Select the interpretation that yields the highest familiarity score while strictly using the exact letters provided in the input, allowing only changes in capitalization, spacing, or punctuation. Do not add, remove, or assume additional letters to form a different word or phrase, even if it results in a more familiar term.
+Step 2: Categorize: Assign the parsed word/phrase to one of the following categories:
+- Word: Single words (e.g., "quixotic"), including contractions (e.g. I've)
+- Derived Word: A word formed from another word (e.g., "diving" from "dive", "pillars" from "pillar")
+- Phrase: Multiple words forming a recognized unit (e.g., "snow fort," "give to"). This includes verb-preposition phrases only if the preposition commonly pairs with the verb.
+- Brand Name: (e.g., "Camelbak")
+- Proper Name: Names of specific people, places, or things (e.g., "Tiger Woods," "Mr. Ed").
+- Acronym: (e.g., "ESPY", "SSN").
+- Abbreviation: A shortened form of a word or phrase (e.g., "attn.," "ctr."). Only use if the abbreviation is less common than the original (e.g., "amp" would be "Word" as it's more common than "ampere"). Also consider plural abbreviations ("ATCs").
+- Prefix/Suffix: (e.g., "tri-," "-ose"). Score based on the familiarity of the prefix/suffix itself.
+- Incoherent: Phrases that do not form a recognized unit or words that are nonsensical (e.g., "snow tag," "xoner"). Incoherent items automatically score 0.
 
-Evaluate words and phrases as:
-- Single words (e.g., "quixotic"). Consider all conjugations of verbs to be equal.
-- Multiword phrases (e.g., "give to" as a verb-preposition phrase, "snow fort", "Mr. Ed").
-- Names (rank based on familiarity of the name in common use, and/or the ease of recalling famous people with the name).
-- Proper Names / Brand Names
-- Acronyms (e.g., "espy" as ESPY award).
-- Abbreviations (e.g., "ctr" as "center". In this case, score based on the familiarity of "ctr" as an abbreviation. Other examples: "attn", "abbr").
-- Prefixes/suffixes (e.g., "ose" as a sugar-related suffix, "tri" as a prefix meaning 3, score based on the familiarity of the prefix/suffix itself).
-- Contractions, including plural acronyms or plural abbreviations. Score based on the particular given form. For example, "ATCs" might be less familiar than "ATC".
+Step 3: Score Familiarity: Assign a score from 0 to 5 based on the following rubric. Consider the word/phrase's common usage, frequency, specificity, and general recognition among native English speakers.
+5 - Basic Building Blocks: Fundamental, daily-use words that are taught in beginner English classes.
+Examples: sit, else, gone, tree, my
+4.5 - Extremely Common: Frequently encountered in everyday conversations. No contractions or abbreviations above a 4.
+Examples: oil, song, usual, boss, ones, own
+4 - Very Common: Well known and in almost eveyone's active vocabulary.
+Examples: attic, comma, period, bark, toast, dinosaurs, I've, give to
+3.5 - Quite Common: Likely recognized by most educated speakers, but not necessarily in everyone's active vocabulary.
+Examples: bio's, pillars, matchmaker, boost, tuba, sentiment, Tiger Woods, give to
+3 - Common: Generally known but more specific in usage, or less frequent. Includes many common acronyms, proper nouns, and commonly understood conjugated/derived words. This is the default home for everything that is otherwise unremarkable.
+Examples: SSN, oboe, coop, bento, tres, mac, deuce, THC, BTU, USSR, stage name, U-boat, decor, D-list, ID'ed, ensue, master gardener, snow fort, ESPY, abbr., tri-, amp
+2.5 - Somewhat Familiar/Niche: Familiar to certain groups or contexts, but not universally recognized.
+Examples: udon, e-cig, midis, Elio, accede, attn.
+2 - Limited Familiarity: Known to a smaller segment of the population (specialized fields, specific cultural references).
+Examples: Elle, Moondance, Manu, Mekong, quixotic, Mr. Ed, ATCs
+1.5 - Very Limited Familiarity: Generally obscure, known only in very specific contexts or by a small number of people.
+Examples: tsars, ade, plagioclase, Ilana, Erivo, ctr., -ose
+1 - Extremely Rare/Obscure: Almost entirely unknown to the general public.
+Examples: Marli Miller, Cantor Set, six seconds
+0.5 - Unused
+0 - Unrecognizable/Nonsensical: Not recognized as legitimate words/phrases, or are typos/misspellings. Also assigned to "Incoherent" category.
+Examples: pink witch, xoner, classikal, roo's crossing, snow tag
 
-Score incoherent words and phrases (e.g., "snow tag" as unrelated words) as 0. A phrase is incoherent unless it forms a recognized unit (e.g., "green thumb" is valid, "blue thumb" is not). Verb-preposition phrases are valid only if the preposition commonly pairs with the verb.
+Output Format: Present each evaluation in the following strict format, without any introductory or auxiliary text:
 
-Additionally, categorize each word or phrase into one of the following categories: (Word, Conjugated Verb, Phrase, Name, Brand Name, Proper Name, Acronym, Abbreviation, Prefix/Suffix, Contraction, Incoherent). Only use "Conjugated Verb" if the verb is not in its infinitive form. Don't use "Abbreviation" if the abbreviation is more common than the original (e.g. "amp").
+<original word/phrase> : <written naturally> : <category> : <score>
 
-Stick to the output format and don't include any introductory or auxiliary text.
+Example Outputs:
+quixotic : quixotic : Word : 2
+DIVING : diving : Derived Word : 4
+SNOWFORT : snow fort : Phrase : 3
+snow tag : snow tag : Incoherent : 0
+ATTN : attn. : Abbreviation : 2.5
+TRI : tri- : Prefix/Suffix : 3
+OSS : OSS : Acronym : 1.5
+CAMELBAK : Camelbak : Brand Name : 2.5
+TIGERWOODS : Tiger Woods : Proper Name : 3.5
+IVE : I've : Word : 3.5
 
-Output Format:
-
-<original word/phrase> (<written naturally>) : <category> : <score>
-
-Rubric:
-
-0: Incoherent. Not a recognized word or phrase (e.g., "snow tag").
-1: Extremely rare. Known by almost nobody, barely exists in the language.
-1.5: Specialized. Known only within specific fields or communities (e.g., "eigenvector," "terpsichorean").
-2: Obscure. Recognized by a minority (< 30% of educated adults), often context-specific (e.g., "quixotic," "Mount Thor").
-2.5: Moderately common. Familiar to 30%-60% of educated adults, often taught in advanced high school/college (e.g., "ubiquitous," "event horizon").
-3: Common. Known by most adults in general contexts (e.g., "Tic Tac," "albatross").
-3.5: Very common. Widely used in everyday settings, still might trip up non-native speakers (e.g., "trench," "pay stub").
-4: Extremely common. Universally recognized in casual conversation (e.g., "be careful," "cereal").
-4.5: Among top 1000 most common words, no names or contractions here (e.g., "center," "company").
-5: Among top 300 most common words, no names or contractions here (e.g., "house," "walk," "good").
-
-Additional Notes:
-
-- If a term has multiple meanings, use the most familiar one.
-- If regional variations significantly affect familiarity, prioritize the region with the most common usage unless specified otherwise.
-
-Example Input:
-
-quixotic, SNOWFORT, GIVETO, snow tag, ATTN, diving, run
-
-Example Output:
-
-quixotic (quixotic) : Word : 2
-SNOWFORT (snow fort) : Phrase : 3
-GIVETO (give to) : Phrase : 3.5
-snow tag (snow tag) : Incoherent : 0
-ATTN (attn.) : Abbreviation: 2.5
-DIVING (diving) : Conjugated Verb : 4
-RUN (run) : Word : 5
-
-Words/phrases:
+Words/phrases to evaluate:
 
 [[DATA]]

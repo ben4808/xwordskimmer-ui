@@ -10,38 +10,54 @@ import { Entry } from './models/Entry';
 import { Puzzle } from './models/Puzzle';
 import fs from 'fs';
 
+let dao: ILoaderDao = new LoaderDao();
+let aiProvider: IAiProvider = new GeminiAiProvider();
+
 let runCrosswordLoadingTasks = async () => {
   let scrapedPuzzles = [] as Puzzle[];
-  let dao: ILoaderDao = new LoaderDao();
-  let aiProvider: IAiProvider = new GeminiAiProvider();
 
   console.log("Starting crossword loading tasks...");
   try {
-    //scrapedPuzzles = await scrapePuzzles();
-
-    scrapedPuzzles = await getSamplePuzzles();
+    scrapedPuzzles = await scrapePuzzles();
+    //scrapedPuzzles = await getSamplePuzzles();
     
-    for (let puzzle of scrapedPuzzles) {
-      //await dao.savePuzzle(puzzle);
+    await Promise.all(scrapedPuzzles.map(async (puzzle) => {
+      await processPuzzle(puzzle);
+    }));
+
+  } catch (error) {
+    console.error("Error in crossword loading tasks: ", error);
+  }
+};
+
+let processPuzzle = async (puzzle: Puzzle): Promise<void> => {
+  try {
+      console.log(`Processing puzzle for ${puzzle.publicationId}`);
+      await dao.savePuzzle(puzzle);
       let clueCollection = puzzleToClueCollection(puzzle);
-      //await dao.saveClueCollection(clueCollection);
-      //await dao.addCluesToCollection(clueCollection.id, clueCollection.clues);
+      await dao.saveClueCollection(clueCollection);
+      await dao.addCluesToCollection(clueCollection.id, clueCollection.clues);
+
+      console.log(`${puzzle.publicationId} clues saved: ${clueCollection.clues.length}`);
 
       let entries = clueCollection.clues.map(clue => clue.entry.get(clue.lang) as Entry);
       let originalLang = 'en';
       let translatedLang = "es";
 
-      //let translateResults = await aiProvider.getTranslateResultsAsync(clueCollection.clues, originalLang, translatedLang);
-      //await dao.addTranslateResults(translateResults);
+      let translateResults = await aiProvider.getTranslateResultsAsync(clueCollection.clues, originalLang, translatedLang);
+      await dao.addTranslateResults(translateResults);
+
+      console.log(`${puzzle.publicationId} translations saved.`);
 
       let obscurityResults = await aiProvider.getObscurityResultsAsync(entries, translatedLang);
       //let qualityResults = await aiProvider.getQualityResultsAsync(entries, translatedLang);
       //await dao.addObscurityQualityResults(obscurityResults, qualityResults);
-    }
+
+      console.log(`${puzzle.publicationId} scores saved.`);
   } catch (error) {
-    console.error("Error in crossword loading tasks: ", error);
+    console.error(`Error processing puzzle ${puzzle.publicationId}`, error);
   }
-};
+}
 
 let puzzleToClueCollection = (puzzle: Puzzle): ClueCollection => {
   let lang = puzzle.lang || 'en';

@@ -33,8 +33,8 @@ export const scrapePuzzles = async (): Promise<Puzzle[]> => {
   let scrapedPuzzles = [] as Puzzle[]
   let sources = [
     Sources.NYT, 
-    //Sources.WSJ, 
-    //Sources.Newsday
+    Sources.WSJ, 
+    Sources.Newsday
   ] as PuzzleSource[]; // Add other sources as needed
   let date = new Date(); // Use today's date or modify as needed
 
