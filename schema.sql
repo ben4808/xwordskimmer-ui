@@ -77,9 +77,10 @@ create table translated_clue (
 );
 
 create table translated_entry (
+  clue_id text not null,
   "entry" text not null,
   lang text not null,
   display_text text not null,
-  translated_clue_id int not null,
-  primary key("entry", translated_clue_id)
+  source_ai text not null,
+  primary key(clue_id, "entry", lang, source_ai)
 );

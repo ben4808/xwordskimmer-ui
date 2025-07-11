@@ -7,7 +7,6 @@ import { QualityResult } from "../models/QualityResult";
 import { entryToAllCaps, generateId, zipArraysFlat } from "../lib/utils";
 import { Entry } from "../models/Entry";
 
-
 class LoaderDao implements ILoaderDao {
     savePuzzle = async (puzzle: any) => {
         puzzle.id = puzzle.id || generateId();
@@ -88,7 +87,8 @@ class LoaderDao implements ILoaderDao {
                 natural_translation: result.naturalTranslation,
                 natural_answers: zipArraysFlat(result.naturalAnswers.map(x => entryToAllCaps(x)), result.naturalAnswers).join(";"),
                 colloquial_answers: zipArraysFlat(result.colloquialAnswers.map(x => entryToAllCaps(x)), result.colloquialAnswers).join(";"),
-                alternative_english_answers: zipArraysFlat(result.alternativeEnglishAnswers.map(x => entryToAllCaps(x)), result.alternativeEnglishAnswers).join(";"),
+                alternative_english_answers: result.alternativeEnglishAnswers[0] === "(None}" ? [] :
+                  zipArraysFlat(result.alternativeEnglishAnswers.map(x => entryToAllCaps(x)), result.alternativeEnglishAnswers).join(";"),
                 source_ai: result.sourceAI,
             };
         });

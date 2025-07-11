@@ -23,8 +23,8 @@ export async function getTranslateResults(
       let promptData = batch.map(clue => `${clue.clue} : ${clue.entry.get(clue.lang)!.entry}`).join('\n');
       let batchPrompt = prompt.replace('[[DATA]]', promptData);
 
-      //let resultText = await provider.generateResultsAsync(batchPrompt);
-      let resultText = await getSampleTranslateResultText();
+      let resultText = await provider.generateResultsAsync(batchPrompt);
+      //let resultText = await getSampleTranslateResultText();
       const parsed = parseTranslateResponse(resultText);
 
       for (let i=0; i < parsed.length; i++) {
@@ -41,8 +41,6 @@ export async function getTranslateResults(
           sourceAI: provider.sourceAI,
         }) as TranslateResult);
       }
-
-      break;
     }
   } catch (error) {
     console.error('Error:', error);
@@ -114,6 +112,8 @@ export async function getObscurityResults(provider: IAiProvider, entries: Entry[
           sourceAI: provider.sourceAI,
         }) as ObscurityResult);
       }
+
+      break;
     }
   } catch (error) {
     console.error('Error:', error);

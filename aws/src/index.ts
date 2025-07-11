@@ -31,11 +31,11 @@ let runCrosswordLoadingTasks = async () => {
       let originalLang = 'en';
       let translatedLang = "es";
 
-      let translateResults = await aiProvider.getTranslateResultsAsync(clueCollection.clues, originalLang, translatedLang);
-      await dao.addTranslateResults(translateResults);
+      //let translateResults = await aiProvider.getTranslateResultsAsync(clueCollection.clues, originalLang, translatedLang);
+      //await dao.addTranslateResults(translateResults);
 
-      //let obscurityResults = await aiProvider.getObscurityResultsAsync(entries, langToTranslateTo);
-      //let qualityResults = await aiProvider.getQualityResultsAsync(entries, langToTranslateTo);
+      let obscurityResults = await aiProvider.getObscurityResultsAsync(entries, translatedLang);
+      //let qualityResults = await aiProvider.getQualityResultsAsync(entries, translatedLang);
       //await dao.addObscurityQualityResults(obscurityResults, qualityResults);
     }
   } catch (error) {

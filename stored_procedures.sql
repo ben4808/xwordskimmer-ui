@@ -145,7 +145,7 @@ RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Insert natural answers using UNNEST to process arrays in bulk
+    -- Insert into translated_clue
     INSERT INTO translated_clue (clue_id, lang, literal_translation, natural_translation, source_ai)
     SELECT
         (trans->>'clue_id')::text,
@@ -154,83 +154,76 @@ BEGIN
         (trans->>'natural_translation')::text,
         (trans->>'source_ai')::text
     FROM jsonb_array_elements(p_translate_results) AS trans
-    ON CONFLICT (clue_id, lang, source_ai) DO UPDATE -- Note: changed 'source' to 'source_ai' based on the input function
+    ON CONFLICT (clue_id, lang, source_ai) DO UPDATE
     SET literal_translation = EXCLUDED.literal_translation,
         natural_translation = EXCLUDED.natural_translation;
 
-    -- Insert natural answers using UNNEST to process arrays in bulk
-    INSERT INTO translated_entry ("entry", lang, display_text, translated_clue_id)
-    SELECT
-        unnest_answer[1],
-        (trans->>'translated_lang')::text,
-        unnest_answer[2],
-        (trans->>'translated_clue_id')::text
-    FROM jsonb_array_elements(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array((trans->>'natural_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(allcaps, answer)
-    WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array((trans->>'natural_answers')::text, ';'), 1) >= unnest_answer.idx + 1
-    ON CONFLICT ("entry", translated_clue_id) DO NOTHING;
+    -- Process and insert natural answers into translated_entry and entry tables
+    PERFORM _process_answers(p_translate_results, 'natural_answers', 'translated_lang');
 
-    -- Insert colloquial answers using UNNEST to process arrays in bulk
-    INSERT INTO translated_entry ("entry", lang, display_text, translated_clue_id)
-    SELECT
-        unnest_answer[1],
-        (trans->>'translated_lang')::text,
-        unnest_answer[2],
-        (trans->>'translated_clue_id')::text
-    FROM jsonb_array_elements(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array((trans->>'colloquial_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
-    WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array((trans->>'colloquial_answers')::text, ';'), 1) >= unnest_answer.idx + 1
-    ON CONFLICT ("entry", translated_clue_id) DO NOTHING;
+    -- Process and insert colloquial answers into translated_entry and entry tables
+    PERFORM _process_answers(p_translate_results, 'colloquial_answers', 'translated_lang');
 
-    -- Alternative English answers using UNNEST to process arrays in bulk
-    INSERT INTO translated_entry ("entry", lang, display_text, translated_clue_id)
-    SELECT
-        unnest_answer[1],
-        (trans->>'original_lang')::text,
-        unnest_answer[2],
-        (trans->>'translated_clue_id')::text
-    FROM jsonb_array_elements(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array((trans->>'alternative_english_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
-    WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array((trans->>'alternative_english_answers')::text, ';'), 1) >= unnest_answer.idx + 1
-    ON CONFLICT ("entry", translated_clue_id) DO NOTHING;
+    -- Process and insert alternative English answers into translated_entry and entry tables
+    PERFORM _process_answers(p_translate_results, 'alternative_english_answers', 'original_lang');
 
-    -- Insert natural translations as entries
-    INSERT INTO "entry" ("entry", lang, "display_text")
-    SELECT
-        unnest_answer[1],
-        (trans->>'translated_lang')::text,
-        unnest_answer[2]
-    FROM jsonb_array_elements(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array((trans->>'natural_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
-    WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array((trans->>'natural_answers')::text, ';'), 1) >= unnest_answer.idx + 1
-    ON CONFLICT ("entry", lang) DO NOTHING;
+END;
+$$;
 
-    -- Insert colloquial translations as entries
-    INSERT INTO "entry" ("entry", lang, "display_text")
+CREATE OR REPLACE FUNCTION _process_answers (
+    p_translate_results jsonb,
+    p_answer_type text,    -- e.g., 'natural_answers', 'colloquial_answers'
+    p_lang_type text       -- e.g., 'translated_lang', 'original_lang'
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into translated_entry
+    INSERT INTO translated_entry (clue_id, "entry", lang, display_text, source_ai)
     SELECT
-        unnest_answer[1],
-        (trans->>'translated_lang')::text,
-        unnest_answer[2]
-    FROM jsonb_array_elements(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array((trans->>'colloquial_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
-    WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array((trans->>'colloquial_answers')::text, ';'), 1) >= unnest_answer.idx + 1
-    ON CONFLICT ("entry", lang) DO NOTHING;
+        (trans->>'clue_id')::text,
+        s.allcaps_answer,
+        (trans->>p_lang_type)::text, -- Use dynamic language field
+        s.display_answer,
+        (trans->>'source_ai')::text
+    FROM
+        jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL
+        string_to_array((trans->>p_answer_type)::text, ';') AS answers_array
+    CROSS JOIN LATERAL
+        (
+            SELECT
+                answers_array[i] AS allcaps_answer,
+                answers_array[i+1] AS display_answer
+            FROM
+                generate_series(1, array_length(answers_array, 1), 2) AS i
+            WHERE
+                i + 1 <= array_length(answers_array, 1)
+        ) AS s
+    ON CONFLICT (clue_id, "entry", lang, source_ai) DO NOTHING;
 
-    -- Insert alternative English answers as entries
-    INSERT INTO "entry" ("entry", lang, "display_text")
+    -- Insert into "entry" table
+    INSERT INTO "entry" ("entry", lang, "length", "display_text")
     SELECT
-        unnest_answer[1],
-        (trans->>'original_lang')::text,
-        unnest_answer[2]
-    FROM jsonb_array_elements(p_translate_results) AS trans
-    CROSS JOIN LATERAL unnest(string_to_array((trans->>'alternative_english_answers')::text, ';')) WITH ORDINALITY AS unnest_answer(answer, idx)
-    WHERE unnest_answer.idx % 2 = 1
-    AND array_length(string_to_array((trans->>'alternative_english_answers')::text, ';'), 1) >= unnest_answer.idx + 1
+        s.allcaps_answer,
+        (trans->>p_lang_type)::text, -- Use dynamic language field
+        LENGTH(s.allcaps_answer),
+        s.display_answer
+    FROM
+        jsonb_array_elements(p_translate_results) AS trans
+    CROSS JOIN LATERAL
+        string_to_array((trans->>p_answer_type)::text, ';') AS answers_array
+    CROSS JOIN LATERAL
+        (
+            SELECT
+                answers_array[i] AS allcaps_answer,
+                answers_array[i+1] AS display_answer
+            FROM
+                generate_series(1, array_length(answers_array, 1), 2) AS i
+            WHERE
+                i + 1 <= array_length(answers_array, 1)
+        ) AS s
     ON CONFLICT ("entry", lang) DO NOTHING;
 END;
 $$;
