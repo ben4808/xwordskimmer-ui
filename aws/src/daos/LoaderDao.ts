@@ -2,8 +2,6 @@ import { sqlQuery } from "./postgres";
 import { ILoaderDao } from "./ILoaderDao";
 import { Clue } from "../models/Clue";
 import { TranslateResult } from "../models/TranslateResult";
-import { ObscurityResult } from "../models/ObscurityResult";
-import { QualityResult } from "../models/QualityResult";
 import { entryToAllCaps, generateId, zipArraysFlat } from "../lib/utils";
 import { Entry } from "../models/Entry";
 
@@ -85,9 +83,11 @@ class LoaderDao implements ILoaderDao {
                 translated_lang: result.translatedLang,
                 literal_translation: result.literalTranslation,
                 natural_translation: result.naturalTranslation,
-                natural_answers: zipArraysFlat(result.naturalAnswers.map(x => entryToAllCaps(x)), result.naturalAnswers).join(";"),
-                colloquial_answers: zipArraysFlat(result.colloquialAnswers.map(x => entryToAllCaps(x)), result.colloquialAnswers).join(";"),
-                alternative_english_answers: result.alternativeEnglishAnswers[0] === "(None}" ? [] :
+                natural_answers: result.naturalAnswers[0] === "(None)" ? [] :
+                  zipArraysFlat(result.naturalAnswers.map(x => entryToAllCaps(x)), result.naturalAnswers).join(";"),
+                colloquial_answers: result.colloquialAnswers[0] === "(None)" ? [] :
+                  zipArraysFlat(result.colloquialAnswers.map(x => entryToAllCaps(x)), result.colloquialAnswers).join(";"),
+                alternative_english_answers: result.alternativeEnglishAnswers[0] === "(None)" ? [] :
                   zipArraysFlat(result.alternativeEnglishAnswers.map(x => entryToAllCaps(x)), result.alternativeEnglishAnswers).join(";"),
                 source_ai: result.sourceAI,
             };
@@ -98,34 +98,22 @@ class LoaderDao implements ILoaderDao {
         ]);
     }
 
-    addObscurityQualityResults = async (
-      obscurityResults: ObscurityResult[], 
-      qualityResults: QualityResult[]
-    ) => {;
-        let obscurityQualityValue = obscurityResults.map(result => {
+    addObscurityQualityResults = async (entries: Entry[], sourceAI: string) => {;
+        let obscurityQualityValue = entries.map(entry => {
             return {
-                entry: result.entry,
-                lang: result.lang,
-                display_text: result.displayText,
-                entry_type: result.entryType,
-                obscurity_score: result.obscurityScore,
-                quality_score: qualityResults.find(q => q.entry === result.entry && q.lang === result.lang)?.qualityScore || 0,
-                source_ai: result.sourceAI,
-            };
+                entry: entry.entry,
+                lang: entry.lang,
+                display_text: entry.displayText,
+                entry_type: entry.entryType,
+                obscurity_score: entry.obscurityScore,
+                quality_score: entry.qualityScore,
+                source_ai: sourceAI,
+            }; 
         });
 
-        let returnedEntries = await sqlQuery(true, "add_obscurity_quality_scores", [
+        await sqlQuery(true, "add_obscurity_quality_scores", [
             {name: "p_scores", value: obscurityQualityValue},
         ]);
-
-        return returnedEntries.map(row => ({
-            entry: row.entry,
-            lang: row.lang,
-            displayText: row.display_text,
-            entryType: row.entry_type,
-            obscurityScore: row.obscurity_score,
-            qualityScore: row.quality_score,
-        }) as Entry);
     }
 }
 

@@ -12,30 +12,30 @@ Step 2: Categorize: Assign the parsed word/phrase to one of the following catego
 - Derived Word: A word formed from another word (e.g., "diving" from "dive", "pillars" from "pillar")
 - Phrase: Multiple words forming a recognized unit (e.g., "snow fort," "give to"). This includes verb-preposition phrases only if the preposition commonly pairs with the verb.
 - Brand Name: (e.g., "Camelbak")
-- Proper Name: Names of specific people, places, or things (e.g., "Tiger Woods," "Mr. Ed").
+- Proper Name: Names of specific people, places, or things (e.g., "Tiger Woods," "Mr. Ed"). Consider solo first names or last names (e.g. "Idris", "Robbie").
 - Acronym: (e.g., "ESPY", "SSN").
 - Abbreviation: A shortened form of a word or phrase (e.g., "attn.," "ctr."). Only use if the abbreviation is less common than the original (e.g., "amp" would be "Word" as it's more common than "ampere"). Also consider plural abbreviations ("ATCs").
 - Prefix/Suffix: (e.g., "tri-," "-ose"). Score based on the familiarity of the prefix/suffix itself.
 - Incoherent: Phrases that do not form a recognized unit or words that are nonsensical (e.g., "snow tag," "xoner"). Incoherent items automatically score 0.
 
 Step 3: Score Familiarity: Assign a score from 0 to 5 based on the following rubric. Consider the word/phrase's common usage, frequency, specificity, and general recognition among native English speakers.
-5 - Basic Building Blocks: Fundamental, daily-use words that are taught in beginner English classes.
-Examples: sit, else, gone, tree, my
-4.5 - Extremely Common: Frequently encountered in everyday conversations. No contractions or abbreviations above a 4.
-Examples: oil, song, usual, boss, ones, own
-4 - Very Common: Well known and in almost eveyone's active vocabulary.
-Examples: attic, comma, period, bark, toast, dinosaurs, I've, give to
-3.5 - Quite Common: Likely recognized by most educated speakers, but not necessarily in everyone's active vocabulary.
-Examples: bio's, pillars, matchmaker, boost, tuba, sentiment, Tiger Woods, give to
-3 - Common: Generally known but more specific in usage, or less frequent. Includes many common acronyms, proper nouns, and commonly understood conjugated/derived words. This is the default home for everything that is otherwise unremarkable.
-Examples: SSN, oboe, coop, bento, tres, mac, deuce, THC, BTU, USSR, stage name, U-boat, decor, D-list, ID'ed, ensue, master gardener, snow fort, ESPY, abbr., tri-, amp
-2.5 - Somewhat Familiar/Niche: Familiar to certain groups or contexts, but not universally recognized.
-Examples: udon, e-cig, midis, Elio, accede, attn.
-2 - Limited Familiarity: Known to a smaller segment of the population (specialized fields, specific cultural references).
-Examples: Elle, Moondance, Manu, Mekong, quixotic, Mr. Ed, ATCs
-1.5 - Very Limited Familiarity: Generally obscure, known only in very specific contexts or by a small number of people.
-Examples: tsars, ade, plagioclase, Ilana, Erivo, ctr., -ose
-1 - Extremely Rare/Obscure: Almost entirely unknown to the general public.
+5 - Basic Building Blocks: Fundamental, daily-use words that appear in almost every text. No contractions, abbreviations, or acronyms.
+Examples: sit, else, gone, tree, my, thank you
+4.5 - Extremely Common: Frequently encountered in everyday conversations. Taught in first grade/beginner English classes. Extremely common phrases. No contractions, abbreviations, or acronyms.
+Examples: oil, song, usual, boss, ones, own, go ahead, come on
+4 - Very Common: Well known and in almost eveyone's active vocabulary. Common phrases.
+Examples: attic, comma, period, bark, toast, dinosaurs, I've, social media, water bottle
+3.5 - Quite Common: Likely recognized by most educated speakers, but not necessarily in everyone's active vocabulary. Third grade level. Common phrasal verbs. Readily understood phrases (even if they aren't in active vocabulary).
+Examples: bio's, pillars, matchmaker, boost, tuba, sentiment, Tiger Woods, give to, black hole, read ahead, snow fort
+3 - Common: Generally known but more specific in usage, or less frequent. Includes many common acronyms, proper nouns, and middle school level words. Phrases recognized by most. This is the default home for things that are hard to classify into another category.
+Examples: SSN, oboe, coop, bento, tres, mac, deuce, THC, BTU, USSR, stage name, U-boat, decor, D-list, ID'ed, ensue, master gardener, ESPY, abbr., tri-, amp, big data, box score
+2.5 - Somewhat Niche: Familiar to certain groups or contexts, but not universally recognized. High-school level words. 
+Examples: udon, e-cig, midis, Elio, accede, attn., digital marketing, event horizon
+2 - Limited Familiarity: Known to a smaller segment of the population (specialized fields, specific cultural references). Might make good answers to trivia questions. College-level words.
+Examples: Elle, Moondance, Manu, Mekong, quixotic, Mr. Ed, ATCs, Aaron Burr, moment of inertia
+1.5 - Very Limited Familiarity: Generally obscure, known only in very specific contexts or by a small number of people. Obscure alternative spellings. Too obscure to make good trivia.
+Examples: tsars, ade, plagioclase, Ilana, Erivo, ctr., -ose, Gaussian distribution
+1 - Extremely Rare/Obscure: Almost entirely unknown to the general public. Info about these is available on the Internet.
 Examples: Marli Miller, Cantor Set, six seconds
 0.5 - Unused
 0 - Unrecognizable/Nonsensical: Not recognized as legitimate words/phrases, or are typos/misspellings. Also assigned to "Incoherent" category.
@@ -48,7 +48,7 @@ Output Format: Present each evaluation in the following strict format, without a
 Example Outputs:
 quixotic : quixotic : Word : 2
 DIVING : diving : Derived Word : 4
-SNOWFORT : snow fort : Phrase : 3
+SNOWFORT : snow fort : Phrase : 3.5
 snow tag : snow tag : Incoherent : 0
 ATTN : attn. : Abbreviation : 2.5
 TRI : tri- : Prefix/Suffix : 3

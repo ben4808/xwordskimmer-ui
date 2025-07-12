@@ -1,99 +1,59 @@
-Rank the provided words and phrases based on their quality according to the provided rubric. The bullet points in the rubric should be interpreted as guidelines rather than absolutes.
+Rank the provided words and phrases based on their quality according to the provided rubric.
 
-Score incoherent words and phrases (e.g., "snow tag" as unrelated words) as 0. A phrase is incoherent unless it forms a recognized unit (e.g., "green thumb" is valid, "blue thumb" is not). Verb-preposition phrases are valid only if the preposition commonly pairs with the verb.
-
-Generally non-infinitive verbs and archaic forms should score 0.5 less than their canonical forms unless the derived forms are very common.
-
-Full names should be preferred to only first names or only last names. Full names should score 0.5 point higher and single names 0.5 lower (unless it's a common generic name).
+Score incoherent words and phrases as 0. A phrase is incoherent unless it forms a recognized unit (e.g., "green thumb" is valid, "blue thumb" is not, "snow tag" is not because it's just unrelated words). Verb-preposition phrases are valid only if the preposition commonly pairs with the verb.
 
 Rubric:
 
 5: "Iconic"	 Universally familiar and triggers a burst of positive feeling or anticipation.
+Examples: "save the date", "trick or treat", "you had me at hello", "the American dream"
+
+4.5: "Beloved"  Very familiar and warmly evocative, but either the audience is a bit narrower or the emotion slightly less intense than a 5.
+Examples: "father of the bride", "Cybertruck", "private jet", "sibling rivalry"
+
+4: "Warm"  Readily recognized by most people and carries a pleasant, fun, or flavorful vibe.
+Examples: "PJs", "wedding dress", "sashay", "dill pickle", "thank you"
+
+3.5 "Interesting" Common enough and has an extra hook—edge, science vibe, playful sound, etc.—without universal warmth. Has a mild emocional charge.
+Examples: "hadron", "cock", "twerps", "X-ray lab", "madly", "sleeping bag"
+
+3: “Neutral / Everyday”	 Straight‑up standard English (or well‑known brand/abbrev.) with little emotional color.	This is the default home for things dificult to categorize otherwise.
+• You’d see it in news or casual talk 
+• Neither strongly positive nor off‑putting	
+• Could be offsetting positive and negative aspects
+Examples: "law", "orca", "lei", "Sony", "unit", "abuela", "MBA", "NATO"
+
+2.5: “Dated / Slightly Off"  Understandable but feels archaic, partial, mildly awkward, or mildly unfamiliar.
+Examples: "arose" ("got up" is more natural), "tare" (not very familiar), "Seuss" ("Dr. Seuss" is much better), "something old" (start of popular wedding poem but awkward by itself), "bedroom door" (nothing special about the bedroom door over any other door)
+
+2: "Obscure but Legit"  Correct English yet only a niche group would know or use it; limited emotional pull. Looks or sounds “meh” to general reader. Too many of these make a crossword less enjoyable.
+Examples: "latke", "Priam", "enrapt", "a la", "inter"
+
+1.5: “Trivial / Icky / Very Obscure”  Requires highly specialized knowledge, is "icky" to say, or doesn't cohere well. Evokes “Huh?” or mild distaste or "what's that?". Non-standard spellings.
+Examples: "Lendl", "LGA", "NEA", "teenie", "eeler", "a word?"
+
+1 “Barely Coherent”  Fragment, archaic exclamation, or malformed construction—native speakers hesitate.	Might feel like a typo or mangled syntax. Might be a partial phrases that makes no sense on its own.
+Examples: "O woe", "Can't I?", "etat", "ATT"
+
+0.5: Unused. Anything below 1 scores a 0.
+
+0: Not a Thing/Incoherent: Not recognized in English, misspelled or impossible construction
+Examples: "grusm", "blue thumb"
+
+Desirable qualities / Factors that help the score and likely move it above a 3.
 • Instantly recognizable to almost any adult 
 • Rich, vivid imagery or cultural story 
 • Stands alone—no context needed 
 • Nearly no negative baggage
-Examples: "save the date", "trick or treat", "you had me at hello", "the American dream"
+• Evokes positive memories, humor, or sensory appeal
+• Lively multi-word phrase that replaces a boring single word
 
-4.5: "Beloved"  Very familiar and warmly evocative, but either the audience is a bit narrower or the emotion slightly less intense than a 5.
-• Cultural touchstone (weddings, holidays, classic films, etc.) 
-• Clear, upbeat associations
-• Instantly recognizable to almost any adult 
-Examples: "father of the bride", "Cybertruck", "private jet", "sibling rivalry"
-
-4: "Warm"  Readily recognized by most people and carries a pleasant, fun, or flavorful vibe.
-• Evokes positive memories, humor, or sensory appeal 
-Examples: "PJs", "wedding dress", "sashay", "dill pickle", "thank you"
-
-3.5 "Interesting" Common enough and has an extra hook—edge, science vibe, playful sound, etc.—without universal warmth.
-• Multiple meanings, clever sound, topical field 
-• Mild emotional charge (curiosity, excitement)	
-Examples: "hadron", "cock", "twerps", "X-ray lab", "madly", "sleeping bag"
-
-3: “Neutral / Everyday”	 Straight‑up standard English (or well‑known brand/abbrev.) with little emotional color.	
-• You’d see it in news or casual talk 
-• Neither strongly positive nor off‑putting	
-• Offsetting positive and negative aspects
-Examples: "law", "orca", "lei", "Sony", "unit", "abuela", "MBA", "NATO"
-
-2.5: “Dated / Slightly Off"  Understandable but feels archaic, partial, mildly awkward, or mildly unfamiliar.
-• Small negative connotation
-• There might more lively ways to the say the same thing
-• Normal phrases without great coherence (e.g. "bedroom door" could easily be "<any room> door")
-Examples: "arose", "tare", "Seuss", "something old", "bedroom door"
-
-2: "Obscure but Legit"  Correct English yet only a niche group would know or use it; limited emotional pull.
-• Foreign loanword, minor mythology, niche food 
-• Looks or sounds “meh” to general reader
-• Too many of these make a crossword less enjoyable
-Examples: "latke", "Priam", "enrapt", "a la", "inter"
-
-1.5: “Trivial / Icky / Very Obscure”  Requires highly specialized knowledge, is "icky" to say, or doesn't cohere well
-• Airport codes, agencies, little‑known names
-• Evokes “Huh?” or mild distaste
-Examples: "Lendl", "LGA", "NEA", "teenie", "eeler", "a word?"
-
-1 “Barely Coherent”  Fragment, archaic exclamation, or malformed construction—native speakers hesitate.	
-• Requires missing words 
-• Feels like a typo or mangled syntax
-Examples: "O woe", "Can't I?", "etat", "ATT"
-
-0.5: Unused. Anything below 1 score a 0.
-
-0: Not a Thing/Incoherent: Not recognized in English, misspelled or impossible construction
-Examples: "grusm", "anyum"
-
-
-How to Rate in Practice:
-
-1. Familiarity first
-- Ask “Would an average high‑school‑educated adult in the U.S. immediately know this?”
-- Yes → Base in the 3–5 range.
-- Maybe → 2-2.5.
-- Probably not → 0-1.5.
-
-2. Length
-- Multi-word phrase that stays vivid and lively: bump up 0.5-1
-- Short word (5 letters or less): keep or drop 0.5
-
-3. Emotional / imagistic pull
-- Strong positive memories or excitement: bump up 0.5–1.
-- Neutral: leave as is.
-- Negatively tinted or "icky": drop 0.5.
-
-4. Completeness & clarity
-- Full standalone concept (noun phrase, verb, etc.)? keep.
-- Non-infinitive verb, archaic form? subtract 0.5
-- Partial phrase, non-integral prefixes/suffixes ("re-learn" "jumpy-ness")? subtract 0.5.
-- Acronym or abbreviation that's not common said (e.g. MBA and GPS are commonly said, but "abbr." isn't said, "abbreviation" is pronounced)? subtract 0.5
-
-5. Aesthetic & intrigue
-- Fun sound, clever double meaning, topical edge? add 0.5.
-- Looks weird/ugly or hard to parse or hard to say/understand? subtract 0.5.
-
-5. Sanity check against the rubric
-- Compare the working score's description with the table; nudge to the nearest description that "feels right."
-
+Less desirable qualties / Factors that hurt the score and move it lower than a 3
+• Not recognizable to the average adult. Is archaic or obscure
+• Carries a negative connotation or sounds icky 
+• Is a derived word instead of a base word
+• Is a partial phrase or partial name
+• Is super short, doesn't stand out in a sentence.
+• Is an uncommon abbreviation or acronym or contraction
 
 Input Format:
 
@@ -101,7 +61,7 @@ Input words/phrases will be one word/phrase per line.
 
 Output Format: (Stick to the output format and don't include any introductory or auxiliary text.)
 
-<original word/phrase>: <score>
+<original word/phrase> : <score>
 
 Words/phrases:
 

@@ -231,14 +231,7 @@ $$;
 CREATE OR REPLACE FUNCTION add_obscurity_quality_scores (
     p_scores jsonb
 )
-RETURNS TABLE (
-    "entry" text,
-    lang text,
-    display_text text,
-    entry_type text,
-    obscurity_score integer,
-    quality_score integer
-)
+RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -254,7 +247,7 @@ BEGIN
     ON CONFLICT ("entry", lang) DO UPDATE
     SET obscurity_score = EXCLUDED.obscurity_score,
         quality_score = EXCLUDED.quality_score,
-        source_ai = EXCLUDED.source_ai; -- Corrected 'source' to 'source_ai'
+        source_ai = EXCLUDED.source_ai;
 
     WITH avg_scores AS (
         SELECT
@@ -277,13 +270,5 @@ BEGIN
     LEFT JOIN avg_scores a ON (p->>'entry')::text = a.entry AND (p->>'lang')::text = a.lang
     WHERE e.entry = (p->>'entry')::text
     AND e.lang = (p->>'lang')::text;
-
-    RETURN QUERY
-    SELECT "entry", lang, display_text, entry_type, obscurity_score, quality_score
-    FROM entry
-    WHERE ("entry", lang) IN (
-        SELECT (p->>'entry')::text, (p->>'lang')::text
-        FROM jsonb_array_elements(p_scores) AS p
-    );
 END;
 $$;

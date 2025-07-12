@@ -77,7 +77,10 @@ export function generateId(): string {
 }
 
 export function entryToAllCaps(entry: string): string {
-    return entry.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const uppercasePhrase = entry.toUpperCase();
+    const lettersOnlyPhrase = uppercasePhrase.replace(/[^a-zA-Z\u00C0-\u017F]/g, "");
+    const allcapsNoSpacesPhrase = lettersOnlyPhrase.replace(/\s/g, "");
+    return allcapsNoSpacesPhrase;
 };
 
 export function zipArraysFlat<T, U>(arr1: T[], arr2: U[]): (T | U)[] {
@@ -89,4 +92,11 @@ export function zipArraysFlat<T, U>(arr1: T[], arr2: U[]): (T | U)[] {
     }
     
     return result;
+}
+
+export function arrayToMap<T>(array: T[], keyFn: (item: T) => string): Map<string, T> {
+    return array.reduce((map, item) => {
+        map.set(keyFn(item), item);
+        return map;
+    }, new Map<string, T>());
 }
