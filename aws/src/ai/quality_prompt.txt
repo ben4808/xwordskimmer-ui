@@ -1,59 +1,66 @@
-Rank the provided words and phrases based on their quality according to the provided rubric.
+Rate the quality of words and phrases
 
-Score incoherent words and phrases as 0. A phrase is incoherent unless it forms a recognized unit (e.g., "green thumb" is valid, "blue thumb" is not, "snow tag" is not because it's just unrelated words). Verb-preposition phrases are valid only if the preposition commonly pairs with the verb.
+If the word/phrase is incoherent, immediately score it as 0. These are phrases that do not form a recognized unit (e.g. "green thumb" forms a recognized unit, "blue thumb" does not) or words that are nonsensical (e.g., "xoner," "gsuem"). Verb-preposition phrases are valid only if the preposition commonly pairs with the verb.
+
+Assign a score based on quality according to the provided rubric. Calibrate responses based on the provided examples at each level.
+
+How to score in practice:
+The default score is a 3 and the score deviates from there based on the following factors:
+
+Desirable qualities that raise the baseline above 3:
+• Sparks joy
+• Rich, vivid imagery or cultural story 
+• Is likely to spark conversation, perhaps causing people to tell stories or share opinions.
+• Evokes positive memories, humor, or sensory appeal.
+• Is fun to say, looks cool, or alludes to something people find cool.
+• Is interesting, might inspire people to look it up and learn more.
+• Is very topical
+
+Undesirable qualties that subtract from the baseline (these can stack):
+• If very few people can recognize it, subtract 1. If it is unfamiliar to the majority of people, subtract .5.
+• Is less than 6 letters long. This doesn't subtract points but makes it harder to raise the baseline.
+• Is a single word. This doesn't subtract points but makes it harder to raise the baseline.
+• Carries a negative connotation or sounds close to a word with negative connotation or a swear word. Subtract .5
+• Is a derived word instead of a base word, and the derived word is significantly less common than the base word. Subtract .5
+• Is an abbreviation or acronym or contraction that is significantly less common than the full version. Subtract .5
+• Is a partial phrase where the full phrase is much more common. Subtract .5
+• Is a single name, rather than a full name ("Bill" rather than "Bill Gates"). Subtract .5
+• There are better/more common ways to say the same thing. Subtract .5
 
 Rubric:
 
-5: "Iconic"	 Universally familiar and triggers a burst of positive feeling or anticipation.
-Examples: "save the date", "trick or treat", "you had me at hello", "the American dream"
+5: "Iconic"	- Embodies almost every desirable quality. It's hard to achieve this level.
+Examples: save the date, trick or treat, you had me at hello, the American dream
 
-4.5: "Beloved"  Very familiar and warmly evocative, but either the audience is a bit narrower or the emotion slightly less intense than a 5.
-Examples: "father of the bride", "Cybertruck", "private jet", "sibling rivalry"
+4.5: "Beloved" - Embodies many desirable qualities 
+Examples: father of the bride, Cybertruck, private jet, sibling rivalry, game on!, bromance
 
-4: "Warm"  Readily recognized by most people and carries a pleasant, fun, or flavorful vibe.
-Examples: "PJs", "wedding dress", "sashay", "dill pickle", "thank you"
+4: "Warm" - Embodies some desirable qualities 
+Examples: PJs, wedding dress, dill pickle, thank you, it's a go!, and done!, beat it, on a tear
 
-3.5 "Interesting" Common enough and has an extra hook—edge, science vibe, playful sound, etc.—without universal warmth. Has a mild emocional charge.
-Examples: "hadron", "cock", "twerps", "X-ray lab", "madly", "sleeping bag"
+3.5 "Interesting" - Embodies at least one desirable quality
+Examples: hadron, twerps, X-ray lab, madly, sleeping bag, sashay, malaria, dairy farm, souffle, Peak TV
 
-3: “Neutral / Everyday”	 Straight‑up standard English (or well‑known brand/abbrev.) with little emotional color.	This is the default home for things dificult to categorize otherwise.
-• You’d see it in news or casual talk 
-• Neither strongly positive nor off‑putting	
-• Could be offsetting positive and negative aspects
-Examples: "law", "orca", "lei", "Sony", "unit", "abuela", "MBA", "NATO"
+3: “Nothing special" - Either have neither positive or negative qualities or has both that are cancelling each other out
+Examples: law, orca, lei, Sony, unit, abuela, MBA, NATO, Goa, cock, burrs, Abel, enamor, herb garden, cash register, ochre
 
-2.5: “Dated / Slightly Off"  Understandable but feels archaic, partial, mildly awkward, or mildly unfamiliar.
-Examples: "arose" ("got up" is more natural), "tare" (not very familiar), "Seuss" ("Dr. Seuss" is much better), "something old" (start of popular wedding poem but awkward by itself), "bedroom door" (nothing special about the bedroom door over any other door)
+2.5: Embodies probably 1 negative quality
+Examples: "tare" (not very familiar), "Seuss" ("Dr. Seuss" is much better), "puss" (close to "pussy"), "si si" (foreign and not a common contruction), "Alp" ("Alps" is much more common), disused (not very familiar), "b-days" ("birthdays" is better), "slier" (not a common derivation), "Apso" ("Lhasa Apso" is better), "Tasha" (single name, which Tasha are we talking about?), "IRAs" (not common as a plural), "REM" ("REM sleep" is usuall said), "sits pat", ("stands pat" is better)
 
-2: "Obscure but Legit"  Correct English yet only a niche group would know or use it; limited emotional pull. Looks or sounds “meh” to general reader. Too many of these make a crossword less enjoyable.
-Examples: "latke", "Priam", "enrapt", "a la", "inter"
+2: Embodies multiple negative qualities. Or is so obscure almost nobody recognizes what it is.
+Examples: latke, Priam, enrapt, a la, inter, ole, meeter, Sahl, tra-las, OR docs, Nomo, Sao, Entebbe, oneg, nae
 
-1.5: “Trivial / Icky / Very Obscure”  Requires highly specialized knowledge, is "icky" to say, or doesn't cohere well. Evokes “Huh?” or mild distaste or "what's that?". Non-standard spellings.
-Examples: "Lendl", "LGA", "NEA", "teenie", "eeler", "a word?"
+1.5: Would otherwise be a 2 but has an extra negative quality. Very obscure plus a negative quality.
+Examples: Lendl, maa, att.
 
-1 “Barely Coherent”  Fragment, archaic exclamation, or malformed construction—native speakers hesitate.	Might feel like a typo or mangled syntax. Might be a partial phrases that makes no sense on its own.
-Examples: "O woe", "Can't I?", "etat", "ATT"
+1 Barely coherent. Fragment, archaic exclamation, or malformed construction—native speakers hesitate. Might feel like a typo or mangled syntax. Might be a partial phrases that makes no sense on its own.
+Examples: "O woe", "Can't I?"
 
 0.5: Unused. Anything below 1 scores a 0.
 
-0: Not a Thing/Incoherent: Not recognized in English, misspelled or impossible construction
-Examples: "grusm", "blue thumb"
+0: Not a Thing/Incoherent
+Examples: "grusm", "blue thumb", "xoner"
 
-Desirable qualities / Factors that help the score and likely move it above a 3.
-• Instantly recognizable to almost any adult 
-• Rich, vivid imagery or cultural story 
-• Stands alone—no context needed 
-• Nearly no negative baggage
-• Evokes positive memories, humor, or sensory appeal
-• Lively multi-word phrase that replaces a boring single word
-
-Less desirable qualties / Factors that hurt the score and move it lower than a 3
-• Not recognizable to the average adult. Is archaic or obscure
-• Carries a negative connotation or sounds icky 
-• Is a derived word instead of a base word
-• Is a partial phrase or partial name
-• Is super short, doesn't stand out in a sentence.
-• Is an uncommon abbreviation or acronym or contraction
 
 Input Format:
 
@@ -61,7 +68,7 @@ Input words/phrases will be one word/phrase per line.
 
 Output Format: (Stick to the output format and don't include any introductory or auxiliary text.)
 
-<original word/phrase> : <score>
+<original word/phrase> : <quality score>
 
 Words/phrases:
 

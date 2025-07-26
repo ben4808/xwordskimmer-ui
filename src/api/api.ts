@@ -9,7 +9,7 @@ export async function getCrosswordList(date: Date): Promise<ClueCollection[]> {
   return null as any;
 }
 
-export async function getCollectionList(listId: string): Promise<ClueCollection[]> {
+export async function getCollectionList(): Promise<ClueCollection[]> {
   return null as any;
 }
 
@@ -22,6 +22,22 @@ export async function getCollection(collectionId: string): Promise<ClueCollectio
 }
 
 export async function getClue(clueId: number): Promise<Clue> {
+  return null as any;
+}
+
+export async function getEntry(entry: string): Promise<EntryInfo> {
+  return null as any;
+}
+
+export async function generateEntryInfo(entry: string): Promise<EntryInfo> {
+  return null as any;
+}
+
+export async function queryEntries(query: string, filters: EntryFilter[]): Promise<Entry[]> {
+  return null as any;
+}
+
+export async function createClue(clue: string, entry: string): Promise<string> {
   return null as any;
 }
 
