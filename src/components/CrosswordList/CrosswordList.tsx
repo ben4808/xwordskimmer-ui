@@ -13,19 +13,20 @@ import { useEffect, useState } from "react";
 import { CrosswordListProps } from "./CrosswordListProps";
 import styles from './CrosswordList.module.scss';
 import { useNavigate } from "react-router";
-import { getCrosswordList } from "../../api/mockApi";
 import { ClueCollection } from "../../models/ClueCollection";
 import { formatDate } from "../../lib/utils";
+import { MockCruziApi } from "../../api/MockCruziApi";
 
 function CrosswordList(props: CrosswordListProps) {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
     const [crosswords, setCrosswords] = useState([] as ClueCollection[]);
+    const api = new MockCruziApi();
 
     useEffect(() => {
         async function fetchData() {
             try {
-                let response = await getCrosswordList(props.date)
+                let response = await api.getCrosswordList(props.date)
                 setCrosswords(response);
             } catch (error) {
                 console.error('Error fetching crosswords:', error);
@@ -52,7 +53,7 @@ function CrosswordList(props: CrosswordListProps) {
             <div className={styles.thumbnail} style={{ backgroundColor: 'lightgray' }} />
             <div className={styles.content}>
             <h3 className={styles.title}>{crossword.name}</h3>
-            <p className={styles.meta}>{formatDate(crossword.date)}</p>
+            <p className={styles.meta}>{formatDate(crossword.createdDate)}</p>
             <p className={styles.meta}>By Author</p>
             <p className={styles.meta}>Source: {crossword.source}</p>
             </div>

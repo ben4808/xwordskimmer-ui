@@ -46,7 +46,7 @@ Output Format: Present each evaluation in the following strict format, without a
 <original word/phrase> : <written naturally> : <category> : <score>
 
 Example Outputs:
-quixotic : quixotic : Word : 2
+quixotic : quixotic : Word : 2.5
 DIVING : diving : Derived Word : 4
 SNOWFORT : snow fort : Phrase : 3.5
 snow tag : snow tag : Incoherent : 0

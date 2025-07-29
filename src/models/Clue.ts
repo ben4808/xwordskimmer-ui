@@ -1,9 +1,12 @@
 export interface Clue {
-    masterEntry: string;
+    id?: string;
+    clue: string;
     entry: string;
     lang: string;
-    clue: string;
     responseTemplate?: string;
-    metadata1?: string;
+    source?: string;
+    metadata1?: string;  // puzzle index
     metadata2?: string;
+
+    translatedClues?: Map<string, string>; // <lang, clue>
 };
