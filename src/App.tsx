@@ -1,19 +1,18 @@
-import { BrowserRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes, useParams } from 'react-router-dom';
 import './App.css'
 import CrosswordList from './components/CrosswordList/CrosswordList'
 import Header from './components/Header/Header'
 import Solver from './components/Solver/Solver';
-import { getCrossword } from './api/mockApi';
 import { useEffect, useState } from 'react';
 import { ClueCollection } from './models/ClueCollection';
 import { parseDateFromURL } from './lib/utils';
+import { MockCruziApi } from './api/MockCruziApi';
 
 // Layout component (combines Header and Outlet for content)
 function Layout() {
-  const location = useLocation();
   return (
     <div>
-      <Header showDashboardButton={location.pathname.includes("crossword") || location.pathname.includes("clue")} />
+      <Header />
       <Outlet /> {/* Child routes render here */}
     </div>
   );
@@ -23,11 +22,12 @@ function App() {
   const [clueCollection, setClueCollection] = useState(null as ClueCollection | null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null as any);
+  let api = new MockCruziApi();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getCrossword("NYT", new Date(2025, 5, 5));
+        const response = await api.getCrossword("NYT", new Date(2025, 5, 5));
         setClueCollection(response)
       } catch (e) {
         setError(e);

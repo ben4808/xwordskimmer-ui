@@ -1,6 +1,9 @@
 
 import { Clue } from "../models/Clue";
 import { ClueCollection } from "../models/ClueCollection";
+import { Entry } from "../models/Entry";
+import { EntryFilter } from "../models/EntryFilter";
+import { EntryInfo } from "../models/EntryInfo";
 import settings from "../settings.json";
 
 const baseUrl = settings.api_base_url;

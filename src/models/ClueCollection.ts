@@ -8,7 +8,7 @@ export interface ClueCollection {
     description?: string;
     createdDate: Date;
     source?: string;
-    metadata1?: string;
+    metadata1?: string; // crossword author
     metadata2?: string;
     clues: Clue[];
 };

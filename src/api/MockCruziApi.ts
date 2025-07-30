@@ -15,10 +15,19 @@ export class MockCruziApi implements ICruziApi {
         id: "NYT-2025-05-05",
         name: "Monday 5/5",
         createdDate: date,
+        source: "NYT",
         clues: clues,
     };
 
-    return [monday];
+    let laTimes: ClueCollection = {
+      id: '2',
+      name: 'The Sunday Challenge',
+      createdDate: date,
+      source: 'LA Times',
+      clues: clues,
+    };
+
+    return [monday, laTimes];
   }
 
   async getCollectionList(): Promise<ClueCollection[]> {
@@ -31,7 +40,15 @@ export class MockCruziApi implements ICruziApi {
         clues: clues,
     };
 
-    return [monday];
+    let laTimes: ClueCollection = {
+      id: '2',
+      name: 'The Sunday Challenge',
+      createdDate: new Date(2025, 5, 5),
+      source: 'LA Times',
+      clues: clues,
+    };
+
+    return [monday, laTimes];
   }
 
   async getCrossword(source: string, date: Date): Promise<ClueCollection> {

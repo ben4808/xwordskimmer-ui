@@ -1,126 +1,258 @@
+@use "sass:color";
+
+/* Define some variables for consistency */
+$header-height: 60px; // Minimal height for the header
+$mobile-breakpoint: 768px; // Common breakpoint for mobile devices
+$dark-bg-primary: #1a1a1a;
+$dark-bg-secondary: #2c2c2c;
+$text-color-light: #f0f0f0;
+$accent-color: #61dafb; // A common React blue for highlights
+
 .header {
-  position: fixed;
-  top: 0;
+  background-color: $dark-bg-primary; // Dark mode background
+  color: $text-color-light; // Light text color
+  min-height: $header-height;
   width: 100%;
-  height: 60px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  position: fixed; // Fix to the top
+  top: 0;
+  left: 0;
+  z-index: 1000; // Ensure header is on top of other content
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); // Subtle shadow for depth
+  display: flex;
+  align-items: center; // Vertically center content
+  padding: 0 20px; // Padding on sides
+  box-sizing: border-box; // Include padding in width/height calculations
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
+  justify-content: space-between; // Space out left/right sections
   align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  padding: 0 20px;
+  max-width: 1200px; // Optional: Max width for content within header
+  margin: 0 auto; // Center the container if max-width is set
+  position: relative; // Needed for absolutely positioned logo
 }
 
-.hamburger {
-  display: none;
+/* Left Section for menus */
+.leftSection {
+  flex-shrink: 0; // Prevent from shrinking
+  z-index: 100; // Ensure menu is above other elements in its layer
 }
 
-.hamburgerButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
+/* Right Section (empty for now, but good for structure) */
+.rightSection {
+  flex-shrink: 0; // Prevent from shrinking
+  width: auto; // Or set a fixed width if needed for other elements
 }
 
-.hamburgerIcon {
-  display: block;
-  width: 24px;
-  height: 3px;
-  background-color: #333;
-  margin: 4px 0;
-  transition: all 0.3s ease;
-}
-
-.menu {
-  display: flex;
-  align-items: center;
-}
-
-.menuList {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.menuItem {
-  margin: 0 15px;
-}
-
-.menuLink {
-  text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 8px 12px;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: #007bff;
-  }
-
-  &.active {
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
-  }
-}
-
+/* Logo Styling - Centered */
 .logo {
-  flex: 1;
-  display: flex;
+  position: absolute; // Position absolutely
+  left: 50%; // Start at 50% from left
+  transform: translateX(-50%); // Move back by half its width to truly center
+  z-index: 1; // Lower than menus so they can be clicked over it
+  display: flex; // For centering image if it's smaller than its container
+  align-items: center;
   justify-content: center;
+
+  .logoImage {
+    height: calc($header-height - 20px); // Adjust logo size based on header height
+    max-width: 100%; // Ensure logo scales down on smaller screens
+    object-fit: contain; // Maintain aspect ratio
+  }
 }
 
-.logoImage {
-  height: 40px;
-  width: auto;
-}
+/* Hamburger Menu (Mobile Specific) */
+.hamburger {
+  display: none; // Hidden by default
+  position: relative; // For positioning the mobile menu
 
-@media (max-width: 768px) {
-  .hamburger {
-    display: block;
+  @media (max-width: $mobile-breakpoint) {
+    display: block; // Show hamburger on small screens
   }
 
-  .menu {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: #ffffff;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-  }
-
-  .menuOpen {
-    max-height: 300px;
-  }
-
-  .menuList {
+  .hamburgerButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
     flex-direction: column;
-    padding: 20px;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    padding: 0;
+    position: relative;
+    z-index: 1001; // Above the mobile menu and dropdown content
+
+    &:focus {
+      outline: 2px solid $accent-color; // Focus indicator
+    }
+
+    .hamburgerIcon {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background-color: $text-color-light; // Dark mode icon color
+      border-radius: 2px;
+      transition: all 0.3s ease-in-out;
+
+      &:nth-child(2) {
+        transform-origin: left center;
+      }
+    }
+
+    &.open {
+      .hamburgerIcon {
+        &:nth-child(1) {
+          transform: translateY(11px) rotate(45deg);
+        }
+        &:nth-child(2) {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        &:nth-child(3) {
+          transform: translateY(-11px) rotate(-45deg);
+        }
+      }
+    }
+  }
+}
+
+/* Mobile Menu Overlay */
+.mobileMenu {
+  display: none; // Hidden by default
+  position: absolute;
+  top: $header-height; // Position below the header
+  left: 0;
+  width: 100%;
+  background-color: $dark-bg-secondary; // Slightly lighter dark background for menu
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.7);
+  overflow: hidden; // Hide overflow during animation
+  max-height: 0; // Start hidden
+  transition: max-height 0.4s ease-in-out; // Smooth transition for expand/collapse
+  z-index: 999; // Below hamburger button
+
+  &.mobileMenuOpen {
+    display: block; // Show when open
+    max-height: 500px; // Adjust as needed to fit all menu items
+    width: 200px;
   }
 
-  .menuItem {
-    margin: 10px 0;
+  .mobileMenuList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column; // Stack items vertically
+    padding: 10px 0;
   }
 
-  .menuLink {
+  .mobileMenuItem {
+    text-align: center;
+    padding: 10px 0;
+
+    .mobileMenuLink {
+      color: $text-color-light;
+      text-decoration: none;
+      font-size: 1.1em;
+      padding: 10px 20px;
+      display: block;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: color.adjust($dark-bg-secondary, $lightness: 10%); // Lighter hover
+      }
+
+      &.active {
+        font-weight: bold;
+        color: $accent-color; // Highlight active item
+      }
+    }
+  }
+}
+
+/* Desktop Dropdown Menu (Non-Mobile Specific) */
+.desktopDropdown {
+  display: none; // Hidden by default
+
+  @media (min-width: ($mobile-breakpoint + 1px)) { // Only show on screens wider than mobile
     display: block;
-    padding: 12px;
-    font-size: 18px;
+    position: relative; // For positioning the dropdown content
   }
 
-  .logo {
+  .dropdownButton {
+    background-color: $dark-bg-secondary;
+    color: $text-color-light;
+    border: 1px solid lighten($dark-bg-secondary, 10%);
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 8px; // Space between text and arrow
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      background-color: color.adjust($dark-bg-secondary, $lightness: 5%);
+      border-color: $accent-color;
+    }
+
+    &.active {
+      background-color: color.adjust($dark-bg-secondary, $lightness: 5%);
+      border-color: $accent-color;
+      color: $accent-color;
+    }
+
+    .dropdownArrow {
+      font-size: 0.8em;
+      transform: rotate(0deg);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    &.active .dropdownArrow {
+      transform: rotate(180deg); // Rotate arrow when active
+    }
+  }
+
+  .dropdownContent {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 100%; // Position below the button
+    left: 0;
+    background-color: $dark-bg-secondary;
+    min-width: 180px;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    padding: 5px 0;
+    z-index: 1002; // Ensure it's above other header elements
+    margin-top: 5px; // Small gap between button and dropdown
+  }
+
+  .dropdownList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .dropdownItem {
+    .dropdownLink {
+      color: $text-color-light;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: color.adjust($dark-bg-secondary, $lightness: 5);
+        color: $accent-color;
+      }
+
+      &.active {
+        background-color: color.adjust($dark-bg-secondary, $lightness: 10%);
+        color: $accent-color;
+        font-weight: bold;
+      }
+    }
   }
 }

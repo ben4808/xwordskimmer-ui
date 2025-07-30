@@ -54,3 +54,7 @@ export function parseDateFromURL (date: string | null): Date {
   let day = parseInt(parts[2]);
   return new Date(year, month, day);
 }
+
+export function dateToURL(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
