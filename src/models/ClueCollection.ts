@@ -4,7 +4,7 @@ export interface ClueCollection {
     id?: string;
     name: string;
     puzzleId?: string;
-    authorId?: string;
+    author?: string;
     description?: string;
     createdDate: Date;
     source?: string;

@@ -1,36 +1,258 @@
 .container {
+  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
-  max-width: 100%;
+  padding: 2rem;
+  background-color: #121212;
+  color: #e0e0e0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  align-items: flex-start; // Align content to the top
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 }
 
-.clue {
-  font-size: 1.125rem;
-  font-weight: 500;
+.sparkleContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+// Header styles
+.collectionInfo {
+  width: 100%;
+  max-width: 600px;
   margin-bottom: 1rem;
   text-align: center;
 }
 
+.collectionName {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+  width: 100%;
+  text-align: center;
+
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
+}
+
+// Clue navigation styles
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
+}
+
+.navButton {
+  background-color: #333;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 9999px;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+
+  &:hover {
+    background-color: #444;
+    transform: scale(1.05);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.clueIndexContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.clueIndex {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #b0b0b0;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  color: #8c8c8c;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// Clue text styles
+.clueText {
+  font-size: 1.8rem;
+  font-weight: 400;
+  text-align: center;
+  color: #f0f0f0;
+  line-height: 1.5;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+
+  @media (max-width: 480px) {
+    font-size: 1.4rem;
+    padding: 0 1rem;
+  }
+}
+
+// Side panel buttons
+.buttonContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+  width: 100%;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1rem;
+  }
+}
+
+.panelButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: #2a2a2a;
+  color: #f0f0f0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  
+  &:hover {
+    background-color: #3b3b3b;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    font-size: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.scoreDisplay {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+// Crossword input grid
 .inputContainer {
   display: flex;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  max-width: 600px;
+  width: 100%;
+
+  @media (max-width: 480px) {
+    gap: 0.3rem;
+  }
 }
 
 .letterBox {
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
-  background-color: white;
-  border: 2px solid black;
+  width: 45px;
+  height: 45px;
+  background-color: #333;
+  border: 2px solid #555;
+  border-radius: 8px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 
-  @media (min-width: 640px) {
-    width: 3rem;
-    height: 3rem;
+  @media (max-width: 480px) {
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+  }
+}
+
+.spaceBox {
+  width: 25px;
+  height: 45px;
+  
+  @media (max-width: 480px) {
+    width: 15px;
+  }
+}
+
+.letterInput {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  text-align: center;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  caret-color: #1a73e8;
+  outline: none;
+  
+  &:focus {
+    box-shadow: 0 0 0 2px #1a73e8;
+    border-color: #1a73e8;
+  }
+
+  &.correct {
+    color: #4CAF50;
+  }
+
+  &.incorrect {
+    color: #f44336;
+  }
+  
+  &:focus {
+    color: #fff;
+    background-color: #444;
   }
 }
 
@@ -38,33 +260,26 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
-  background-color: #90EE90; // Light green
+  width: 100%;
+  background-color: #4CAF50;
+  opacity: 0.5;
   transition: height 0.1s linear;
 }
 
-.letterInput {
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: bold;
-  border: none;
-  background: transparent;
-  position: relative;
-  z-index: 10;
-  outline: none;
-  text-transform: uppercase;
+@keyframes sparkle-fade {
+  0% { transform: scale(0) translateY(0); opacity: 1; }
+  20% { transform: scale(1) translateY(-20px); opacity: 1; }
+  100% { transform: scale(0.5) translateY(-100px); opacity: 0; }
+}
 
-  &.correct {
-    color: #1B5E20; // Dark green
-  }
-
-  &.incorrect {
-    color: #8B0000; // Dark red
-  }
-
-  &.focused {
-    box-shadow: 0 0 0 2px #3B82F6; // Blue ring
-  }
+.sparkle {
+  position: absolute;
+  top: var(--sparkle-y);
+  left: var(--sparkle-x);
+  width: var(--sparkle-size);
+  height: var(--sparkle-size);
+  background-color: var(--sparkle-color);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkle-fade var(--sparkle-duration) ease-out forwards;
 }

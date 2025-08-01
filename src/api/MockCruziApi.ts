@@ -15,8 +15,9 @@ export class MockCruziApi implements ICruziApi {
         id: "NYT-2025-05-05",
         name: "Monday 5/5",
         createdDate: date,
-        source: "NYT",
+        source: "New York Times",
         clues: clues,
+        author: "John Doe",
     };
 
     let laTimes: ClueCollection = {
@@ -25,9 +26,28 @@ export class MockCruziApi implements ICruziApi {
       createdDate: date,
       source: 'LA Times',
       clues: clues,
+      author: "Jane Smith",
     };
 
-    return [monday, laTimes];
+    let wsj: ClueCollection = {
+      id: '2',
+      name: 'WSJ Daily',
+      createdDate: date,
+      source: 'Wall Street Journal',
+      clues: clues,
+      author: "Alice Johnson",
+    };
+
+    let newsday: ClueCollection = {
+      id: '2',
+      name: 'Saturday Stumper',
+      createdDate: date,
+      source: 'Newsday',
+      clues: clues,
+      author: "Bob Brown",
+    };
+
+    return [monday, laTimes, wsj, newsday];
   }
 
   async getCollectionList(): Promise<ClueCollection[]> {

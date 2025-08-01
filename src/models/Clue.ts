@@ -1,7 +1,9 @@
+import { Entry } from "./Entry";
+
 export interface Clue {
     id?: string;
     clue: string;
-    entry: string;
+    entry: Entry;
     lang: string;
     responseTemplate?: string;
     source?: string;

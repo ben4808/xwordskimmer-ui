@@ -10,6 +10,14 @@ $accent-color: #8bb4ff; // A soft blue for accents
 $border-color: #444;
 $error-color: #ff6b6b; // A distinct red for errors
 
+body {
+  background-color: $primary-bg;
+  color: $text-color;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 // Mixin for responsive design
 @mixin for-phone-only {
   @media (max-width: 599px) {
@@ -85,6 +93,7 @@ $error-color: #ff6b6b; // A distinct red for errors
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 25px;
 
   .dateLabel {
     font-size: 1.1rem;
@@ -145,11 +154,11 @@ $error-color: #ff6b6b; // A distinct red for errors
   }
 
   @include for-tablet-landscape-up {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); // Potentially wider cards or more columns
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); // Potentially wider cards or more columns
   }
 
   @include for-desktop-up {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); // Even wider or more columns for desktop
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); // Even wider or more columns for desktop
     max-width: 1200px;
   }
 }
@@ -183,13 +192,13 @@ $error-color: #ff6b6b; // A distinct red for errors
 
 .thumbnail {
   flex-shrink: 0; // Prevent shrinking
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: color.adjust($card-bg, $lightness: -5%); // Slightly darker background for thumbnail area
-  padding: 10px;
+  margin-left: 20px;
 
   img {
     width: 80px; // Slightly smaller to give padding
@@ -211,13 +220,14 @@ $error-color: #ff6b6b; // A distinct red for errors
 
 .details {
   flex-grow: 1;
-  padding: 15px 20px;
+  text-align: left;
+  padding: 0px 20px;
 
   .title {
     font-size: 1.4rem;
     color: $text-color;
-    margin-bottom: 8px;
     line-height: 1.3;
+    margin: 0;
 
     @include for-phone-only {
       font-size: 1.2rem;
@@ -227,11 +237,7 @@ $error-color: #ff6b6b; // A distinct red for errors
   .meta {
     font-size: 0.95rem;
     color: $light-text-color;
-    margin-bottom: 4px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+    margin: 4px 0;
 
     @include for-phone-only {
       font-size: 0.85rem;

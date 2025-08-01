@@ -1,173 +1,364 @@
 /**
 In React, write a component that displays a single crossword clue with a input space to solve it with the following features:
-1. The component should accept props for the crossword clue data, including the clue text and the answer.
-2. The component should display the clue text and an input field for the user to enter their answer.
-3. The input field should be styled to match the crossword theme, i.e. each letter should be in a separate box that looks like a crossword square.
-4. The component should validate the user's input against the correct answer for every letter entered. Correct letters should display in dark green and incorrect letters in dark red.
-5. The user should be able to click on a letter box to focus it. Once a letter is entered, the focus should move to the next letter.
-6. The component should handle keyboard events to allow the user to navigate through the letters using arrow keys and backspace.
-7. Long pressing on a letter should wait about a second and then show the correct answer for that letter. During that wait time, the letter box should progressively fill with light green to indicate that it's about to be revealed. This progressive fill should start from the bottom of the box and progress to the top so the box completely fills after a second.
-8. The component should be responsive and work well on different screen sizes.
-9. The component should use TypeScript for type safety.
+- The component should accept props for the full set of crossword clues and answers.
+- At the top, display the name of the crossword collection. Indicate which clue is currently being solved (e.g. "Clue 3 of 10").
+  - Include links to navigate to the previous and next clues.
+  - Include a link to view the full list of clues the side panel (will be a separate component).
+- Display the clue text fairly prominently below this.
+- Below the clue, display a couple of buttons:
+  - A button to show the Spanish information in the side panel (will be a separate component).
+  - A button to open an explanation of the clue in the side panel (will be a separate component).
+- Below the buttons, display an input field for the user to enter their answer.
+  - The input field should be styled to match the crossword theme, 
+    i.e. each letter should be in a separate box that looks like a crossword square.
+  - The component should validate the user's input against the correct answer for every letter entered. 
+    Correct letters should display in dark green and incorrect letters in dark red.
+  - The user should be able to click on a letter box to focus it. 
+    Once a letter is entered, the focus should move to the next letter.
+  - The component should handle keyboard events to allow the user to navigate through the letters using arrow keys and backspace.
+  - Long pressing or clicking and holding on a letter should wait about a second 
+    and then show the correct answer for that letter. During that wait time, the letter box should progressively fill 
+    with light green to indicate that it's about to be revealed. This progressive fill should start from the bottom 
+    of the box and progress to the top so that when the box completely fills, the letter is revealed.
+  - When all the letters are correctly entered, the input field should emit some celebratory sparks
+    and play a brief, joyful sound.
+- The component should be styled using an SCSS module.
+- The component should be styled in dark mode.
+- The component should be responsive and work well on different screen sizes, including mobile devices.
+- The component should use TypeScript for type safety.
+- The component should handle loading and error states gracefully.
+- Add a display of the crossword score just above the answer boxes in the form of "Cruzi Score: <score>". 
+  - Make it trend red for scores closer to 0 and green for scores closer to 5.
+- Use the displayText to determine the letters to make boxes before, rather than the raw 'entry'. 
+  - Ignore anything that isn't a letter, number, or space when creating boxes. Insert a space between the boxes where there is a space in the displayText.
+- Keep track of the user's input for each clue, so it doesn't get lost when users move between clues.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { SolverProps } from './SolverProps';
-import styles from './Solver.module.scss';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
+import { faList, faChevronLeft, faChevronRight, faInfoCircle, faLanguage } from '@fortawesome/free-solid-svg-icons';
+import styles from './Solver.module.scss';
+import { SolverProps } from './SolverProps';
+
+// Sparkle effect type for the celebration
+interface Sparkle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  duration: number;
+};
 
 function Solver(props: SolverProps) {
-  const firstClue = props.clueCollection.clues[0];
-  const [currentClue, setCurrentClue] = useState(firstClue);
+  // --- State Management ---
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [language, setLanguage] = useState(currentClue.lang || 'en');
-  const [userInput, setUserInput] = useState<string[]>(Array(firstClue.entry.length).fill(''));
-  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [revealProgress, setRevealProgress] = useState<number>(0);  // percentage
+  const [allUserInput, setAllUserInput] = useState<Record<number, string[]>>({});
+  const [userInput, setUserInput] = useState<string[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(0);
+  const [revealProgress, setRevealProgress] = useState<number>(0);
+  const [isSolved, setIsSolved] = useState(false);
+  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+
+  // Refs for DOM elements and timers
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
+  // Guard clause for missing data
+  if (!props.clueCollection || props.clueCollection.clues.length === 0) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingMessage}>Loading crossword...</div>
+      </div>
+    );
+  }
+
+  const { clueCollection } = props;
+  const currentClue = clueCollection.clues[currentIndex];
+  const displayText = currentClue.entry.displayText || currentClue.entry.entry;
+  const clueLength = displayText.replace(/ /g, '').length;
+
+  // --- Audio Logic for Celebration ---
+  // Plays a simple, joyful sound when the puzzle is solved
+  const playCelebrationSound = useCallback(() => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext)();
+    }
+    const audioContext = audioContextRef.current;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  }, []);
+
+  // --- Celebration Sparks Logic ---
+  // Creates and manages the celebratory sparkle effect within the input container
+  const handleCelebration = useCallback(() => {
+    playCelebrationSound();
+    
+    const inputContainer = inputContainerRef.current;
+    if (!inputContainer) return;
+    const rect = inputContainer.getBoundingClientRect();
+    
+    const newSparkles: Sparkle[] = Array.from({ length: 50 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * rect.width,
+      y: Math.random() * rect.height,
+      size: Math.random() * 5 + 2,
+      color: `hsl(${Math.random() * 360}, 100%, 75%)`,
+      duration: Math.random() * 1 + 1,
+    }));
+    setSparkles(newSparkles);
+
+    setTimeout(() => setSparkles([]), 2000);
+  }, [playCelebrationSound]);
+
+  // --- Utility Functions ---
+  const getScoreColor = (score: number) => {
+    // Score is from 0 to 5. We want a gradient from red (low) to green (high).
+    const hue = (score / 5) * 120; // Hue value from 0 (red) to 120 (green)
+    return `hsl(${hue}, 80%, 50%)`;
+  };
+
+  // --- useEffect Hooks ---
+
+  // Initialize input state when a new clue is selected
+  useEffect(() => {
+    // Load user input for the current clue
+    const savedInput = allUserInput[currentIndex] || Array(clueLength).fill('');
+    setUserInput(savedInput);
+    setIsSolved(false);
+    setFocusedIndex(0);
+    
+    // Use a small delay to ensure refs are ready
+    const timer = setTimeout(() => {
+      inputRefs.current[0]?.focus();
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [currentIndex, clueLength, allUserInput]);
+
+  // Check for a solved state and trigger celebration
+  useEffect(() => {
+    const isClueSolved = userInput.join('') === currentClue.entry.entry.toUpperCase();
+    if (isClueSolved && !isSolved) {
+      setIsSolved(true);
+      handleCelebration();
+    }
+  }, [userInput, currentClue, isSolved, handleCelebration]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) clearTimeout(longPressTimer.current);
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, []);
+
+  // --- Event Handlers ---
+
+  // Handles input from the letter boxes
   const handleInputChange = (index: number, value: string) => {
     const newInput = [...userInput];
     const upperValue = value.toUpperCase();
-    if (/^[A-Z]$/.test(upperValue) || value === '') {
+    
+    if (/^[A-Z0-9]$/.test(upperValue) || value === '') {
       newInput[index] = upperValue;
       setUserInput(newInput);
-      if (upperValue && index < currentClue.entry.length - 1) {
+      
+      // Auto-focus the next input box
+      if (upperValue && index < clueLength - 1) {
         setFocusedIndex(index + 1);
         inputRefs.current[index + 1]?.focus();
       }
     }
   };
 
+  // Handles keyboard navigation (arrows, backspace)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!focusedIndex) return;
-    const index = focusedIndex;
-    if (e.key === 'ArrowLeft' && index > 0) {
-      setFocusedIndex(index - 1);
-      inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < currentClue.entry.length - 1) {
-      setFocusedIndex(index + 1);
-      inputRefs.current[index + 1]?.focus();
-    } else if (e.key === 'Backspace' && !userInput[index] && index > 0) {
-      setFocusedIndex(index - 1);
-      inputRefs.current[index - 1]?.focus();
+    if (e.key === 'ArrowLeft' && focusedIndex !== null && focusedIndex > 0) {
+      e.preventDefault();
+      setFocusedIndex(focusedIndex - 1);
+      inputRefs.current[focusedIndex - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && focusedIndex !== null && focusedIndex < clueLength - 1) {
+      e.preventDefault();
+      setFocusedIndex(focusedIndex + 1);
+      inputRefs.current[focusedIndex + 1]?.focus();
+    } else if (e.key === 'Backspace' && focusedIndex !== null) {
+      if (!userInput[focusedIndex] && focusedIndex > 0) {
+        setFocusedIndex(focusedIndex - 1);
+        inputRefs.current[focusedIndex - 1]?.focus();
+      }
     }
   };
 
-  const startLongPress = () => {
-    if (!focusedIndex) return;
-    stopLongPress(); // Clear any existing timers
+  // --- Long Press Logic ---
+  const startLongPress = (index: number) => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    if (progressInterval.current) clearInterval(progressInterval.current);
+    setFocusedIndex(index);
+    setRevealProgress(0);
+
     let progress = 0;
     progressInterval.current = setInterval(() => {
-      progress += 10; // Increment every 100ms to reach 100 in 1 second
+      progress += 10;
       setRevealProgress(progress);
     }, 100);
 
     longPressTimer.current = setTimeout(() => {
       const newInput = [...userInput];
-      newInput[focusedIndex] = currentClue.entry[focusedIndex].toUpperCase();
+      // Reveals the correct letter and updates the state
+      const entryString = currentClue.entry.entry;
+      newInput[index] = entryString[index].toUpperCase();
       setUserInput(newInput);
-      setRevealProgress(0);
       stopLongPress();
     }, 1000);
   };
 
   const stopLongPress = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer.current!);
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
     if (progressInterval.current) {
-      clearInterval(progressInterval.current!);
+      clearInterval(progressInterval.current);
       progressInterval.current = null;
-      setRevealProgress(0);
     }
+    setRevealProgress(0);
   };
 
+  // --- Navigation Handlers ---
   const previousClue = () => {
-    const prevIndex = (currentIndex - 1 + props.clueCollection.clues.length) % props.clueCollection.clues.length;
-    setCurrentClue(props.clueCollection.clues[prevIndex]);
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
+    const prevIndex = (currentIndex - 1 + clueCollection.clues.length) % clueCollection.clues.length;
     setCurrentIndex(prevIndex);
-    setUserInput(Array(props.clueCollection.clues[prevIndex].entry.length).fill(''));
-    setFocusedIndex(0);
-  }
+  };
 
   const nextClue = () => {
-    const nextIndex = (currentIndex + 1) % props.clueCollection.clues.length;
-    setCurrentClue(props.clueCollection.clues[nextIndex]);
-    setCurrentIndex(nextIndex); 
-    setUserInput(Array(props.clueCollection.clues[nextIndex].entry.length).fill(''));
-    setFocusedIndex(0);
-  }
-
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'es' : 'en');
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
+    const nextIndex = (currentIndex + 1) % clueCollection.clues.length;
+    setCurrentIndex(nextIndex);
   };
-
-  useEffect(() => {
-    return () => {
-      // Cleanup timer on unmount
-      stopLongPress();
-    };
-  }, []);
+  
+  // Maps displayText to an array of characters, skipping spaces and non-letter/number characters
+  const validChars = displayText.split('').filter(char => /[A-Z0-9]/.test(char));
+  let inputIndex = 0;
 
   return (
     <div className={styles.container}>
+      {/* Celebration sparkles */}
+      <div ref={inputContainerRef} className={styles.sparkleContainer}>
+        {sparkles.map(sparkle => (
+          <div
+            key={sparkle.id}
+            className={styles.sparkle}
+            style={{
+              '--sparkle-x': `${sparkle.x}px`,
+              '--sparkle-y': `${sparkle.y}px`,
+              '--sparkle-size': `${sparkle.size}px`,
+              '--sparkle-color': sparkle.color,
+              '--sparkle-duration': `${sparkle.duration}s`,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
+      {/* Header and navigation */}
       <div className={styles.collectionInfo}>
-        <div className={styles.collectionName}>{props.clueCollection.name}</div>
-        <div className={styles.collectionLink}>
-          <FontAwesomeIcon icon={faList} size="2x" style={{ marginLeft: '10px' }} />
+        <div className={styles.collectionName}>{clueCollection.name}</div>
+      </div>
+
+      <div className={styles.navigation}>
+        <button className={styles.navButton} onClick={previousClue} aria-label="Previous Clue">
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+        <div className={styles.clueIndexContainer}>
+          <span className={styles.clueIndex}>Clue {currentIndex + 1} of {clueCollection.clues.length}</span>
+          <button onClick={props.onShowClueList} className={styles.actionButton} aria-label="Show Clue List">
+            <FontAwesomeIcon icon={faList} />
+          </button>
         </div>
+        <button className={styles.navButton} onClick={nextClue} aria-label="Next Clue">
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
       </div>
-      <div>
-        <button className={styles.prevNextButton} onClick={() => previousClue()}>&lt;</button>
-        <span className={styles.clueIndex}>{currentIndex + 1} of {props.clueCollection.clues.length}</span>
-        <button className={styles.prevNextButton} onClick={() => nextClue()}>&gt;</button>
+
+      <div className={styles.clueText}>{currentClue.clue}</div>
+      
+      {/* Action buttons for side panel */}
+      <div className={styles.buttonContainer}>
+        <button onClick={props.onShowSpanish} className={styles.panelButton} aria-label="Show Spanish Info">
+          <FontAwesomeIcon icon={faLanguage} />
+          <span>Spanish Info</span>
+        </button>
+        <button onClick={props.onShowExplanation} className={styles.panelButton} aria-label="Show Explanation">
+          <FontAwesomeIcon icon={faInfoCircle} />
+          <span>Explanation</span>
+        </button>
       </div>
-      <div className={styles.clue}>{currentClue.clue}</div>
-      <div className={styles.languageSelector}>
-        <span className="language-label">'English'</span>
-        <FontAwesomeIcon
-          icon={language === 'en' ? faToggleOff : faToggleOn}
-          onClick={toggleLanguage}
-          className="toggle-icon"
-        />
-        <span className="language-label">'Spanish'</span>
-      </div>
+
+      {currentClue.entry.crosswordScore !== undefined && (
+        <div className={styles.scoreDisplay} style={{ color: getScoreColor(currentClue.entry.crosswordScore) }}>
+          Cruzi Score: {currentClue.entry.crosswordScore}
+        </div>
+      )}
+
+      {/* Crossword input field */}
       <div className={styles.inputContainer}>
-        {currentClue.entry.split('').map((letter, index) => {
-          const isCorrect = userInput[index] && userInput[index] === letter;
-          const isIncorrect = userInput[index] && userInput[index] !== letter;
+        {displayText.split('').map((char, index) => {
+          if (char === ' ') {
+            return <div key={index} className={styles.spaceBox} />;
+          }
+
+          const currentInputIndex = inputIndex;
+          inputIndex++;
+          const isCorrect = userInput[currentInputIndex] && userInput[currentInputIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[currentInputIndex];
+          const isIncorrect = userInput[currentInputIndex] && userInput[currentInputIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[currentInputIndex];
+          const isFocused = focusedIndex === currentInputIndex;
+
           return (
-            <div
-              key={index}
+            <div 
+              key={index} 
               className={styles.letterBox}
-              onMouseDown={() => startLongPress()}
-              onMouseUp={() => stopLongPress()}
-              onMouseLeave={() => stopLongPress()}
-              onTouchStart={() => startLongPress()}
-              onTouchEnd={() => stopLongPress()}
+              onMouseDown={() => startLongPress(currentInputIndex)}
+              onMouseUp={stopLongPress}
+              onMouseLeave={stopLongPress}
+              onTouchStart={() => startLongPress(currentInputIndex)}
+              onTouchEnd={stopLongPress}
             >
-              {index == focusedIndex && revealProgress > 0 && (
+              {isFocused && revealProgress > 0 && (
                 <div
                   className={styles.revealProgress}
                   style={{ height: `${revealProgress}%` }}
                 />
               )}
               <input
-                ref={(el) => (inputRefs.current[index] = el)}
+                ref={(el) => (inputRefs.current[currentInputIndex] = el)}
                 type="text"
                 maxLength={1}
-                value={userInput[index]}
-                onChange={(e) => handleInputChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e)}
-                onFocus={() => setFocusedIndex(index)}
-                className={`${styles.letterInput} ${
-                  isCorrect ? styles.correct : isIncorrect ? styles.incorrect : ''
-                } ${focusedIndex === index ? styles.focused : ''}`}
+                value={userInput[currentInputIndex] || ''}
+                onChange={(e) => handleInputChange(currentInputIndex, e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setFocusedIndex(currentInputIndex)}
+                className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
+                disabled={isSolved}
               />
             </div>
           );

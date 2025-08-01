@@ -96,10 +96,9 @@ function CrosswordList(props: CrosswordListProps) {
                   <img src={crosswordThumbnail} alt={`Thumbnail for ${crossword.name}`} />
                 </div>
                 <div className={styles.details}>
+                  <p className={styles.meta}>{crossword.source}</p>
                   <h3 className={styles.title}>{crossword.name}</h3>
-                  <p className={styles.meta}>Date: {formatDate(crossword.createdDate)}</p>
-                  <p className={styles.meta}>Source: {crossword.source}</p>
-                  <p className={styles.meta}>Author: {crossword.metadata1 || 'N/A'}</p>
+                  <p className={styles.meta}>By {crossword.author || 'N/A'}</p>
                 </div>
               </div>
             ))}
