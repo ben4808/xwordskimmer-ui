@@ -30,7 +30,7 @@ export class MockCruziApi implements ICruziApi {
     };
 
     let wsj: ClueCollection = {
-      id: '2',
+      id: '3',
       name: 'WSJ Daily',
       createdDate: date,
       source: 'Wall Street Journal',
@@ -39,7 +39,7 @@ export class MockCruziApi implements ICruziApi {
     };
 
     let newsday: ClueCollection = {
-      id: '2',
+      id: '4',
       name: 'Saturday Stumper',
       createdDate: date,
       source: 'Newsday',
@@ -102,13 +102,23 @@ export class MockCruziApi implements ICruziApi {
   async getClue(clueId: number): Promise<Clue> {
     //let clues = readCrosswordClues();
 
-    let clue: Clue = {
-      id: "1",
-      entry: "TIMEMACHINE",
-      lang: "en-US",
+    let clue: Clue = {    
+      id: "testid",
       clue: "The DeLorean in \"Back to the Future,\" e.g.",
+      entry: {
+        entry: "TIMEMACHINE",
+        lang: "en",
+        length: 11,
+        displayText: "time machine",
+        entryType: "Word",
+        obscurityScore: 3.5,
+        qualityScore: 4,
+        crosswordScore: 4.5,
+      } as Entry,
+      lang: "en",
+      source: "NYT",
       metadata1: "17A",
-    };
+    } as Clue;
 
     return clue;
   }
@@ -133,11 +143,21 @@ export class MockCruziApi implements ICruziApi {
 function readCrosswordClues(): Clue[] {
   let results : Clue[] = cluesData.map((clue) => {
     return {    
-        masterEntry: clue.response,
-        entry: clue.response,
-        lang: 'en-US',
-        clue: clue.clue,
-        metadata1: clue.number,
+      id: clue.response.replace(/\s+/g, '').toUpperCase(),
+      clue: clue.clue,
+      entry: {
+        entry: clue.response.replace(/\s+/g, '').toUpperCase(),
+        lang: "en",
+        length: clue.response.replace(/\s+/g, '').toUpperCase().length,
+        displayText: clue.response,
+        entryType: "Word",
+        obscurityScore: 3,
+        qualityScore: 3,
+        crosswordScore: Math.round(Math.random() * 50),
+      } as Entry,
+      lang: "en",
+      source: "NYT",
+      metadata1: clue.number
     } as Clue;
   });
 

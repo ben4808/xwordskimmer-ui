@@ -36,9 +36,10 @@ In React, write a component that displays a single crossword clue with a input s
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faChevronLeft, faChevronRight, faInfoCircle, faLanguage } from '@fortawesome/free-solid-svg-icons';
+import { faList, faChevronLeft, faChevronRight, faInfoCircle, faLanguage, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import styles from './Solver.module.scss';
 import { SolverProps } from './SolverProps';
+import { displayTextToEntry } from '../../lib/utils';
 
 // Sparkle effect type for the celebration
 interface Sparkle {
@@ -79,7 +80,8 @@ function Solver(props: SolverProps) {
   const { clueCollection } = props;
   const currentClue = clueCollection.clues[currentIndex];
   const displayText = currentClue.entry.displayText || currentClue.entry.entry;
-  const clueLength = displayText.replace(/ /g, '').length;
+  const entryText = displayText.replace(/[^A-Za-z0-9 ]/g, '').toUpperCase(); // Filter out non-alphanumeric characters
+  const entryLength = displayTextToEntry(displayText).length;
 
   // --- Audio Logic for Celebration ---
   // Plays a simple, joyful sound when the puzzle is solved
@@ -129,10 +131,31 @@ function Solver(props: SolverProps) {
   }, [playCelebrationSound]);
 
   // --- Utility Functions ---
-  const getScoreColor = (score: number) => {
-    // Score is from 0 to 5. We want a gradient from red (low) to green (high).
-    const hue = (score / 5) * 120; // Hue value from 0 (red) to 120 (green)
-    return `hsl(${hue}, 80%, 50%)`;
+  const getScoreColor = (score: number): string => {
+  // Ensure score is within the 0-50 range
+    score = Math.max(0, Math.min(50, score));
+
+    if (score < 10) {
+      return 'Red'; // Scores below 10 are DarkRed
+    } else if (score >= 10 && score < 30) {
+      // Transition from DarkRed (10) to LightGray (30)
+      const ratio = (score - 10) / (30 - 10); // 0 at score 10, 1 at score 30
+      const red = Math.round(139 * (1 - ratio) + 211 * ratio);   // From DarkRed R (139) to LightGray R (211)
+      const green = Math.round(0 * (1 - ratio) + 211 * ratio); // From DarkRed G (0) to LightGray G (211)
+      const blue = Math.round(0 * (1 - ratio) + 211 * ratio);  // From DarkRed B (0) to LightGray B (211)
+
+      return `rgb(${red}, ${green}, ${blue})`;
+    } else if (score >= 30 && score <= 50) {
+      // Transition from LightGray (30) to Green (50)
+      const ratio = (score - 30) / (50 - 30); // 0 at score 30, 1 at score 50
+      const red = Math.round(211 * (1 - ratio) + 0 * ratio);   // From LightGray R (211) to Green R (0)
+      const green = Math.round(211 * (1 - ratio) + 128 * ratio); // From LightGray G (211) to Green G (128)
+      const blue = Math.round(211 * (1 - ratio) + 0 * ratio);  // From LightGray B (211) to Green B (0)
+
+      return `rgb(${red}, ${green}, ${blue})`;
+    } else {
+      return 'lightgray'; // Should technically only be hit if score is exactly 30
+    }
   };
 
   // --- useEffect Hooks ---
@@ -140,7 +163,7 @@ function Solver(props: SolverProps) {
   // Initialize input state when a new clue is selected
   useEffect(() => {
     // Load user input for the current clue
-    const savedInput = allUserInput[currentIndex] || Array(clueLength).fill('');
+    const savedInput = allUserInput[currentIndex] || Array(entryLength).fill('');
     setUserInput(savedInput);
     setIsSolved(false);
     setFocusedIndex(0);
@@ -153,7 +176,7 @@ function Solver(props: SolverProps) {
     return () => {
       clearTimeout(timer);
     };
-  }, [currentIndex, clueLength, allUserInput]);
+  }, [currentIndex, entryLength, allUserInput]);
 
   // Check for a solved state and trigger celebration
   useEffect(() => {
@@ -184,7 +207,7 @@ function Solver(props: SolverProps) {
       setUserInput(newInput);
       
       // Auto-focus the next input box
-      if (upperValue && index < clueLength - 1) {
+      if (upperValue && index < entryLength - 1) {
         setFocusedIndex(index + 1);
         inputRefs.current[index + 1]?.focus();
       }
@@ -197,7 +220,7 @@ function Solver(props: SolverProps) {
       e.preventDefault();
       setFocusedIndex(focusedIndex - 1);
       inputRefs.current[focusedIndex - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && focusedIndex !== null && focusedIndex < clueLength - 1) {
+    } else if (e.key === 'ArrowRight' && focusedIndex !== null && focusedIndex < entryLength - 1) {
       e.preventDefault();
       setFocusedIndex(focusedIndex + 1);
       inputRefs.current[focusedIndex + 1]?.focus();
@@ -257,8 +280,6 @@ function Solver(props: SolverProps) {
     setCurrentIndex(nextIndex);
   };
   
-  // Maps displayText to an array of characters, skipping spaces and non-letter/number characters
-  const validChars = displayText.split('').filter(char => /[A-Z0-9]/.test(char));
   let inputIndex = 0;
 
   return (
@@ -304,25 +325,32 @@ function Solver(props: SolverProps) {
       
       {/* Action buttons for side panel */}
       <div className={styles.buttonContainer}>
+        <button onClick={props.onGoBack} className={styles.panelButton} aria-label="Back to Crossword List">
+          <FontAwesomeIcon icon={faArrowLeft} />
+          <span>End Solve</span>
+        </button>
         <button onClick={props.onShowSpanish} className={styles.panelButton} aria-label="Show Spanish Info">
           <FontAwesomeIcon icon={faLanguage} />
-          <span>Spanish Info</span>
+          <span>Spanish</span>
         </button>
         <button onClick={props.onShowExplanation} className={styles.panelButton} aria-label="Show Explanation">
           <FontAwesomeIcon icon={faInfoCircle} />
-          <span>Explanation</span>
+          <span>Explain</span>
         </button>
       </div>
 
-      {currentClue.entry.crosswordScore !== undefined && (
-        <div className={styles.scoreDisplay} style={{ color: getScoreColor(currentClue.entry.crosswordScore) }}>
-          Cruzi Score: {currentClue.entry.crosswordScore}
-        </div>
-      )}
+      <div className={styles.scoreContainer}>
+        Cruzi Score: 
+        {currentClue.entry.crosswordScore !== undefined && (
+          <div className={styles.scoreDisplay} style={{ color: getScoreColor(currentClue.entry.crosswordScore) }}>
+            {(currentClue.entry.crosswordScore/10).toFixed(1)}
+          </div>
+        )}
+      </div>
 
       {/* Crossword input field */}
       <div className={styles.inputContainer}>
-        {displayText.split('').map((char, index) => {
+        {entryText.split('').map((char, index) => {
           if (char === ' ') {
             return <div key={index} className={styles.spaceBox} />;
           }
