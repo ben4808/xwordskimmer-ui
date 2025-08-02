@@ -80,7 +80,8 @@ function Solver(props: SolverProps) {
   const { clueCollection } = props;
   const currentClue = clueCollection.clues[currentIndex];
   const displayText = currentClue.entry.displayText || currentClue.entry.entry;
-  const entryText = displayText.replace(/[^A-Za-z0-9 ]/g, '').toUpperCase(); // Filter out non-alphanumeric characters
+  // Get the actual characters for the input, ignoring non-alphanumeric chars for length.
+  const entryTextForInput = displayText.replace(/[^A-Za-z0-9 ]/g, '').toUpperCase();
   const entryLength = displayTextToEntry(displayText).length;
 
   // --- Audio Logic for Celebration ---
@@ -90,13 +91,13 @@ function Solver(props: SolverProps) {
       audioContextRef.current = new (window.AudioContext)();
     }
     const audioContext = audioContextRef.current;
-    
+
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
     oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
@@ -112,11 +113,11 @@ function Solver(props: SolverProps) {
   // Creates and manages the celebratory sparkle effect within the input container
   const handleCelebration = useCallback(() => {
     playCelebrationSound();
-    
+
     const inputContainer = inputContainerRef.current;
     if (!inputContainer) return;
     const rect = inputContainer.getBoundingClientRect();
-    
+
     const newSparkles: Sparkle[] = Array.from({ length: 50 }).map((_, i) => ({
       id: i,
       x: Math.random() * rect.width,
@@ -132,25 +133,25 @@ function Solver(props: SolverProps) {
 
   // --- Utility Functions ---
   const getScoreColor = (score: number): string => {
-  // Ensure score is within the 0-50 range
+    // Ensure score is within the 0-50 range
     score = Math.max(0, Math.min(50, score));
 
     if (score < 10) {
       return 'Red'; // Scores below 10 are DarkRed
     } else if (score >= 10 && score < 30) {
-      // Transition from DarkRed (10) to LightGray (30)
+      // Transition from DarkRed (139,0,0) to LightGray (211,211,211)
       const ratio = (score - 10) / (30 - 10); // 0 at score 10, 1 at score 30
-      const red = Math.round(139 * (1 - ratio) + 211 * ratio);   // From DarkRed R (139) to LightGray R (211)
-      const green = Math.round(0 * (1 - ratio) + 211 * ratio); // From DarkRed G (0) to LightGray G (211)
-      const blue = Math.round(0 * (1 - ratio) + 211 * ratio);  // From DarkRed B (0) to LightGray B (211)
+      const red = Math.round(139 * (1 - ratio) + 211 * ratio);
+      const green = Math.round(0 * (1 - ratio) + 211 * ratio);
+      const blue = Math.round(0 * (1 - ratio) + 211 * ratio);
 
       return `rgb(${red}, ${green}, ${blue})`;
     } else if (score >= 30 && score <= 50) {
-      // Transition from LightGray (30) to Green (50)
+      // Transition from LightGray (211,211,211) to Green (0,128,0)
       const ratio = (score - 30) / (50 - 30); // 0 at score 30, 1 at score 50
-      const red = Math.round(211 * (1 - ratio) + 0 * ratio);   // From LightGray R (211) to Green R (0)
-      const green = Math.round(211 * (1 - ratio) + 128 * ratio); // From LightGray G (211) to Green G (128)
-      const blue = Math.round(211 * (1 - ratio) + 0 * ratio);  // From LightGray B (211) to Green B (0)
+      const red = Math.round(211 * (1 - ratio) + 0 * ratio);
+      const green = Math.round(211 * (1 - ratio) + 128 * ratio);
+      const blue = Math.round(211 * (1 - ratio) + 0 * ratio);
 
       return `rgb(${red}, ${green}, ${blue})`;
     } else {
@@ -167,7 +168,7 @@ function Solver(props: SolverProps) {
     setUserInput(savedInput);
     setIsSolved(false);
     setFocusedIndex(0);
-    
+
     // Use a small delay to ensure refs are ready
     const timer = setTimeout(() => {
       inputRefs.current[0]?.focus();
@@ -180,7 +181,10 @@ function Solver(props: SolverProps) {
 
   // Check for a solved state and trigger celebration
   useEffect(() => {
-    const isClueSolved = userInput.join('') === currentClue.entry.entry.toUpperCase();
+    // Ensure we only compare the actual input characters against the entry.
+    const actualEntryText = currentClue.entry.entry.toUpperCase();
+    const isClueSolved = userInput.join('') === actualEntryText;
+
     if (isClueSolved && !isSolved) {
       setIsSolved(true);
       handleCelebration();
@@ -201,11 +205,11 @@ function Solver(props: SolverProps) {
   const handleInputChange = (index: number, value: string) => {
     const newInput = [...userInput];
     const upperValue = value.toUpperCase();
-    
+
     if (/^[A-Z0-9]$/.test(upperValue) || value === '') {
       newInput[index] = upperValue;
       setUserInput(newInput);
-      
+
       // Auto-focus the next input box
       if (upperValue && index < entryLength - 1) {
         setFocusedIndex(index + 1);
@@ -216,15 +220,19 @@ function Solver(props: SolverProps) {
 
   // Handles keyboard navigation (arrows, backspace)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowLeft' && focusedIndex !== null && focusedIndex > 0) {
+    if (focusedIndex === null) return;
+
+    if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      setFocusedIndex(focusedIndex - 1);
-      inputRefs.current[focusedIndex - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && focusedIndex !== null && focusedIndex < entryLength - 1) {
+      const newIndex = Math.max(0, focusedIndex - 1);
+      setFocusedIndex(newIndex);
+      inputRefs.current[newIndex]?.focus();
+    } else if (e.key === 'ArrowRight') {
       e.preventDefault();
-      setFocusedIndex(focusedIndex + 1);
-      inputRefs.current[focusedIndex + 1]?.focus();
-    } else if (e.key === 'Backspace' && focusedIndex !== null) {
+      const newIndex = Math.min(entryLength - 1, focusedIndex + 1);
+      setFocusedIndex(newIndex);
+      inputRefs.current[newIndex]?.focus();
+    } else if (e.key === 'Backspace') {
       if (!userInput[focusedIndex] && focusedIndex > 0) {
         setFocusedIndex(focusedIndex - 1);
         inputRefs.current[focusedIndex - 1]?.focus();
@@ -248,8 +256,8 @@ function Solver(props: SolverProps) {
     longPressTimer.current = setTimeout(() => {
       const newInput = [...userInput];
       // Reveals the correct letter and updates the state
-      const entryString = currentClue.entry.entry;
-      newInput[index] = entryString[index].toUpperCase();
+      const entryString = currentClue.entry.entry.toUpperCase(); // Ensure comparison is case-insensitive
+      newInput[index] = entryString[index];
       setUserInput(newInput);
       stopLongPress();
     }, 1000);
@@ -279,8 +287,152 @@ function Solver(props: SolverProps) {
     const nextIndex = (currentIndex + 1) % clueCollection.clues.length;
     setCurrentIndex(nextIndex);
   };
-  
-  let inputIndex = 0;
+
+  // --- Render Logic for Word Wrapping ---
+  let currentInputCharIndex = 0; // Tracks the index for the actual input boxes, skipping spaces
+
+  const renderInputBoxes = () => {
+    const segments: React.ReactNode[] = [];
+    let currentWordChars: { char: string; originalIndex: number }[] = [];
+
+    [...entryTextForInput].forEach((item, originalIndex) => {
+      if (item === ' ') {
+        if (currentWordChars.length > 0) {
+          segments.push(
+            <div key={`word-${currentInputCharIndex}`} className={styles.wordGroup}>
+              {currentWordChars.map((charItem) => {
+                const charIndex = charItem.originalIndex; // Use original index for char mapping
+                const actualInputIndex = currentInputCharIndex - currentWordChars.length + currentWordChars.indexOf(charItem);
+
+                const isCorrect = userInput[actualInputIndex] && userInput[actualInputIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[actualInputIndex];
+                const isIncorrect = userInput[actualInputIndex] && userInput[actualInputIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[actualInputIndex];
+                const isFocused = focusedIndex === actualInputIndex;
+
+                return (
+                  <div
+                    key={charIndex}
+                    className={styles.letterBox}
+                    onMouseDown={() => startLongPress(actualInputIndex)}
+                    onMouseUp={stopLongPress}
+                    onMouseLeave={stopLongPress}
+                    onTouchStart={() => startLongPress(actualInputIndex)}
+                    onTouchEnd={stopLongPress}
+                  >
+                    {isFocused && revealProgress > 0 && (
+                      <div
+                        className={styles.revealProgress}
+                        style={{ height: `${revealProgress}%` }}
+                      />
+                    )}
+                    <input
+                      ref={(el) => (inputRefs.current[actualInputIndex] = el)}
+                      type="text"
+                      maxLength={1}
+                      value={userInput[actualInputIndex] || ''}
+                      onChange={(e) => handleInputChange(actualInputIndex, e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => setFocusedIndex(actualInputIndex)}
+                      className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
+                      disabled={isSolved}
+                      aria-label={`Letter input ${actualInputIndex + 1}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          );
+          currentWordChars = []; // Reset for the next word
+        }
+        segments.push(<div key={`space-${originalIndex}`} className={styles.wordSpace} />);
+      } else {
+        // Collect characters for the current word
+        currentWordChars.push({ char: item, originalIndex: currentInputCharIndex++ });
+      }
+    });
+
+    // Add any remaining word characters after the loop
+    if (currentWordChars.length > 0) {
+      segments.push(
+        <div key={`word-final-${currentInputCharIndex}`} className={styles.wordGroup}>
+          {currentWordChars.map((charItem) => {
+            const charIndex = charItem.originalIndex;
+            const isCorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[charIndex];
+            const isIncorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[charIndex];
+            const isFocused = focusedIndex === charIndex;
+
+            return (
+              <div
+                key={charIndex}
+                className={styles.letterBox}
+                onMouseDown={() => startLongPress(charIndex)}
+                onMouseUp={stopLongPress}
+                onMouseLeave={stopLongPress}
+                onTouchStart={() => startLongPress(charIndex)}
+                onTouchEnd={stopLongPress}
+              >
+                {isFocused && revealProgress > 0 && (
+                  <div
+                    className={styles.revealProgress}
+                    style={{ height: `${revealProgress}%` }}
+                  />
+                )}
+                <input
+                  ref={(el) => (inputRefs.current[charIndex] = el)}
+                  type="text"
+                  maxLength={1}
+                  value={userInput[charIndex] || ''}
+                  onChange={(e) => handleInputChange(charIndex, e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setFocusedIndex(charIndex)}
+                  className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
+                  disabled={isSolved}
+                  aria-label={`Letter input ${charIndex + 1}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    return segments;
+  };
+
+  const renderInputBox = (charIndex: number) => {
+    const isCorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[charIndex];
+    const isIncorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[charIndex];
+    const isFocused = focusedIndex === charIndex;
+
+    return (
+      <div
+        key={charIndex}
+        className={styles.letterBox}
+        onMouseDown={() => startLongPress(charIndex)}
+        onMouseUp={stopLongPress}
+        onMouseLeave={stopLongPress}
+        onTouchStart={() => startLongPress(charIndex)}
+        onTouchEnd={stopLongPress}
+      >
+        {isFocused && revealProgress > 0 && (
+          <div
+            className={styles.revealProgress}
+            style={{ height: `${revealProgress}%` }}
+          />
+        )}
+        <input
+          ref={(el) => (inputRefs.current[charIndex] = el)}
+          type="text"
+          maxLength={1}
+          value={userInput[charIndex] || ''}
+          onChange={(e) => handleInputChange(charIndex, e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setFocusedIndex(charIndex)}
+          className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
+          disabled={isSolved}
+          aria-label={`Letter input ${charIndex + 1}`}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -322,7 +474,7 @@ function Solver(props: SolverProps) {
       </div>
 
       <div className={styles.clueText}>{currentClue.clue}</div>
-      
+
       {/* Action buttons for side panel */}
       <div className={styles.buttonContainer}>
         <button onClick={props.onGoBack} className={styles.panelButton} aria-label="Back to Crossword List">
@@ -340,57 +492,17 @@ function Solver(props: SolverProps) {
       </div>
 
       <div className={styles.scoreContainer}>
-        Cruzi Score: 
+        Cruzi Score:
         {currentClue.entry.crosswordScore !== undefined && (
           <div className={styles.scoreDisplay} style={{ color: getScoreColor(currentClue.entry.crosswordScore) }}>
-            {(currentClue.entry.crosswordScore/10).toFixed(1)}
+            {(currentClue.entry.crosswordScore / 10).toFixed(1)}
           </div>
         )}
       </div>
 
       {/* Crossword input field */}
-      <div className={styles.inputContainer}>
-        {entryText.split('').map((char, index) => {
-          if (char === ' ') {
-            return <div key={index} className={styles.spaceBox} />;
-          }
-
-          const currentInputIndex = inputIndex;
-          inputIndex++;
-          const isCorrect = userInput[currentInputIndex] && userInput[currentInputIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[currentInputIndex];
-          const isIncorrect = userInput[currentInputIndex] && userInput[currentInputIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[currentInputIndex];
-          const isFocused = focusedIndex === currentInputIndex;
-
-          return (
-            <div 
-              key={index} 
-              className={styles.letterBox}
-              onMouseDown={() => startLongPress(currentInputIndex)}
-              onMouseUp={stopLongPress}
-              onMouseLeave={stopLongPress}
-              onTouchStart={() => startLongPress(currentInputIndex)}
-              onTouchEnd={stopLongPress}
-            >
-              {isFocused && revealProgress > 0 && (
-                <div
-                  className={styles.revealProgress}
-                  style={{ height: `${revealProgress}%` }}
-                />
-              )}
-              <input
-                ref={(el) => (inputRefs.current[currentInputIndex] = el)}
-                type="text"
-                maxLength={1}
-                value={userInput[currentInputIndex] || ''}
-                onChange={(e) => handleInputChange(currentInputIndex, e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => setFocusedIndex(currentInputIndex)}
-                className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
-                disabled={isSolved}
-              />
-            </div>
-          );
-        })}
+      <div className={styles.inputGridContainer}> {/* This will be your flex container for words */}
+        {renderInputBoxes()}
       </div>
     </div>
   );

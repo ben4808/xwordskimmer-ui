@@ -63,3 +63,41 @@ export function displayTextToEntry(text: string): string {
   // Convert display text to entry format
   return text.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 }
+
+export function breakTextIntoLines(text: string, maxLineLength: number): string[] {
+  let words = text.split(' ');
+  let lines = [""] as string[];
+  let lengths = [0] as number[];
+  let curIdx = 0;
+
+  for (let word of words) {
+    if (word.length <= (maxLineLength - lines[curIdx].length)) {
+      lines[curIdx] += (lines[curIdx].length > 0 ? ' ' : '') + word;
+      lengths[curIdx] += word.length;
+      continue;
+    }
+
+    if (curIdx > 0 && (maxLineLength - lines[curIdx - 1].length) >= (maxLineLength - lines[curIdx].length + word.length)) {
+      lines[curIdx] += (lines[curIdx].length > 0 ? ' ' : '') + word;
+      lengths[curIdx] += word.length;
+      let charsToAddToPreviousLine = maxLineLength - lines[curIdx - 1].length;
+      if (lines[curIdx - 1].slice(-1) === '-')
+        lines[curIdx - 1] = lines[curIdx - 1].slice(0, -1) + lines[curIdx].slice(0, charsToAddToPreviousLine) + '-';
+      else
+        lines[curIdx - 1] += ' ' + lines[curIdx].slice(0, charsToAddToPreviousLine) + '-';
+      lengths[curIdx - 1] += charsToAddToPreviousLine;
+      lengths[curIdx] -= charsToAddToPreviousLine;
+      lines[curIdx] = lines[curIdx].slice(charsToAddToPreviousLine);
+      continue;
+    }
+
+    if ((maxLineLength - lines[curIdx].length) < 3 || word === words[words.length - 1]) {
+      curIdx++;
+      lines.push(word);
+      lengths.push(word.length);
+      continue;
+    }
+
+    let charsToAdd = maxLineLength - lines[curIdx].length;
+  }
+}
