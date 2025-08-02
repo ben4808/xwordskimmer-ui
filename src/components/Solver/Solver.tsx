@@ -39,7 +39,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList, faChevronLeft, faChevronRight, faInfoCircle, faLanguage, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import styles from './Solver.module.scss';
 import { SolverProps } from './SolverProps';
-import { displayTextToEntry } from '../../lib/utils';
+import { breakTextIntoLines } from '../../lib/utils';
 
 // Sparkle effect type for the celebration
 interface Sparkle {
@@ -81,8 +81,9 @@ function Solver(props: SolverProps) {
   const currentClue = clueCollection.clues[currentIndex];
   const displayText = currentClue.entry.displayText || currentClue.entry.entry;
   // Get the actual characters for the input, ignoring non-alphanumeric chars for length.
+  const currentEntry = currentClue.entry.entry;
   const entryTextForInput = displayText.replace(/[^A-Za-z0-9 ]/g, '').toUpperCase();
-  const entryLength = displayTextToEntry(displayText).length;
+  const entryLength = currentEntry.length;
 
   // --- Audio Logic for Celebration ---
   // Plays a simple, joyful sound when the puzzle is solved
@@ -214,6 +215,7 @@ function Solver(props: SolverProps) {
       if (upperValue && index < entryLength - 1) {
         setFocusedIndex(index + 1);
         inputRefs.current[index + 1]?.focus();
+        inputRefs.current[index + 1]?.select();
       }
     }
   };
@@ -227,15 +229,22 @@ function Solver(props: SolverProps) {
       const newIndex = Math.max(0, focusedIndex - 1);
       setFocusedIndex(newIndex);
       inputRefs.current[newIndex]?.focus();
+      inputRefs.current[newIndex]?.select();
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
       const newIndex = Math.min(entryLength - 1, focusedIndex + 1);
       setFocusedIndex(newIndex);
       inputRefs.current[newIndex]?.focus();
+      inputRefs.current[newIndex]?.select();
     } else if (e.key === 'Backspace') {
-      if (!userInput[focusedIndex] && focusedIndex > 0) {
+      e.preventDefault();
+      const newInput = [...userInput];
+      newInput[focusedIndex] = ''
+      setUserInput(newInput);
+      if (focusedIndex > 0) {
         setFocusedIndex(focusedIndex - 1);
         inputRefs.current[focusedIndex - 1]?.focus();
+        inputRefs.current[focusedIndex - 1]?.select();
       }
     }
   };
@@ -259,11 +268,11 @@ function Solver(props: SolverProps) {
       const entryString = currentClue.entry.entry.toUpperCase(); // Ensure comparison is case-insensitive
       newInput[index] = entryString[index];
       setUserInput(newInput);
-      stopLongPress();
+      stopLongPress(index);
     }, 1000);
   };
 
-  const stopLongPress = () => {
+  const stopLongPress = (index: number) => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
@@ -288,87 +297,37 @@ function Solver(props: SolverProps) {
     setCurrentIndex(nextIndex);
   };
 
-  // --- Render Logic for Word Wrapping ---
-  let currentInputCharIndex = 0; // Tracks the index for the actual input boxes, skipping spaces
-
   const renderInputBoxes = () => {
-    const segments: React.ReactNode[] = [];
-    let currentWordChars: { char: string; originalIndex: number }[] = [];
+    const segments: JSX.Element[] = [];
+    let index = -1;
+    let spaceIndex = -1;
 
-    [...entryTextForInput].forEach((item, originalIndex) => {
-      if (item === ' ') {
-        if (currentWordChars.length > 0) {
-          segments.push(
-            <div key={`word-${currentInputCharIndex}`} className={styles.wordGroup}>
-              {currentWordChars.map((charItem) => {
-                const charIndex = charItem.originalIndex; // Use original index for char mapping
-                const actualInputIndex = currentInputCharIndex - currentWordChars.length + currentWordChars.indexOf(charItem);
-
-                const isCorrect = userInput[actualInputIndex] && userInput[actualInputIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[actualInputIndex];
-                const isIncorrect = userInput[actualInputIndex] && userInput[actualInputIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[actualInputIndex];
-                const isFocused = focusedIndex === actualInputIndex;
-
-                return (
-                  <div
-                    key={charIndex}
-                    className={styles.letterBox}
-                    onMouseDown={() => startLongPress(actualInputIndex)}
-                    onMouseUp={stopLongPress}
-                    onMouseLeave={stopLongPress}
-                    onTouchStart={() => startLongPress(actualInputIndex)}
-                    onTouchEnd={stopLongPress}
-                  >
-                    {isFocused && revealProgress > 0 && (
-                      <div
-                        className={styles.revealProgress}
-                        style={{ height: `${revealProgress}%` }}
-                      />
-                    )}
-                    <input
-                      ref={(el) => (inputRefs.current[actualInputIndex] = el)}
-                      type="text"
-                      maxLength={1}
-                      value={userInput[actualInputIndex] || ''}
-                      onChange={(e) => handleInputChange(actualInputIndex, e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      onFocus={() => setFocusedIndex(actualInputIndex)}
-                      className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
-                      disabled={isSolved}
-                      aria-label={`Letter input ${actualInputIndex + 1}`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          );
-          currentWordChars = []; // Reset for the next word
-        }
-        segments.push(<div key={`space-${originalIndex}`} className={styles.wordSpace} />);
-      } else {
-        // Collect characters for the current word
-        currentWordChars.push({ char: item, originalIndex: currentInputCharIndex++ });
-      }
-    });
-
-    // Add any remaining word characters after the loop
-    if (currentWordChars.length > 0) {
+    breakTextIntoLines(entryTextForInput, 8).forEach((line, lineIndex) => {
       segments.push(
-        <div key={`word-final-${currentInputCharIndex}`} className={styles.wordGroup}>
-          {currentWordChars.map((charItem) => {
-            const charIndex = charItem.originalIndex;
-            const isCorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[charIndex];
-            const isIncorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[charIndex];
-            const isFocused = focusedIndex === charIndex;
+        <div key={`line-${lineIndex}`} className={styles.wordGroup}>
+          {[...line].map((charItem) => {
+            spaceIndex++;
+            if (charItem === ' ' || charItem === '-') {
+              return (
+                <div key={`space-${spaceIndex}`} className={styles.spaceBox}>
+                  <span className={styles.space}>{charItem}</span>
+                </div>
+              );
+            }
+
+            let entryIndex = ++index;
+            const isCorrect = userInput[entryIndex] && userInput[entryIndex] === currentEntry[entryIndex];
+            const isIncorrect = userInput[entryIndex] && userInput[entryIndex] !== currentEntry[entryIndex];
+            const isFocused = focusedIndex === entryIndex;
 
             return (
               <div
-                key={charIndex}
+                key={entryIndex}
                 className={styles.letterBox}
-                onMouseDown={() => startLongPress(charIndex)}
-                onMouseUp={stopLongPress}
-                onMouseLeave={stopLongPress}
-                onTouchStart={() => startLongPress(charIndex)}
-                onTouchEnd={stopLongPress}
+                onMouseDown={() => startLongPress(entryIndex)}
+                onMouseUp={() => stopLongPress(entryIndex)}
+                onTouchStart={() => startLongPress(entryIndex)}
+                onTouchEnd={() => stopLongPress(entryIndex)}
               >
                 {isFocused && revealProgress > 0 && (
                   <div
@@ -377,62 +336,26 @@ function Solver(props: SolverProps) {
                   />
                 )}
                 <input
-                  ref={(el) => (inputRefs.current[charIndex] = el)}
+                  ref={(el) => (inputRefs.current[entryIndex] = el)}
                   type="text"
                   maxLength={1}
-                  value={userInput[charIndex] || ''}
-                  onChange={(e) => handleInputChange(charIndex, e.target.value)}
+                  value={userInput[entryIndex] || ''}
+                  onChange={(e) => handleInputChange(entryIndex, e.target.value)}
                   onKeyDown={handleKeyDown}
-                  onFocus={() => setFocusedIndex(charIndex)}
+                  onFocus={() => setFocusedIndex(entryIndex)}
                   className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
                   disabled={isSolved}
-                  aria-label={`Letter input ${charIndex + 1}`}
+                  aria-label={`Letter input ${entryIndex + 1}`}
                 />
               </div>
             );
           })}
         </div>
       );
-    }
+    });
+
     return segments;
   };
-
-  const renderInputBox = (charIndex: number) => {
-    const isCorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() === currentClue.entry.entry.toUpperCase()[charIndex];
-    const isIncorrect = userInput[charIndex] && userInput[charIndex].toUpperCase() !== currentClue.entry.entry.toUpperCase()[charIndex];
-    const isFocused = focusedIndex === charIndex;
-
-    return (
-      <div
-        key={charIndex}
-        className={styles.letterBox}
-        onMouseDown={() => startLongPress(charIndex)}
-        onMouseUp={stopLongPress}
-        onMouseLeave={stopLongPress}
-        onTouchStart={() => startLongPress(charIndex)}
-        onTouchEnd={stopLongPress}
-      >
-        {isFocused && revealProgress > 0 && (
-          <div
-            className={styles.revealProgress}
-            style={{ height: `${revealProgress}%` }}
-          />
-        )}
-        <input
-          ref={(el) => (inputRefs.current[charIndex] = el)}
-          type="text"
-          maxLength={1}
-          value={userInput[charIndex] || ''}
-          onChange={(e) => handleInputChange(charIndex, e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setFocusedIndex(charIndex)}
-          className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
-          disabled={isSolved}
-          aria-label={`Letter input ${charIndex + 1}`}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className={styles.container}>

@@ -71,33 +71,27 @@ export function breakTextIntoLines(text: string, maxLineLength: number): string[
   let curIdx = 0;
 
   for (let word of words) {
-    if (word.length <= (maxLineLength - lines[curIdx].length)) {
-      lines[curIdx] += (lines[curIdx].length > 0 ? ' ' : '') + word;
+    if (lengths[curIdx] + word.length <= maxLineLength) {
+      lines[curIdx] += (lines[curIdx] ? ' ' : '') + word;
       lengths[curIdx] += word.length;
       continue;
     }
-
-    if (curIdx > 0 && (maxLineLength - lines[curIdx - 1].length) >= (maxLineLength - lines[curIdx].length + word.length)) {
-      lines[curIdx] += (lines[curIdx].length > 0 ? ' ' : '') + word;
-      lengths[curIdx] += word.length;
-      let charsToAddToPreviousLine = maxLineLength - lines[curIdx - 1].length;
-      if (lines[curIdx - 1].slice(-1) === '-')
-        lines[curIdx - 1] = lines[curIdx - 1].slice(0, -1) + lines[curIdx].slice(0, charsToAddToPreviousLine) + '-';
-      else
-        lines[curIdx - 1] += ' ' + lines[curIdx].slice(0, charsToAddToPreviousLine) + '-';
-      lengths[curIdx - 1] += charsToAddToPreviousLine;
-      lengths[curIdx] -= charsToAddToPreviousLine;
-      lines[curIdx] = lines[curIdx].slice(charsToAddToPreviousLine);
-      continue;
-    }
-
-    if ((maxLineLength - lines[curIdx].length) < 3 || word === words[words.length - 1]) {
-      curIdx++;
+    
+    if (word.length > maxLineLength) {
+      // If the word is longer than the max line length, split it
+      let halves = [word.slice(0, word.length / 2), word.slice(word.length / 2)];
+      for (let part of halves) {
+        lines.push(part + "-");
+        lengths.push(part.length);
+        curIdx++;
+      }
+    } else {
+      // Start a new line for the word
       lines.push(word);
       lengths.push(word.length);
-      continue;
+      curIdx++;
     }
-
-    let charsToAdd = maxLineLength - lines[curIdx].length;
   }
+
+  return lines;
 }

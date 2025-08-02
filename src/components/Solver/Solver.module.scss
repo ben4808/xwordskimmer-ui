@@ -197,7 +197,7 @@
 }
 
 // Crossword input grid
-.inputContainer {
+.inputGridContainer {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -208,6 +208,12 @@
   @media (max-width: 480px) {
     gap: 0.3rem;
   }
+}
+
+.wordGroup {
+  display: flex;
+  gap: 2px; /* Small space between letters within a word */
+  margin: 0 .25rem; /* Small margin to separate from other words */
 }
 
 .letterBox {
@@ -231,12 +237,8 @@
 }
 
 .spaceBox {
-  width: 25px;
+  width: 15px;
   height: 45px;
-  
-  @media (max-width: 480px) {
-    width: 15px;
-  }
 }
 
 .letterInput {
@@ -266,7 +268,6 @@
   }
   
   &:focus {
-    color: #fff;
     background-color: #444;
   }
 }
@@ -298,3 +299,4 @@
   pointer-events: none;
   animation: sparkle-fade var(--sparkle-duration) ease-out forwards;
 }
+
