@@ -22,10 +22,11 @@ create table clue_collection (
   id text not null primary key,
   puzzle_id text,
   title text not null,
-  author_id text,
+  author text,
   "description" text,
   created_date timestamp not null,
-  metadata1 text, -- AI Score
+  modified_date timestamp not null,
+  metadata1 text, -- AI composite score
   metadata2 text
 );
 
@@ -53,8 +54,8 @@ create table clue (
   id text not null primary key,
   "entry" text not null,
   lang text not null,
+  isCrosswordClue boolean not null default false,
   clue text not null,
-  response_template text,
   source text -- Book it came from? AI source?
 );
 
@@ -70,10 +71,10 @@ create table collection__clue (
 create table translated_clue (
   clue_id text not null,
   lang text not null,
-  literal_translation text not null,
+  literal_translation text,
   natural_translation text not null,
   source_ai text not null,
-  primary key(clue_id, lang, source_ai)
+  primary key(clue_id, lang)
 );
 
 create table translated_entry (
@@ -82,5 +83,5 @@ create table translated_entry (
   lang text not null,
   display_text text not null,
   source_ai text not null,
-  primary key(clue_id, "entry", lang, source_ai)
+  primary key(clue_id, "entry", lang)
 );
