@@ -48,420 +48,439 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList, faChevronLeft, faChevronRight, faInfoCircle, faLanguage, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import styles from './Solver.module.scss';
 import { SolverProps } from './SolverProps';
-import { replaceCharAtIndex, breakTextIntoLines, getCruziScoreColor, getTextWidth, deepClone } from '../../lib/utils'; // Assuming this utility function exists.
+import { replaceCharAtIndex, breakTextIntoLines, getCruziScoreColor, getTextWidth, deepClone } from '../../lib/utils';
 import { Clue } from '../../models/Clue';
 
 // Type definitions for the celebration sparkle effect
 interface Sparkle {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  duration: number;
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  duration: number;
 }
 
 const Solver = (props: SolverProps) => {
-  // --- State Management ---
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [allUserInput, setAllUserInput] = useState<Record<number, string>>({}); // Changed to store string
-  const [userInput, setUserInput] = useState<string>(''); // Single string for both input types
-  const [focusedIndex, setFocusedIndex] = useState<number | null>(0);
-  const [revealProgress, setRevealProgress] = useState<number>(0);
-  const [isSolved, setIsSolved] = useState(false);
-  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  // --- State Management ---
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [allUserInput, setAllUserInput] = useState<Record<number, string>>({});
+  const [userInput, setUserInput] = useState<string>('');
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(0);
+  const [revealProgress, setRevealProgress] = useState<number>(0);
+  const [isSolved, setIsSolved] = useState(false);
+  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const [randomizedClues, setRandomizedClues] = useState<Clue[]>([]);
 
-  // Refs for DOM elements and timers
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const nonCrosswordInputRef = useRef<HTMLInputElement>(null);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const progressInterval = useRef<NodeJS.Timeout | null>(null);
-  const sparkleContainerRef = useRef<HTMLDivElement>(null);
+  // Refs for DOM elements and timers
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const nonCrosswordInputRef = useRef<HTMLInputElement>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const progressInterval = useRef<NodeJS.Timeout | null>(null);
+  const sparkleContainerRef = useRef<HTMLDivElement>(null);
 
-  // --- Data and Guard Clauses ---
-  if (!props.clueCollection || props.clueCollection.clues.length === 0) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingMessage}>Loading clues...</div>
-      </div>
-    );
-  }
+  // --- Derived State and Variables ---
+  const { clueCollection } = props;
+  const currentClue = randomizedClues[currentIndex];
+  const isCrosswordClue = currentClue?.isCrosswordClue;
+  const rawAnswer = currentClue?.entry.entry;
+  const normalizedAnswer = rawAnswer?.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const displayText = currentClue?.entry.displayText || rawAnswer;
 
-  const randomizeClues = (clues: Clue[]) => {
-    return clues.sort(() => Math.random() - 0.5);
-  }
+  // --- Utility Functions ---
+  const randomizeClues = (clues: Clue[]) => {
+    return clues.sort(() => Math.random() - 0.5);
+  }
 
-  const { clueCollection } = props;
-  const currentClue = clueCollection.clues[currentIndex];
-  const isCrosswordClue = currentClue.isCrosswordClue;
-  const rawAnswer = currentClue.entry.entry;
-  const normalizedAnswer = rawAnswer.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const displayText = currentClue.entry.displayText || rawAnswer;
+  const changeFocusedIndex = (index: number) => {
+    if (isCrosswordClue && index >= 0 && normalizedAnswer && index < normalizedAnswer.length) {
+      setFocusedIndex(index);
+      inputRefs.current[index]?.focus();
+      inputRefs.current[index]?.select();
+    }
+  }
 
-  // --- Celebration Sparks Logic ---
-  const handleCelebration = useCallback(() => {
-    const sparkleContainer = sparkleContainerRef.current;
-    if (!sparkleContainer) return;
-    const rect = sparkleContainer.getBoundingClientRect();
-    const newSparkles: Sparkle[] = Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * rect.width,
-      y: Math.random() * rect.height,
-      size: Math.random() * 5 + 2,
-      color: `hsl(${Math.random() * 360}, 100%, 75%)`,
-      duration: Math.random() * 0.5 + 0.5,
-    }));
-    setSparkles(newSparkles);
-    setTimeout(() => setSparkles([]), 1000);
-  }, []);
+  const revealAnswer = () => {
+    if (!isSolved) {
+      const fullAnswer = isCrosswordClue ? normalizedAnswer : displayText;
+      setUserInput(fullAnswer || '');
+      setAllUserInput(prev => ({ ...prev, [currentIndex]: fullAnswer || '' }));
+      setIsSolved(true);
+    }
+  };
 
-  useEffect(() => {
-    clueCollection.clues = randomizeClues(deepClone(clueCollection.clues));
-  }, []);
+  const previousClue = () => {
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
+    const prevIndex = (currentIndex - 1 + clueCollection.clues.length) % clueCollection.clues.length;
+    setCurrentIndex(prevIndex);
+  };
 
-  // Initialize state when a new clue is selected
-  useEffect(() => {
-    const savedInput = allUserInput[currentIndex] || '';
-    setUserInput(savedInput);
-    setIsSolved(false);
+  const nextClue = () => {
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
+    const nextIndex = (currentIndex + 1) % clueCollection.clues.length;
+    setCurrentIndex(nextIndex);
+  };
 
-    if (isCrosswordClue) {
-      const timer = setTimeout(() => {
-        changeFocusedIndex(0);
-      }, 0);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        nonCrosswordInputRef.current?.focus();
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex]);
+  // --- Event Handlers ---
+  const handleCelebration = useCallback(() => {
+    const sparkleContainer = sparkleContainerRef.current;
+    if (!sparkleContainer) return;
+    const rect = sparkleContainer.getBoundingClientRect();
+    const newSparkles: Sparkle[] = Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * rect.width,
+      y: Math.random() * rect.height,
+      size: Math.random() * 5 + 2,
+      color: `hsl(${Math.random() * 360}, 100%, 75%)`,
+      duration: Math.random() * 0.5 + 0.5,
+    }));
+    setSparkles(newSparkles);
+    setTimeout(() => setSparkles([]), 1000);
+  }, []);
 
-  // Check for solved state and trigger celebration
-  useEffect(() => {
-    const isClueSolved = isCrosswordClue
-      ? userInput.toUpperCase() === normalizedAnswer
-      : userInput.toUpperCase().replace(/[^A-Z0-9]/g, '') === normalizedAnswer;
+  const handleCrosswordInputChange = (index: number, value: string) => {
+    if (isSolved || !normalizedAnswer) return;
+    const upperValue = value.toUpperCase();
+    if (/^[A-Z0-9]$/.test(upperValue) || value === '') {
+      let newUserInput = replaceCharAtIndex(userInput, upperValue, index);
+      setUserInput(newUserInput);
+      setAllUserInput(prev => ({ ...prev, [currentIndex]: newUserInput }));
 
-    if (isClueSolved && !isSolved) {
-      setIsSolved(true);
-      handleCelebration();
-    }
-  }, [userInput]);
+      if (upperValue && index < normalizedAnswer.length - 1) {
+        const nextIndex = index + 1;
+        changeFocusedIndex(nextIndex);
+      }
+    }
+  };
 
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (longPressTimer.current) clearTimeout(longPressTimer.current);
-      if (progressInterval.current) clearInterval(progressInterval.current);
-    };
-  }, []);
+  const handleNonCrosswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isSolved) return;
+    const value = e.target.value;
+    setUserInput(value);
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: value }));
+  };
 
-  // --- Event Handlers ---
-  const handleCrosswordInputChange = (index: number, value: string) => {
-    if (isSolved) return;
-    const upperValue = value.toUpperCase();
-    if (/^[A-Z0-9]$/.test(upperValue) || value === '') {
-      let newUserInput = replaceCharAtIndex(userInput, upperValue, index);
-      setUserInput(newUserInput);
-      setAllUserInput(prev => ({ ...prev, [currentIndex]: newUserInput }));
+  const handleNonCrosswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isSolved) {
+        nextClue();
+      } else {
+        revealAnswer();
+      }
+    }
+  };
 
-      if (upperValue && index < normalizedAnswer.length - 1) {
-        const nextIndex = index + 1;
-        changeFocusedIndex(nextIndex);
-      }
-    }
-  };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (!isCrosswordClue || focusedIndex === null || !normalizedAnswer) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!isSolved) {
+          revealAnswer();
+        } else {
+          nextClue();
+        }
+      }
+      return;
+    }
+    const len = normalizedAnswer.length;
 
-  const handleNonCrosswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isSolved) return;
-    const value = e.target.value;
-    setUserInput(value);
-    setAllUserInput(prev => ({ ...prev, [currentIndex]: value }));
-  };
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!isSolved) {
+        revealAnswer();
+      } else {
+        nextClue();
+      }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const newIndex = Math.max(0, focusedIndex - 1);
+      changeFocusedIndex(newIndex);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const newIndex = Math.min(len - 1, focusedIndex + 1);
+      changeFocusedIndex(newIndex);
+    } else if (e.key === 'Backspace') {
+      e.preventDefault();
+      const newInput = replaceCharAtIndex(userInput, '', index);
+      const newIndex = Math.max(0, index - 1);
+      changeFocusedIndex(newIndex);
+      setUserInput(newInput);
+      setAllUserInput(prev => ({ ...prev, [currentIndex]: newInput }));
+    }
+  }
 
-  const changeFocusedIndex = (index: number) => {
-    if (isCrosswordClue && index >= 0 && index < normalizedAnswer.length) {
-      setFocusedIndex(index);
-      inputRefs.current[index]?.focus();
-      inputRefs.current[index]?.select();
-    }
-  }
+  // --- Long Press Logic ---
+  const startLongPress = (index: number) => {
+    if (!isCrosswordClue || !normalizedAnswer) return;
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    if (progressInterval.current) clearInterval(progressInterval.current);
+    changeFocusedIndex(index);
+    setRevealProgress(0);
 
-  const revealAnswer = () => {
-    if (!isSolved) {
-      const fullAnswer = isCrosswordClue ? normalizedAnswer : displayText;
-      setUserInput(fullAnswer);
-      setAllUserInput(prev => ({ ...prev, [currentIndex]: fullAnswer }));
-      setIsSolved(true);
-    }
-  };
+    let progress = 0;
+    progressInterval.current = setInterval(() => {
+      progress = Math.min(100, progress + 20);
+      setRevealProgress(progress);
+    }, 100);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (!isCrosswordClue || focusedIndex === null) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        revealAnswer();
-      }
-      return;
-    }
-    const len = normalizedAnswer.length;
+    longPressTimer.current = setTimeout(() => {
+      const newInput = replaceCharAtIndex(userInput, normalizedAnswer[index], index);
+      setUserInput(newInput);
+      setAllUserInput(prev => ({ ...prev, [currentIndex]: newInput }));
+      stopLongPress();
+    }, 500);
+  };
 
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      revealAnswer();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      const newIndex = Math.max(0, focusedIndex - 1);
-      changeFocusedIndex(newIndex);
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      const newIndex = Math.min(len - 1, focusedIndex + 1);
-      changeFocusedIndex(newIndex);
-    } else if (e.key === 'Backspace') {
-      e.preventDefault();
-      const newInput = replaceCharAtIndex(userInput, '', index);
-      const newIndex = Math.max(0, index - 1);
-      changeFocusedIndex(newIndex);
-      setUserInput(newInput);
-      setAllUserInput(prev => ({ ...prev, [currentIndex]: newInput }));
-    }
-  }
+  const stopLongPress = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    if (progressInterval.current) clearInterval(progressInterval.current);
+    setRevealProgress(0);
+    if (isCrosswordClue && focusedIndex !== null) {
+      changeFocusedIndex(focusedIndex);
+    }
+  };
 
-  // --- Long Press Logic ---
-  const startLongPress = (index: number) => {
-    if (!isCrosswordClue) return;
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    if (progressInterval.current) clearInterval(progressInterval.current);
-    changeFocusedIndex(index);
-    setRevealProgress(0);
+  // --- Effects ---
+  // Initialize and randomize clues on first load
+  useEffect(() => {
+    setRandomizedClues(randomizeClues(deepClone(props.clueCollection.clues)));
+  }, [props.clueCollection]);
 
-    let progress = 0;
-    progressInterval.current = setInterval(() => {
-      progress = Math.min(100, progress + 20);
-      setRevealProgress(progress);
-    }, 100);
+  // Initialize state when a new clue is selected
+  useEffect(() => {
+    const savedInput = allUserInput[currentIndex] || '';
+    setUserInput(savedInput);
+    setIsSolved(false);
 
-    longPressTimer.current = setTimeout(() => {
-      const newInput = replaceCharAtIndex(userInput, normalizedAnswer[index], index);
-      setUserInput(newInput);
-      setAllUserInput(prev => ({ ...prev, [currentIndex]: newInput }));
-      stopLongPress();
-    }, 500);
-  };
+    if (isCrosswordClue) {
+      const timer = setTimeout(() => {
+        changeFocusedIndex(0);
+      }, 0);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => {
+        nonCrosswordInputRef.current?.focus();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, isCrosswordClue, allUserInput]);
 
-  const stopLongPress = () => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    if (progressInterval.current) clearInterval(progressInterval.current);
-    setRevealProgress(0);
-    if (isCrosswordClue && focusedIndex !== null) {
-      changeFocusedIndex(focusedIndex);
-    }
-  };
+  // Check for solved state and trigger celebration
+  useEffect(() => {
+    if (!currentClue || !normalizedAnswer) return;
+    const isClueSolved = isCrosswordClue
+      ? userInput.toUpperCase() === normalizedAnswer
+      : userInput.toUpperCase().replace(/[^A-Z0-9]/g, '') === normalizedAnswer;
 
-  // --- Navigation Handlers ---
-  const previousClue = () => {
-    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
-    const prevIndex = (currentIndex - 1 + clueCollection.clues.length) % clueCollection.clues.length;
-    setCurrentIndex(prevIndex);
-  };
+    if (isClueSolved && !isSolved) {
+      setIsSolved(true);
+      handleCelebration();
+    }
+  }, [userInput, isSolved, normalizedAnswer, isCrosswordClue, currentClue, handleCelebration]);
 
-  const nextClue = () => {
-    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
-    const nextIndex = (currentIndex + 1) % clueCollection.clues.length;
-    setCurrentIndex(nextIndex);
-  };
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) clearTimeout(longPressTimer.current);
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, []);
 
-  // --- Renderers ---
-  const renderCrosswordInputs = () => {
-    const segments: JSX.Element[] = [];
-    let letterIndex = 0;
+  // --- Data and Guard Clauses ---
+  if (!props.clueCollection || props.clueCollection.clues.length === 0 || !currentClue) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingMessage}>Loading clues...</div>
+      </div>
+    );
+  }
+  
+  // --- Renderers ---
+  const renderCrosswordInputs = () => {
+    if (!displayText || !normalizedAnswer) return null;
+    const segments: JSX.Element[] = [];
+    let letterIndex = 0;
 
-    breakTextIntoLines(displayText, 8).forEach((line, lineIndex) => {
-      segments.push(
-        <div key={`line-${lineIndex}`} className={styles.wordGroup}>
-          {[...line].map((charItem, charDisplayIndex) => {
-            const charIsLetter = /[A-Z0-9]/.test(charItem.toUpperCase());
+    breakTextIntoLines(displayText, 8).forEach((line, lineIndex) => {
+      segments.push(
+        <div key={`line-${lineIndex}`} className={styles.wordGroup}>
+          {[...line].map((charItem, charDisplayIndex) => {
+            const charIsLetter = /[A-Z0-9]/.test(charItem.toUpperCase());
 
-            if (!charIsLetter) {
-              return (
-                <div key={`space-${lineIndex}-${charDisplayIndex}`} className={styles.spaceBox}>
-                  <span className={styles.space}>{charItem}</span>
-                </div>
-              );
-            }
+            if (!charIsLetter) {
+              return (
+                <div key={`space-${lineIndex}-${charDisplayIndex}`} className={styles.spaceBox}>
+                  <span className={styles.space}>{charItem}</span>
+                </div>
+              );
+            }
 
-            const currentLetterIndex = letterIndex++;
-            const inputChar = userInput[currentLetterIndex]?.toUpperCase() || '';
-            const correctChar = normalizedAnswer[currentLetterIndex]?.toUpperCase();
-            const isCorrect = inputChar === correctChar;
-            const isIncorrect = inputChar !== '' && inputChar !== correctChar;
-            const isFocused = focusedIndex === currentLetterIndex;
+            const currentLetterIndex = letterIndex++;
+            const inputChar = userInput[currentLetterIndex]?.toUpperCase() || '';
+            const correctChar = normalizedAnswer[currentLetterIndex]?.toUpperCase();
+            const isCorrect = inputChar === correctChar;
+            const isIncorrect = inputChar !== '' && inputChar !== correctChar;
+            const isFocused = focusedIndex === currentLetterIndex;
 
-            return (
-              <div
-                key={currentLetterIndex}
-                className={styles.letterBox}
-                // Prevent default blur behavior on mouse/touch events
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  startLongPress(currentLetterIndex);
-                }}
-                onMouseUp={(e) => {
-                  e.preventDefault();
-                  stopLongPress();
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  startLongPress(currentLetterIndex);
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  stopLongPress();
-                }}
-              >
-                {isFocused && revealProgress > 0 && (
-                  <div
-                    className={styles.revealProgress}
-                    style={{ height: `${revealProgress}%` }}
-                  />
-                )}
-                <input
-                  ref={(el) => (inputRefs.current[currentLetterIndex] = el)}
-                  type="text"
-                  maxLength={1}
-                  value={inputChar.trim()}
-                  onChange={(e) => handleCrosswordInputChange(currentLetterIndex, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, currentLetterIndex)}
-                  onFocus={() => changeFocusedIndex(currentLetterIndex)}
-                  className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
-                  disabled={isSolved}
-                  aria-label={`Letter input ${currentLetterIndex + 1}`}
-                />
-              </div>
-            );
-          })}
-        </div>
-      );
-    });
-    return segments;
-  };
+            return (
+              <div
+                key={currentLetterIndex}
+                className={styles.letterBox}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  startLongPress(currentLetterIndex);
+                }}
+                onMouseUp={(e) => {
+                  e.preventDefault();
+                  stopLongPress();
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  startLongPress(currentLetterIndex);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  stopLongPress();
+                }}
+              >
+                {isFocused && revealProgress > 0 && (
+                  <div
+                    className={styles.revealProgress}
+                    style={{ height: `${revealProgress}%` }}
+                  />
+                )}
+                <input
+                  ref={(el) => (inputRefs.current[currentLetterIndex] = el)}
+                  type="text"
+                  maxLength={1}
+                  value={inputChar.trim()}
+                  onChange={(e) => handleCrosswordInputChange(currentLetterIndex, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, currentLetterIndex)}
+                  onFocus={() => changeFocusedIndex(currentLetterIndex)}
+                  className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
+                  aria-label={`Letter input ${currentLetterIndex + 1}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+      );
+    });
+    return segments;
+  };
 
-  const renderNonCrosswordInput = () => {
-    const normalizedInput = userInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const isIncorrect = !isSolved && normalizedInput !== normalizedAnswer.slice(0, normalizedInput.length);
-    const isCorrect = !isSolved && normalizedInput === normalizedAnswer.slice(0, normalizedInput.length);
+  const renderNonCrosswordInput = () => {
+    if (!normalizedAnswer || !displayText) return null;
+    const normalizedInput = userInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const isIncorrect = !isSolved && normalizedInput !== normalizedAnswer.slice(0, normalizedInput.length);
+    const isCorrect = isSolved || normalizedInput === normalizedAnswer.slice(0, normalizedInput.length);
 
-    return (
-      <div className={styles.nonCrosswordContainer}>
-        <input
-          ref={nonCrosswordInputRef}
-          type="text"
-          value={userInput}
-          onChange={handleNonCrosswordInputChange}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (!isSolved) {
-                revealAnswer();
-              }
-              else {
-                nextClue();
-              }
-            }
-          }}
-          className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCorrect ? styles.correct : ''}`}
-          disabled={isSolved}
-          style={{ width: getTextWidth(displayText, 1.5, "Verdana") + 20 }}
-          aria-label="Answer input field"
-        />
-      </div>
-    );
-  };
+    return (
+      <div className={styles.nonCrosswordContainer}>
+        <input
+          ref={nonCrosswordInputRef}
+          type="text"
+          value={userInput}
+          onChange={handleNonCrosswordInputChange}
+          onKeyDown={handleNonCrosswordKeyDown}
+          className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCorrect ? styles.correct : ''}`}
+          style={{ width: getTextWidth(displayText, 1.5, "Verdana") + 20 }}
+          aria-label="Answer input field"
+        />
+      </div>
+    );
+  };
 
-  return (
-    <div className={styles.container}>
-      {/* Celebration sparkles */}
-      <div ref={sparkleContainerRef} className={styles.sparkleContainer}>
-        {sparkles.map(sparkle => (
-          <div
-            key={sparkle.id}
-            className={styles.sparkle}
-            style={{
-              '--sparkle-x': `${sparkle.x}px`,
-              '--sparkle-y': `${sparkle.y}px`,
-              '--sparkle-size': `${sparkle.size}px`,
-              '--sparkle-color': sparkle.color,
-              '--sparkle-duration': `${sparkle.duration}s`,
-            } as React.CSSProperties}
-          />
-        ))}
-      </div>
+  return (
+    <div className={styles.container}>
+      {/* Celebration sparkles */}
+      <div ref={sparkleContainerRef} className={styles.sparkleContainer}>
+        {sparkles.map(sparkle => (
+          <div
+            key={sparkle.id}
+            className={styles.sparkle}
+            style={{
+              '--sparkle-x': `${sparkle.x}px`,
+              '--sparkle-y': `${sparkle.y}px`,
+              '--sparkle-size': `${sparkle.size}px`,
+              '--sparkle-color': sparkle.color,
+              '--sparkle-duration': `${sparkle.duration}s`,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
 
-      {/* Header and navigation */}
-      <div className={styles.collectionInfo}>
-        <div className={styles.collectionName}>{clueCollection.name}</div>
-      </div>
-      <div className={styles.navigation}>
-        <button className={styles.navButton} onClick={previousClue} aria-label="Previous Clue">
-          <FontAwesomeIcon icon={faChevronLeft} />
-        </button>
-        <div className={styles.clueIndexContainer}>
-          <span className={styles.clueIndex}>Clue {currentIndex + 1} of {clueCollection.clues.length}</span>
-          <button onClick={props.onShowClueList} className={styles.actionButton} aria-label="Show Clue List">
-            <FontAwesomeIcon icon={faList} />
-          </button>
-        </div>
-        <button className={styles.navButton} onClick={nextClue} aria-label="Next Clue">
-          <FontAwesomeIcon icon={faChevronRight} />
-        </button>
-      </div>
+      {/* Header and navigation */}
+      <div className={styles.collectionInfo}>
+        <div className={styles.collectionName}>{clueCollection.name}</div>
+      </div>
+      <div className={styles.navigation}>
+        <button className={styles.navButton} onClick={previousClue} aria-label="Previous Clue">
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+        <div className={styles.clueIndexContainer}>
+          <span className={styles.clueIndex}>Clue {currentIndex + 1} of {clueCollection.clues.length}</span>
+          {false && <button onClick={props.onShowClueList} className={styles.actionButton} aria-label="Show Clue List">
+            <FontAwesomeIcon icon={faList} />
+          </button>}
+        </div>
+        <button className={styles.navButton} onClick={nextClue} aria-label="Next Clue">
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
+      </div>
 
-      <div className={styles.clueText}>{currentClue.clue}</div>
+      <div className={styles.clueText}>{currentClue.clue}</div>
 
-      {/* Action buttons for side panel */}
-      <div className={styles.buttonContainer}>
-        <button onClick={props.onGoBack} className={styles.panelButton} aria-label="Back to Crossword List">
-          <FontAwesomeIcon icon={faArrowLeft} />
-          <span>End Solve</span>
-        </button>
-        <button onClick={props.onShowSpanish} className={styles.panelButton} aria-label="Show Spanish Info">
-          <FontAwesomeIcon icon={faLanguage} />
-          <span>Spanish</span>
-        </button>
-        <button onClick={props.onShowExplanation} className={styles.panelButton} aria-label="Show Explanation">
-          <FontAwesomeIcon icon={faInfoCircle} />
-          <span>Explain</span>
-        </button>
-      </div>
+      {/* Action buttons for side panel */}
+      <div className={styles.buttonContainer}>
+        <button onClick={props.onGoBack} className={styles.panelButton} aria-label="Back to Crossword List">
+          <FontAwesomeIcon icon={faArrowLeft} />
+          <span>End Solve</span>
+        </button>
+        <button onClick={props.onShowSpanish} className={styles.panelButton} aria-label="Show Spanish Info">
+          <FontAwesomeIcon icon={faLanguage} />
+          <span>Spanish</span>
+        </button>
+        <button onClick={props.onShowExplanation} className={styles.panelButton} aria-label="Show Explanation">
+          <FontAwesomeIcon icon={faInfoCircle} />
+          <span>Explain</span>
+        </button>
+      </div>
 
-      {isCrosswordClue && (
-        <div className={styles.scoreContainer}>
-          Cruzi Score:
-          <div className={styles.scoreDisplay} style={{ color: getCruziScoreColor(currentClue.entry.cruziScore as number) }}>
-            {(currentClue.entry.cruziScore as number).toFixed(1)}
-          </div>
-        </div>
-      )}
+      {isCrosswordClue && currentClue.entry.cruziScore !== undefined && (
+        <div className={styles.scoreContainer}>
+          Cruzi Score:
+          <div className={styles.scoreDisplay} style={{ color: getCruziScoreColor(currentClue.entry.cruziScore as number) }}>
+            {(currentClue.entry.cruziScore as number).toFixed(1)}
+          </div>
+        </div>
+      )}
 
-      {/* Input field based on clue type */}
-      {isCrosswordClue ? (
-        <div className={styles.inputGridContainer}>
-          {renderCrosswordInputs()}
-        </div>
-      ) : (
-        renderNonCrosswordInput()
-      )}
+      {/* Input field based on clue type */}
+      {isCrosswordClue ? (
+        <div className={styles.inputGridContainer}>
+          {renderCrosswordInputs()}
+        </div>
+      ) : (
+        renderNonCrosswordInput()
+      )}
 
-      {/* Next button */}
-      {isSolved && (
-        <button onClick={nextClue} className={styles.nextButton}>
-          NEXT
-        </button>
-      )}
-    </div>
-  );
+      {/* Reveal button */}
+      {!isSolved && (
+        <button onClick={revealAnswer} className={styles.nextButton}>
+          REVEAL
+        </button>
+      )}
+
+      {/* Next button */}
+      {isSolved && (
+        <button onClick={nextClue} className={styles.nextButton}>
+          NEXT
+        </button>
+      )}
+    </div>
+  );
 };
 
 export default Solver;
