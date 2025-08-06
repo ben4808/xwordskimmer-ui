@@ -1,0 +1,224 @@
+{
+  "counties": [
+    {
+      "name": "Ada",
+      "capital": "Boise",
+      "code": "1A"
+    },
+    {
+      "name": "Adams",
+      "capital": "Council",
+      "code": "2A"
+    },
+    {
+      "name": "Bannock",
+      "capital": "Pocatello",
+      "code": "1B"
+    },
+    {
+      "name": "Bear Lake",
+      "capital": "Paris",
+      "code": "2B"
+    },
+    {
+      "name": "Benewah",
+      "capital": "St. Maries",
+      "code": "3B"
+    },
+    {
+      "name": "Bingham",
+      "capital": "Blackfoot",
+      "code": "4B"
+    },
+    {
+      "name": "Blaine",
+      "capital": "Hailey",
+      "code": "5B"
+    },
+    {
+      "name": "Boise",
+      "capital": "Idaho City",
+      "code": "6B"
+    },
+    {
+      "name": "Bonner",
+      "capital": "Sandpoint",
+      "code": "7B"
+    },
+    {
+      "name": "Bonneville",
+      "capital": "Idaho Falls",
+      "code": "8B"
+    },
+    {
+      "name": "Boundary",
+      "capital": "Bonners Ferry",
+      "code": "9B"
+    },
+    {
+      "name": "Butte",
+      "capital": "Arco",
+      "code": "10B"
+    },
+    {
+      "name": "Camas",
+      "capital": "Fairfield",
+      "code": "1C"
+    },
+    {
+      "name": "Canyon",
+      "capital": "Caldwell",
+      "code": "2C"
+    },
+    {
+      "name": "Caribou",
+      "capital": "Soda Springs",
+      "code": "3C"
+    },
+    {
+      "name": "Cassia",
+      "capital": "Burley",
+      "code": "4C"
+    },
+    {
+      "name": "Clark",
+      "capital": "Dubois",
+      "code": "5C"
+    },
+    {
+      "name": "Clearwater",
+      "capital": "Orofino",
+      "code": "6C"
+    },
+    {
+      "name": "Custer",
+      "capital": "Challis",
+      "code": "7C"
+    },
+    {
+      "name": "Elmore",
+      "capital": "Mountain Home",
+      "code": "E"
+    },
+    {
+      "name": "Franklin",
+      "capital": "Preston",
+      "code": "1F"
+    },
+    {
+      "name": "Fremont",
+      "capital": "Saint Anthony",
+      "code": "2F"
+    },
+    {
+      "name": "Gem",
+      "capital": "Emmett",
+      "code": "1G"
+    },
+    {
+      "name": "Gooding",
+      "capital": "Gooding",
+      "code": "2G"
+    },
+    {
+      "name": "Idaho",
+      "capital": "Grangeville",
+      "code": "I"
+    },
+    {
+      "name": "Jefferson",
+      "capital": "Rigby",
+      "code": "1J"
+    },
+    {
+      "name": "Jerome",
+      "capital": "Jerome",
+      "code": "2J"
+    },
+    {
+      "name": "Kootenai",
+      "capital": "Coeur d'Alene",
+      "code": "K"
+    },
+    {
+      "name": "Latah",
+      "capital": "Moscow",
+      "code": "1L"
+    },
+    {
+      "name": "Lemhi",
+      "capital": "Salmon",
+      "code": "2L"
+    },
+    {
+      "name": "Lewis",
+      "capital": "Nezperce",
+      "code": "3L"
+    },
+    {
+      "name": "Lincoln",
+      "capital": "Shoshone",
+      "code": "4L"
+    },
+    {
+      "name": "Madison",
+      "capital": "Rexburg",
+      "code": "1M"
+    },
+    {
+      "name": "Minidoka",
+      "capital": "Rupert",
+      "code": "2M"
+    },
+    {
+      "name": "Nez Perce",
+      "capital": "Lewiston",
+      "code": "N"
+    },
+    {
+      "name": "Oneida",
+      "capital": "Malad City",
+      "code": "1O"
+    },
+    {
+      "name": "Owyhee",
+      "capital": "Murphy",
+      "code": "2O"
+    },
+    {
+      "name": "Payette",
+      "capital": "Payette",
+      "code": "1P"
+    },
+    {
+      "name": "Power",
+      "capital": "American Falls",
+      "code": "2P"
+    },
+    {
+      "name": "Shoshone",
+      "capital": "Wallace",
+      "code": "S"
+    },
+    {
+      "name": "Teton",
+      "capital": "Driggs",
+      "code": "1T"
+    },
+    {
+      "name": "Twin Falls",
+      "capital": "Twin Falls",
+      "code": "2T"
+    },
+    {
+      "name": "Valley",
+      "capital": "Cascade",
+      "code": "V"
+    },
+    {
+      "name": "Washington",
+      "capital": "Weiser",
+      "code": "W"
+    }
+  ]
+}

@@ -54,7 +54,7 @@ create table clue (
   id text not null primary key,
   "entry" text not null,
   lang text not null,
-  isCrosswordClue boolean not null default false,
+  isCrosswordClue boolean not null default true,
   clue text not null,
   source text -- Book it came from? AI source?
 );

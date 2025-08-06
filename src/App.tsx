@@ -27,7 +27,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.getCrossword("NYT", new Date(2025, 5, 5));
+        const response = await api.getCrossword("Lists", new Date());
         setClueCollection(response)
       } catch (e) {
         setError(e);
@@ -39,7 +39,7 @@ function App() {
     fetchData();
   }, []);
 
-  let paramDate = useParams().date ? parseDateFromURL(useParams().date!) : new Date(2025, 5, 5);
+  let paramDate = useParams().date ? parseDateFromURL(useParams().date!) : new Date();
 
   if (loading) {
     return <p>Loading...</p>;

@@ -6,5 +6,5 @@ export interface Entry {
     entryType?: string;
     obscurityScore?: number;
     qualityScore?: number;
-    crosswordScore?: number;
+    cruziScore?: number;
 }
