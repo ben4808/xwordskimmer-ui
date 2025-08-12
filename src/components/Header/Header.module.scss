@@ -256,3 +256,104 @@ $accent-color: #61dafb; // A common React blue for highlights
     }
   }
 }
+
+.logo {
+  flex: 0;
+  text-align: center;
+}
+
+.logoImage {
+  height: 40px;
+  width: auto;
+}
+
+.rightSection {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.userMenu {
+  position: relative;
+}
+
+.avatarButton {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.avatar {
+  background-color: #3a3a3a;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.userName {
+  display: none; // Hidden on mobile, shown on desktop
+}
+
+.userDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #2a2a2a;
+  min-width: 120px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.userDropdownList {
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+}
+
+.userDropdownItem {
+  margin: 0;
+}
+
+.userDropdownLink {
+  background: none;
+  border: none;
+  color: #ffffff;
+  text-decoration: none;
+  display: block;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #3a3a3a;
+  }
+}
+
+.loginButton {
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    border: 0;
+  }
+}
+
+.googleLoginButton {
+  width: auto;
+}

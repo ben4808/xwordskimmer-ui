@@ -8,25 +8,37 @@ Create a header component for the a React app with the following features:
     - Crosswords
     - Collections
     - Word Finder
- 6. The header should be responsive and work well on different screen sizes.
- 7. The drop-down menu on small screens (mobile-sized) should be a hamburger menu that expands when clicked.
- 8. The header should use TypeScript for type safety.
+ 6. On right right side, the header should have the first name of the logged-in user and a generic avator 
+    (e.g., a circle with the first letter of the user's name).
+    - If the user is not logged in, it should display a login button with the Google logo.
+    - When the login button is clicked, it should redirect to the Google login page.
+    - When the user is logged in, clicking on the avatar should open a drop-down menu with a logout option.
+    - When the logout option is clicked, it should log the user out and redirect to the home page.
+ 7. The header should be responsive and work well on different screen sizes.
+ 8. The drop-down menu on small screens (mobile-sized) should be a hamburger menu that expands when clicked.
+ 9. The header should use TypeScript for type safety.
  */
 
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.scss';
 import logo from '../../../logo.png'; // Make sure this path is correct for your project
 import { useState, useRef, useEffect } from 'react';
+import googleLoginButton from '../../../google_login_button.png'; // Add Google logo for login button
+import { HeaderProps } from './HeaderProps';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 
-const Header = () => {
+const Header = (props: HeaderProps) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // State for user dropdown
   const [selectedMenuItem, setSelectedMenuItem] = useState('Crosswords'); // Keeps track of active item for styling
 
   const menuItems = ['Crosswords', 'Collections', 'Word Finder'];
   const mobileMenuRef = useRef<HTMLDivElement>(null); // Ref for clicking outside mobile menu
   const desktopDropdownRef = useRef<HTMLDivElement>(null); // Ref for clicking outside desktop dropdown
+  const userMenuRef = useRef<HTMLDivElement>(null); // Ref for clicking outside user menu
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -36,6 +48,12 @@ const Header = () => {
   const toggleDesktopDropdown = () => {
     setIsDesktopDropdownOpen((prev) => !prev);
     setIsMobileMenuOpen(false); // Close mobile menu if desktop dropdown is opened
+  };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen((prev) => !prev);
+    setIsMobileMenuOpen(false); // Close mobile menu if user menu is opened
+    setIsDesktopDropdownOpen(false); // Close desktop dropdown if user menu is opened
   };
 
   const handleModeClick = (menuItem: string) => {
@@ -59,6 +77,36 @@ const Header = () => {
     }
   };
 
+  const handleLogin = () => {
+    setIsUserMenuOpen(false);
+
+    props.onLogin(); // Call the login function passed from props
+  };
+
+  const handleLogout = () => {
+    setIsUserMenuOpen(false);
+    props.onLogout(); // Call the logout function passed from props
+  };
+
+  const handleSuccess = async (credentialResponse) => {
+    try {
+      // Send ID token to backend
+      const response = await axios.post('/auth/google', {
+        token: credentialResponse.credential,
+      });
+      console.log('Login Success:', response.data);
+      // Store JWT or user data in localStorage/state management
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    } catch (error) {
+      console.error('Login Failed:', error);
+    }
+  };
+
+  const handleError = () => {
+    console.error('Login Failed');
+  };
+
   // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,6 +115,9 @@ const Header = () => {
       }
       if (desktopDropdownRef.current && !desktopDropdownRef.current.contains(event.target as Node)) {
         setIsDesktopDropdownOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
       }
     };
 
@@ -158,9 +209,48 @@ const Header = () => {
           <img src={logo} alt="Application Logo" className={styles.logoImage} />
         </div>
 
-        {/* Right Section (can be empty or hold other elements if needed) */}
+        {/* Right Section: User Avatar/Login Button */}
         <div className={styles.rightSection}>
-          {/* Add any other elements that might be on the right side */}
+          {props.user ? (
+            <div className={styles.userMenu} ref={userMenuRef}>
+              <button
+                className={styles.avatarButton}
+                onClick={toggleUserMenu}
+                aria-haspopup="true"
+                aria-expanded={isUserMenuOpen}
+                aria-label={`User menu for ${props.user.firstName}`}
+              >
+                <span className={styles.avatar}>
+                  {props.user.firstName.charAt(0).toUpperCase()}
+                </span>
+                <span className={styles.userName}>{props.user.firstName}</span>
+              </button>
+              {isUserMenuOpen && (
+                <nav className={styles.userDropdown}>
+                  <ul className={styles.userDropdownList}>
+                    <li className={styles.userDropdownItem}>
+                      <button
+                        className={styles.userDropdownLink}
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              )}
+            </div>
+          ) : (
+            <GoogleOAuthProvider clientId="your-google-client-id">
+              <GoogleLogin
+                onSuccess={handleSuccess}
+                onError={handleError}
+                theme="filled_black" // Enables dark mode
+                shape="circle" // Makes the button rounded
+                useOneTap // Optional: Enables one-tap login
+              />
+            </GoogleOAuthProvider>
+          )}
         </div>
       </div>
     </header>
