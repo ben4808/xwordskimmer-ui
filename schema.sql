@@ -54,7 +54,6 @@ create table clue (
   id text not null primary key,
   "entry" text not null,
   lang text not null,
-  isCrosswordClue boolean not null default true,
   clue text not null,
   source text -- Book it came from? AI source?
 );
@@ -84,4 +83,31 @@ create table translated_entry (
   display_text text not null,
   source_ai text not null,
   primary key(clue_id, "entry", lang)
+);
+
+create table user (
+  id text not null primary key,
+  email text not null unique,
+  first_name text,
+  last_name text,
+  created_at timestamp not null default now()
+);
+
+create table user__collection (
+  user_id text not null,
+  collection_id text not null,
+  unseen int not null,
+  in_progress int not null,
+  completed int not null,
+  primary key(user_id, collection_id)
+);
+
+create table user__clue (
+  user_id text not null,
+  clue_id text not null,
+  total_solves int not null,
+  correct_solves int not null,
+  incorrect_solves int not null,
+  last_solve date,
+  primary key(user_id, clue_id)
 );
