@@ -1,11 +1,13 @@
 import { Clue } from "./Clue";
 import { Puzzle } from "./Puzzle";
+import { User } from "./User";
 
 export interface ClueCollection {
     id?: string;
-    name: string;
+    title: string;
     puzzle?: Puzzle;
     author?: string;
+    creator?: User;
     description?: string;
     createdDate: Date;
     modifiedDate: Date;

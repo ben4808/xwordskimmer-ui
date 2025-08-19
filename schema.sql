@@ -23,6 +23,7 @@ create table clue_collection (
   puzzle_id text,
   title text not null,
   author text,
+  creator_id text,
   "description" text,
   created_date timestamp not null,
   modified_date timestamp not null,
@@ -41,13 +42,30 @@ create table "entry" (
   primary key("entry", lang)
 );
 
+create table entry_sense (
+  id text not null primary key,
+  "entry" text not null,
+  lang text not null,
+  summary text not null,
+  "definition" text,
+  source_ai text
+);
+
 create table entry_score (
   "entry" text not null,
   lang text not null,
   obscurity_score int,
   quality_score int,
   source_ai text not null,
-  primary key("entry", lang)
+  primary key("entry", lang, source_ai)
+);
+
+create table entry_sense_score (
+  sense_id text not null,
+  obscurity_score int,
+  quality_score int,
+  source_ai text not null,
+  primary key(sense_id, source_ai)
 );
 
 create table clue (
@@ -83,6 +101,24 @@ create table translated_entry (
   display_text text not null,
   source_ai text not null,
   primary key(clue_id, "entry", lang)
+);
+
+create table translated_sense (
+  sense_id text not null,
+  lang text not null,
+  "entry" text not null,
+  display_text text not null,
+  source_ai text not null,
+  primary key(sense_id, lang)
+);
+
+create table example_sentence (
+  id text not null primary key,
+  sense_id text not null,
+  lang text not null,
+  sentence text not null,
+  translated_sentence text not null,
+  source_ai text not null
 );
 
 create table user (

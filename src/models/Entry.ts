@@ -1,3 +1,5 @@
+import { Sense } from "./Sense";
+
 export interface Entry {
     entry: string;
     lang: string;
@@ -7,4 +9,6 @@ export interface Entry {
     obscurityScore?: number;
     qualityScore?: number;
     cruziScore?: number;
+
+    senses?: Sense[]
 }
