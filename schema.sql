@@ -18,6 +18,11 @@ create table puzzle (
   source_link text
 );
 
+create table publication (
+  id text not null primary key,
+  "name" text not null
+);
+
 create table clue_collection (
   id text not null primary key,
   puzzle_id text,
@@ -25,11 +30,14 @@ create table clue_collection (
   author text,
   creator_id text,
   "description" text,
+  is_private boolean not null default false,
   created_date timestamp not null,
   modified_date timestamp not null,
   metadata1 text, -- AI composite score
   metadata2 text
 );
+
+CREATE INDEX IX_Date ON clue_collection(created_date ASC);
 
 create table "entry" (
   "entry" text not null,
