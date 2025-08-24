@@ -45,9 +45,17 @@ create table "entry" (
   "length" int not null,
   display_text text,
   entry_type text,
-  obscurity_score int,
+  familiarity_score int,
   quality_score int,
   primary key("entry", lang)
+);
+
+create table entry_tags (
+  "entry" text not null,
+  lang text not null,
+  tag text not null,
+  value text,
+  primary key("entry", lang, tag)
 );
 
 create table entry_sense (
@@ -56,13 +64,15 @@ create table entry_sense (
   lang text not null,
   summary text not null,
   "definition" text,
+  familiarity_score int,
+  quality_score int,
   source_ai text
 );
 
 create table entry_score (
   "entry" text not null,
   lang text not null,
-  obscurity_score int,
+  familiarity_score int,
   quality_score int,
   source_ai text not null,
   primary key("entry", lang, source_ai)
@@ -70,10 +80,19 @@ create table entry_score (
 
 create table entry_sense_score (
   sense_id text not null,
-  obscurity_score int,
+  familiarity_score int,
   quality_score int,
   source_ai text not null,
   primary key(sense_id, source_ai)
+);
+
+create table example_sentence (
+  id text not null primary key,
+  sense_id text not null,
+  lang text not null,
+  sentence text not null,
+  translated_sentence text not null,
+  source_ai text not null
 );
 
 create table clue (
@@ -120,15 +139,6 @@ create table translated_sense (
   primary key(sense_id, lang)
 );
 
-create table example_sentence (
-  id text not null primary key,
-  sense_id text not null,
-  lang text not null,
-  sentence text not null,
-  translated_sentence text not null,
-  source_ai text not null
-);
-
 create table user (
   id text not null primary key,
   email text not null unique,
@@ -154,4 +164,11 @@ create table user__clue (
   incorrect_solves int not null,
   last_solve date,
   primary key(user_id, clue_id)
+);
+
+create table entry_info_queue (
+  id serial primary key,
+  "entry" text not null,
+  lang text not null,
+  added_at timestamp not null default now()
 );
