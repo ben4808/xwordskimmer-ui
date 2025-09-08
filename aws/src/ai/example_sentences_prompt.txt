@@ -1,0 +1,25 @@
+Input:
+A list of words or phrases, together with the sense in which they should be considered.
+
+For each phrase:
+1. Generate 3 example sentences and exemplify the word or phrase in the given sense. The sentences should be relevant, concise, and varied.
+2. Translate the sentences into Spanish using natural Spanish phrasing.
+
+Output format:
+Generate the results in the following format. Don't include any introductory or auxiliary text.
+
+<original word or phrase>
+<sentence 1 in English> 
+<sentence 1 in Spanish>
+<sentence 2 in English> 
+<sentence 2 in Spanish>
+<sentence 3 in English> 
+<sentence 3 in Spanish>
+
+Words and phrases:
+
+tree (woody plant)
+tree (diagrammatic representation)
+pool (body of water)
+pool (game)
+pool (collected resource)
