@@ -9,6 +9,7 @@ create table puzzle (
   id text not null primary key,
   publication_id text,
   "date" date not null,
+  lang text not null default 'en',
   author text,
   title text not null,
   copyright text,
@@ -41,6 +42,7 @@ CREATE INDEX IX_Date ON clue_collection(created_date ASC);
 
 create table "entry" (
   "entry" text not null,
+  root_entry text, -- For inflected forms, the base form
   lang text not null,
   "length" int not null,
   display_text text,
@@ -58,17 +60,6 @@ create table entry_tags (
   primary key("entry", lang, tag)
 );
 
-create table entry_sense (
-  id text not null primary key,
-  "entry" text not null,
-  lang text not null,
-  summary text not null,
-  "definition" text,
-  familiarity_score int,
-  quality_score int,
-  source_ai text
-);
-
 create table entry_score (
   "entry" text not null,
   lang text not null,
@@ -78,12 +69,39 @@ create table entry_score (
   primary key("entry", lang, source_ai)
 );
 
-create table entry_sense_score (
+create table sense (
+  id text not null primary key,
+  "entry" text not null,
+  lang text not null,
+  part_of_speech text,
+  commonness text,
+  familiarity_score int,
+  quality_score int,
+  source_ai text
+);
+
+create table sense_translation (
+  sense_id text not null,
+  lang text not null,
+  summary text not null,
+  "definition" text,
+  primary key(sense_id, lang)
+);
+
+create table sense_entry_score (
   sense_id text not null,
   familiarity_score int,
   quality_score int,
   source_ai text not null,
   primary key(sense_id, source_ai)
+);
+
+create table sense_entry_translation (
+  sense_id text not null,
+  "entry" text not null,
+  lang text not null,
+  display_text text not null,
+  primary key(sense_id, "entry", lang)
 );
 
 create table example_sentence (
@@ -100,6 +118,7 @@ create table clue (
   "entry" text not null,
   lang text not null,
   clue text not null,
+  custom_display_text text,
   source text -- Book it came from? AI source?
 );
 
@@ -112,7 +131,7 @@ create table collection__clue (
   primary key(collection_id, clue_id)
 );
 
-create table translated_clue (
+create table crossword_clue_translation (
   clue_id text not null,
   lang text not null,
   literal_translation text,
@@ -121,7 +140,7 @@ create table translated_clue (
   primary key(clue_id, lang)
 );
 
-create table translated_entry (
+create table crossword_entry_translation (
   clue_id text not null,
   "entry" text not null,
   lang text not null,
@@ -130,16 +149,7 @@ create table translated_entry (
   primary key(clue_id, "entry", lang)
 );
 
-create table translated_sense (
-  sense_id text not null,
-  lang text not null,
-  "entry" text not null,
-  display_text text not null,
-  source_ai text not null,
-  primary key(sense_id, lang)
-);
-
-create table user (
+create table "user" (
   id text not null primary key,
   email text not null unique,
   first_name text,
