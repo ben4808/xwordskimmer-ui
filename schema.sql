@@ -88,14 +88,6 @@ create table sense_translation (
   primary key(sense_id, lang)
 );
 
-create table sense_entry_score (
-  sense_id text not null,
-  familiarity_score int,
-  quality_score int,
-  source_ai text not null,
-  primary key(sense_id, source_ai)
-);
-
 create table sense_entry_translation (
   sense_id text not null,
   "entry" text not null,
@@ -108,16 +100,23 @@ create table example_sentence (
   id text not null primary key,
   sense_id text not null,
   lang text not null,
-  sentence text not null,
-  translated_sentence text not null,
-  source_ai text not null
+  sentence text not null
+);
+
+create table sense_entry_score (
+  sense_id text not null,
+  familiarity_score int,
+  quality_score int,
+  source_ai text not null,
+  primary key(sense_id, source_ai)
 );
 
 create table clue (
   id text not null primary key,
-  "entry" text not null,
-  lang text not null,
-  clue text not null,
+  "entry" text not null, -- in some cases only for reference
+  lang text not null, -- in some cases only for reference
+  sense_id text, -- optional, if linked to a specific sense
+  custom_clue text,
   custom_display_text text,
   source text -- Book it came from? AI source?
 );
