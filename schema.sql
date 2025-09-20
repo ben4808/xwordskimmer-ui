@@ -98,9 +98,14 @@ create table sense_entry_translation (
 
 create table example_sentence (
   id text not null primary key,
-  sense_id text not null,
+  sense_id text not null
+);
+
+create table example_sentence_translation (
+  example_id text not null,
   lang text not null,
-  sentence text not null
+  sentence text not null,
+  primary key(example_id, lang)
 );
 
 create table sense_entry_score (
