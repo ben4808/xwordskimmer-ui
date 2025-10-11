@@ -1,14 +1,15 @@
-import { Entry } from "./Entry";
 import { EntryTranslation } from "./EntryTranslation";
+import { ExampleSentence } from "./ExampleSentence";
 
 export interface Sense {
-  id: string;
-  entry: Entry;
-  lang: string;
-  summary: string;
-  definition?: string;
-  exampleSentences?: string[];
+  id?: string;
+  partOfSpeech?: string;
+  commonness?: string;
+  summary: Map<string, string>; // <lang, summary>
+  definition?: Map<string, string>; // <lang, definition>
+  exampleSentences?: ExampleSentence[];
+  translations?: Map<string, EntryTranslation>; // <lang, EntryTranslation>
   familiarityScore?: number;
   qualityScore?: number;
-  translations: EntryTranslation;
+  sourceAi?: string; // Source of the sense (e.g., "ChatGPT", "WordNet")
 }

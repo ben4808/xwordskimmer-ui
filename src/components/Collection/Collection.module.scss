@@ -1,0 +1,480 @@
+@use "sass:color";
+
+// Define a dark mode color palette
+$primary-bg: #1a1a1a;
+$secondary-bg: #2a2a2a;
+$card-bg: #333;
+$text-color: #e0e0e0;
+$light-text-color: #b0b0b0;
+$accent-color: #8bb4ff; // A soft blue for accents
+$border-color: #444;
+$error-color: #ff6b6b; // A distinct red for errors
+$success-color: #4caf50; // Green for success states
+
+// Mixin for responsive design
+@mixin for-phone-only {
+  @media (max-width: 599px) {
+    @content;
+  }
+}
+
+@mixin for-tablet-portrait-up {
+  @media (min-width: 600px) {
+    @content;
+  }
+}
+
+@mixin for-tablet-landscape-up {
+  @media (min-width: 900px) {
+    @content;
+  }
+}
+
+@mixin for-desktop-up {
+  @media (min-width: 1200px) {
+    @content;
+  }
+}
+
+.collectionPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $primary-bg;
+  color: $text-color;
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  box-sizing: border-box;
+  gap: 30px;
+
+  @include for-phone-only {
+    padding: 15px;
+    gap: 20px;
+  }
+}
+
+// Progress Section
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: $card-bg;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+
+  @include for-phone-only {
+    padding: 15px;
+  }
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+
+  .totalClues {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: $accent-color;
+
+    @include for-phone-only {
+      font-size: 1.1rem;
+    }
+  }
+
+  .listIcon {
+    background: none;
+    border: none;
+    color: $accent-color;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: color.adjust($accent-color, $alpha: -0.8);
+    }
+
+    &:focus {
+      outline: 2px solid $accent-color;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.progressStats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  @include for-phone-only {
+    gap: 15px;
+  }
+
+  .stat {
+    font-size: 1rem;
+    color: $light-text-color;
+    font-weight: 500;
+
+    @include for-phone-only {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.progressBar {
+  display: flex;
+  height: 8px;
+  background-color: $border-color;
+  border-radius: 4px;
+  overflow: hidden;
+
+  .progressMastered {
+    background-color: $success-color;
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .progressInProgress {
+    background-color: #ffc107; // Yellow for in progress
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .progressUnseen {
+    background-color: #6c757d; // Gray for unseen
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+}
+
+// Add Word Section
+.addWordSection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: $card-bg;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+  position: relative;
+
+  @include for-phone-only {
+    padding: 15px;
+  }
+}
+
+.addWordContainer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  @include for-phone-only {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.wordInput {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid $border-color;
+  border-radius: 8px;
+  background-color: $secondary-bg;
+  color: $text-color;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $accent-color;
+  }
+
+  &::placeholder {
+    color: $light-text-color;
+  }
+
+  @include for-phone-only {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+}
+
+.addButton {
+  padding: 12px 24px;
+  background-color: $accent-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust($accent-color, $lightness: -10%);
+  }
+
+  &:disabled {
+    background-color: $border-color;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include for-phone-only {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+}
+
+// Autocomplete Dropdown
+.autocompleteDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+
+  .autocompleteItem {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid $border-color;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: color.adjust($accent-color, $alpha: -0.8);
+    }
+  }
+}
+
+// Quiz Section
+.quizSection {
+  display: flex;
+  justify-content: center;
+  background-color: $card-bg;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+
+  @include for-phone-only {
+    padding: 15px;
+  }
+}
+
+.startQuizButton {
+  padding: 16px 32px;
+  background-color: $success-color;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: color.adjust($success-color, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @include for-phone-only {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 14px 24px;
+  }
+}
+
+// Popup Modal
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+  box-sizing: border-box;
+
+  @include for-phone-only {
+    padding: 10px;
+  }
+}
+
+.popupContent {
+  background-color: $card-bg;
+  border-radius: 12px;
+  border: 1px solid $border-color;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-width: 800px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+
+  @include for-phone-only {
+    max-height: 90vh;
+  }
+}
+
+.popupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid $border-color;
+
+  h3 {
+    margin: 0;
+    color: $accent-color;
+    font-size: 1.4rem;
+
+    @include for-phone-only {
+      font-size: 1.2rem;
+    }
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    color: $light-text-color;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: color.adjust($error-color, $alpha: -0.8);
+      color: $error-color;
+    }
+
+    &:focus {
+      outline: 2px solid $accent-color;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.popupBody {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+
+  @include for-phone-only {
+    padding: 15px;
+  }
+}
+
+.wordsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid $border-color;
+
+    @include for-phone-only {
+      padding: 8px;
+      font-size: 0.8rem;
+    }
+  }
+
+  th {
+    background-color: $secondary-bg;
+    color: $accent-color;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+  }
+
+  td {
+    color: $text-color;
+  }
+
+  .noData {
+    text-align: center;
+    color: $light-text-color;
+    font-style: italic;
+    padding: 20px;
+  }
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+
+  &.statusMastered {
+    background-color: color.adjust($success-color, $alpha: -0.8);
+    color: $success-color;
+  }
+
+  &.statusInProgress {
+    background-color: color.adjust(#ffc107, $alpha: -0.8);
+    color: #ffc107;
+  }
+
+  &.statusUnseen {
+    background-color: color.adjust(#6c757d, $alpha: -0.8);
+    color: #6c757d;
+  }
+}
+
+// Toast Notification
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: $success-color;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 3000;
+  font-weight: bold;
+  animation: slideInUp 0.3s ease;
+
+  @include for-phone-only {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    text-align: center;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

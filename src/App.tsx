@@ -2,7 +2,7 @@ import { BrowserRouter, Outlet, Route, Routes, useParams } from 'react-router-do
 import './App.css'
 import CrosswordList from './components/CrosswordList/CrosswordList'
 import Header from './components/Header/Header'
-import Solver from './components/Solver/Solver';
+import CollectionQuiz from './components/CollectionQuiz/CollectionQuiz';
 import { useEffect, useState } from 'react';
 import { ClueCollection } from './models/ClueCollection';
 import { parseDateFromURL } from './lib/utils';
@@ -54,8 +54,8 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/list/:date" element={<CrosswordList date={paramDate} />} />
-          <Route path="/crossword/:source/:date" element={<Solver clueCollection={clueCollection!} />} />
-          <Route path="/clue/:id" element={<Solver clueCollection={clueCollection!} />} />
+          <Route path="/crossword/:source/:date" element={<CollectionQuiz clueCollection={clueCollection!} />} />
+          <Route path="/clue/:id" element={<CollectionQuiz clueCollection={clueCollection!} />} />
           <Route path="*" element={<CrosswordList date={paramDate} />} />
         </Route>
       </Routes>

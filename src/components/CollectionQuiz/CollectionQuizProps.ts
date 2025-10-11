@@ -1,6 +1,6 @@
 import { ClueCollection } from "../../models/ClueCollection";
 
-export interface SolverProps {
+export interface CollectionQuizProps {
   clueCollection?: ClueCollection;
   returnUrl?: string; // URL to return to after solving
   onGoBack?: () => void;

@@ -1,14 +1,13 @@
 export interface Puzzle {
-    id?: string
-    publicationId?: string;
+    id?: string;
     title: string;
-    authors: string[];
-    copyright: string;
-    notes?: string;
+    publication?: string;
     date: Date;
-    source: string;
-    lang?: string;
     width: number;
     height: number;
+    authors?: string[];
+    copyright?: string;
+    notes?: string;
+    lang?: string;
     sourceLink?: string; // Link to the source of the puzzle
 }

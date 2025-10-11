@@ -13,10 +13,7 @@ $accent-color: #61dafb; // A common React blue for highlights
   color: $text-color-light; // Light text color
   min-height: $header-height;
   width: 100%;
-  position: fixed; // Fix to the top
-  top: 0;
-  left: 0;
-  z-index: 1000; // Ensure header is on top of other content
+  position: relative; // Part of the page flow, not floating
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); // Subtle shadow for depth
   display: flex;
   align-items: center; // Vertically center content
@@ -356,4 +353,82 @@ $accent-color: #61dafb; // A common React blue for highlights
 
 .googleLoginButton {
   width: auto;
+}
+
+/* Back Button Styling */
+.backButton {
+  background: none;
+  border: none;
+  color: $text-color-light;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover {
+    background-color: color.adjust($dark-bg-secondary, $lightness: 5%);
+    color: $accent-color;
+  }
+
+  &:focus {
+    outline: 2px solid $accent-color;
+    outline-offset: 2px;
+  }
+}
+
+/* Center Content for Collection/Quiz Headers */
+.centerContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.collectionTitle {
+  color: $text-color-light;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  padding: 0 20px;
+  
+  @media (max-width: $mobile-breakpoint) {
+    font-size: 1.2rem;
+    padding: 0 10px;
+  }
+}
+
+/* Google Login Button Styling */
+.googleLoginContainer {
+  display: flex;
+  align-items: center;
+  
+  // Override Google's default styling to match our dark theme
+  :global(.google-login-button) {
+    background-color: #4285f4 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+    
+    &:hover {
+      background-color: #3367d6 !important;
+    }
+    
+    &:focus {
+      outline: 2px solid $accent-color !important;
+      outline-offset: 2px !important;
+    }
+  }
 }

@@ -173,7 +173,7 @@ create table user__collection (
 create table user__clue (
   user_id text not null,
   clue_id text not null,
-  total_solves int not null,
+  correct_solves_needed int not null,
   correct_solves int not null,
   incorrect_solves int not null,
   last_solve date,
