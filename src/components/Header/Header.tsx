@@ -161,7 +161,6 @@ const Header = (props: HeaderProps) => {
             onError={handleGoogleError}
             theme="filled_black" // Enables dark mode
             shape="circle" // Makes the button rounded
-            useOneTap // Optional: Enables one-tap login
           />
         </div>
       )}
