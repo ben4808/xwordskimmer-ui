@@ -38,13 +38,13 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.scss';
 import logo from '../../../logo.png'; // Make sure this path is correct for your project
 import { useState, useRef, useEffect } from 'react';
-import googleLoginButton from '../../../google_login_button.png'; // Add Google logo for login button
 import { HeaderProps } from './HeaderProps';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Header = (props: HeaderProps) => {
   const navigate = useNavigate();
+  const { user, handleGoogleSuccess, handleGoogleError } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // State for user dropdown
@@ -94,32 +94,12 @@ const Header = (props: HeaderProps) => {
 
   const handleLogin = () => {
     setIsUserMenuOpen(false);
-
     props.onLogin(); // Call the login function passed from props
   };
 
   const handleLogout = () => {
     setIsUserMenuOpen(false);
     props.onLogout(); // Call the logout function passed from props
-  };
-
-  const handleSuccess = async (credentialResponse) => {
-    try {
-      // Send ID token to backend
-      const response = await axios.post('/auth/google', {
-        token: credentialResponse.credential,
-      });
-      console.log('Login Success:', response.data);
-      // Store JWT or user data in localStorage/state management
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    } catch (error) {
-      console.error('Login Failed:', error);
-    }
-  };
-
-  const handleError = () => {
-    console.error('Login Failed');
   };
 
   // Close menus when clicking outside
@@ -145,19 +125,19 @@ const Header = (props: HeaderProps) => {
   // Common user authentication section
   const renderUserSection = () => (
     <div className={styles.rightSection}>
-      {props.user ? (
+      {user ? (
         <div className={styles.userMenu} ref={userMenuRef}>
           <button
             className={styles.avatarButton}
             onClick={toggleUserMenu}
             aria-haspopup="true"
             aria-expanded={isUserMenuOpen}
-            aria-label={`User menu for ${props.user.firstName}`}
+            aria-label={`User menu for ${user.firstName}`}
           >
             <span className={styles.avatar}>
-              {props.user.firstName.charAt(0).toUpperCase()}
+              {user.firstName.charAt(0).toUpperCase()}
             </span>
-            <span className={styles.userName}>{props.user.firstName}</span>
+            <span className={styles.userName}>{user.firstName}</span>
           </button>
           {isUserMenuOpen && (
             <nav className={styles.userDropdown}>
@@ -176,15 +156,13 @@ const Header = (props: HeaderProps) => {
         </div>
       ) : (
         <div className={styles.googleLoginContainer}>
-          <GoogleOAuthProvider clientId="your-google-client-id">
-            <GoogleLogin
-              onSuccess={handleSuccess}
-              onError={handleError}
-              theme="filled_black" // Enables dark mode
-              shape="circle" // Makes the button rounded
-              useOneTap // Optional: Enables one-tap login
-            />
-          </GoogleOAuthProvider>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            theme="filled_black" // Enables dark mode
+            shape="circle" // Makes the button rounded
+            useOneTap // Optional: Enables one-tap login
+          />
         </div>
       )}
     </div>

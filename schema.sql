@@ -31,6 +31,7 @@ create table clue_collection (
   author text,
   creator_id text,
   "description" text,
+  is_crossword_collection boolean not null default false, -- affects the UI
   is_private boolean not null default false,
   created_date timestamp not null,
   modified_date timestamp not null,
@@ -123,7 +124,7 @@ create table clue (
   sense_id text, -- optional, if linked to a specific sense
   custom_clue text,
   custom_display_text text,
-  source text -- Book it came from? AI source?
+  source text -- Book it came from? AI source? Important in case I need to remove copyrighted data.
 );
 
 create table collection__clue (
@@ -158,6 +159,7 @@ create table "user" (
   email text not null unique,
   first_name text,
   last_name text,
+  native_lang text,
   created_at timestamp not null default now()
 );
 

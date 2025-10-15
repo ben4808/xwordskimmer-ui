@@ -31,16 +31,18 @@ import { CollectionListProps } from "./CollectionListProps";
 import styles from './CollectionList.module.scss';
 import { useNavigate } from "react-router-dom";
 import { ClueCollection } from "../../models/ClueCollection";
-import { MockCruziApi } from "../../api/MockCruziApi";
+import CruziApi from "../../api/CruziApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 function CollectionList(props: CollectionListProps) {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [collections, setCollections] = useState<ClueCollection[]>([]);
     const [userCollections, setUserCollections] = useState<ClueCollection[]>([]);
     const [publicCollections, setPublicCollections] = useState<ClueCollection[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const api = new MockCruziApi();
+    const api = CruziApi;
 
     const fetchCollections = useCallback(async () => {
       setIsLoading(true);
@@ -53,8 +55,8 @@ function CollectionList(props: CollectionListProps) {
         const publicCols = response.filter(collection => !collection.isPrivate);
         const userCols = response.filter(collection => 
           collection.isPrivate && 
-          props.user && 
-          collection.creator?.id === props.user.id
+          user && 
+          collection.creator?.id === user.id
         );
         
         // Sort public collections alphabetically by title
@@ -70,7 +72,7 @@ function CollectionList(props: CollectionListProps) {
       } finally {
         setIsLoading(false);
       }
-    }, [props.user]);
+    }, [user]);
 
     useEffect(() => {
       fetchCollections();
@@ -101,7 +103,7 @@ function CollectionList(props: CollectionListProps) {
         {!isLoading && !error && collections.length > 0 && (
           <div className={styles.collectionsContainer}>
             {/* Your Collections Section - only show if user is logged in and has collections */}
-            {props.user && userCollections.length > 0 && (
+            {user && userCollections.length > 0 && (
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>Your Collections</h2>
                 <div className={styles.collectionList}>
@@ -178,7 +180,7 @@ function CollectionList(props: CollectionListProps) {
                         By: {collection.author || collection.creator?.firstName || 'Unknown'} • Public • {collection.clueCount || collection.clues?.length || 0} clues
                       </p>
                     </div>
-                    {props.user && collection.progressData && (() => {
+                    {user && collection.progressData && (() => {
                       const total = collection.progressData.completed + collection.progressData.in_progress + collection.progressData.unseen;
                       return (
                         <div className={styles.progressBar}>

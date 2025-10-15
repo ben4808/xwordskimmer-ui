@@ -13,6 +13,7 @@ export interface ClueCollection {
     createdDate: Date;
     modifiedDate: Date;
     source?: string; // e.g. "NYT", "LA Times", etc. for URL
+    isCrosswordCollection: boolean; // affects the UI
     isPrivate: boolean; // true if the collection is private
     metadata1?: string;
     metadata2?: string;

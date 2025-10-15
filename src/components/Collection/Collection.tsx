@@ -34,9 +34,11 @@ Collection page (/collection/<id>)
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CollectionProps } from "./CollectionProps";
 import styles from './Collection.module.scss';
-import { MockCruziApi } from "../../api/MockCruziApi";
+import CruziApi from "../../api/CruziApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 function Collection(props: CollectionProps) {
+    const { user } = useAuth();
     const [newWord, setNewWord] = useState<string>("");
     const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<string[]>([]);
     const [showAutocomplete, setShowAutocomplete] = useState<boolean>(false);
@@ -47,7 +49,7 @@ function Collection(props: CollectionProps) {
     
     const autocompleteRef = useRef<HTMLDivElement>(null);
     const popupRef = useRef<HTMLDivElement>(null);
-    const api = new MockCruziApi();
+    const api = CruziApi;
 
     // Calculate progress data
     const totalClues = props.collection.clueCount || props.collection.clues?.length || 0;
@@ -56,25 +58,11 @@ function Collection(props: CollectionProps) {
     const inProgress = progressData?.in_progress || 0;
     const unseen = progressData?.unseen || 0;
 
-    // Handle autocomplete
+    // Handle autocomplete - TEMPORARILY DISABLED
     const handleAutocomplete = useCallback(async (query: string) => {
-        if (query.length < 2) {
-            setAutocompleteSuggestions([]);
-            setShowAutocomplete(false);
-            return;
-        }
-
-        try {
-            // Mock autocomplete API call - replace with actual API call
-            const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
-            const suggestions = await response.json();
-            setAutocompleteSuggestions(suggestions);
-            setShowAutocomplete(true);
-        } catch (error) {
-            console.error('Autocomplete error:', error);
-            setAutocompleteSuggestions([]);
-            setShowAutocomplete(false);
-        }
+        // Autocomplete functionality temporarily disabled
+        setAutocompleteSuggestions([]);
+        setShowAutocomplete(false);
     }, []);
 
     // Handle word input change
@@ -90,8 +78,28 @@ function Collection(props: CollectionProps) {
 
         setIsAddingWord(true);
         try {
-            // Mock API call to add word to collection
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+            // Create a new clue object for the word
+            const newClue = {
+                id: Date.now().toString(), // Temporary ID
+                clue: `Definition for ${newWord}`,
+                entry: {
+                    entry: newWord,
+                    lang: 'en', // Default language
+                    displayText: newWord,
+                    translation: null
+                },
+                isCrosswordClue: false,
+                progressData: {
+                    userId: user?.id || 'anonymous',
+                    clueId: Date.now().toString(),
+                    correctSolves: 0,
+                    correctSolvesNeeded: 3,
+                    incorrectSolves: 0
+                }
+            };
+
+            // Use CruziApi to add the clue to the collection
+            await api.addCluesToCollection(props.collection.id!, [newClue]);
             
             setToastMessage(`"${newWord}" added to collection`);
             setShowToast(true);
@@ -163,7 +171,7 @@ function Collection(props: CollectionProps) {
                     </button>
                 </div>
                 
-                {props.user && (
+                {user && (
                     <>
                         <div className={styles.progressStats}>
                             <span className={styles.stat}>{mastered} Mastered</span>

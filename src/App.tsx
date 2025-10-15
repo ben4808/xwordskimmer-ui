@@ -1,24 +1,30 @@
 import { BrowserRouter, Outlet, Route, Routes, useParams } from 'react-router-dom';
 import './App.css'
-import CrosswordList from './components/CrosswordList/CrosswordList'
 import Header from './components/Header/Header'
 import CollectionQuiz from './components/CollectionQuiz/CollectionQuiz';
+import CollectionList from './components/CollectionList/CollectionList';
+import Collection from './components/Collection/Collection';
 import { useEffect, useState } from 'react';
 import { ClueCollection } from './models/ClueCollection';
 import { parseDateFromURL } from './lib/utils';
 import { MockCruziApi } from './api/MockCruziApi';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Layout component (combines Header and Outlet for content)
 function Layout() {
+  const { user, login, logout } = useAuth();
+  
   return (
     <div>
-      <Header />
+      <Header onLogin={login} onLogout={logout} />
       <Outlet /> {/* Child routes render here */}
     </div>
   );
 }
 
-function App() {
+// Component that uses auth context
+function AppContent() {
+  const { user } = useAuth();
   const [clueCollection, setClueCollection] = useState(null as ClueCollection | null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null as any);
@@ -27,8 +33,8 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.getCrossword("Lists", new Date());
-        setClueCollection(response)
+        const response = await api.getCollectionList();
+        setClueCollection(response[0])
       } catch (e) {
         setError(e);
       } finally {
@@ -50,16 +56,24 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/list/:date" element={<CrosswordList date={paramDate} />} />
-          <Route path="/crossword/:source/:date" element={<CollectionQuiz clueCollection={clueCollection!} />} />
-          <Route path="/clue/:id" element={<CollectionQuiz clueCollection={clueCollection!} />} />
-          <Route path="*" element={<CrosswordList date={paramDate} />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/collections" element={<CollectionList />} />
+        <Route path="/collection/:id" element={<Collection collection={clueCollection!} onBack={() => window.history.back()} onStartQuiz={(id) => window.location.href = `/quiz/${id}`} />} />
+        <Route path="/quiz/:id" element={<CollectionQuiz clueCollection={clueCollection!} />} />
+        <Route path="*" element={<CollectionList />} />
+      </Route>
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 
