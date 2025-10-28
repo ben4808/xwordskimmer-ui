@@ -36,7 +36,8 @@ create table clue_collection (
   created_date timestamp not null,
   modified_date timestamp not null,
   metadata1 text, -- AI composite score
-  metadata2 text
+  metadata2 text,
+  clue_count int not null default 0
 );
 
 CREATE INDEX IX_Date ON clue_collection(created_date ASC);
@@ -187,4 +188,10 @@ create table entry_info_queue (
   "entry" text not null,
   lang text not null,
   added_at timestamp not null default now()
+);
+
+create table collection_access (
+  collection_id text not null,
+  user_id text not null,
+  primary key(collection_id, user_id)
 );

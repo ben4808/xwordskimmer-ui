@@ -5,7 +5,7 @@ export interface Sense {
   id?: string;
   partOfSpeech?: string;
   commonness?: string;
-  summary: Map<string, string>; // <lang, summary>
+  summary?: Map<string, string>; // <lang, summary>
   definition?: Map<string, string>; // <lang, definition>
   exampleSentences?: ExampleSentence[];
   translations?: Map<string, EntryTranslation>; // <lang, EntryTranslation>

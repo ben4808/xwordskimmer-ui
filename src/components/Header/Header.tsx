@@ -12,7 +12,7 @@ General
     as a pleasing light blue.
 - The header is part of the page and does not float on top of the screen.
 
-Header for Crosswords/Collections/Dictionary pages
+Header for Crosswords/Collections List/Dictionary pages
 - On the left side of the header is a dropdown menu with the options “Crosswords”, “Collections”, 
     and “Dictionary”.
 - The dropdown is a hamburger list on mobile. On desktop, it is a dropdown that shows the currently 
@@ -159,8 +159,14 @@ const Header = (props: HeaderProps) => {
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
-            theme="filled_black" // Enables dark mode
-            shape="circle" // Makes the button rounded
+            theme="filled_blue"
+            shape="rectangular"
+            size="medium"
+            text="signin_with"
+            width="200"
+            useOneTap={false}
+            auto_select={false}
+            cancel_on_tap_outside={true}
           />
         </div>
       )}
@@ -297,7 +303,7 @@ const Header = (props: HeaderProps) => {
 
   return (
     <header className={styles.header}>
-      <div className={styles.container}>
+      <div className={`${styles.container} ${(headerType === 'collection' || headerType === 'quiz') ? styles.collectionLayout : ''}`}>
         {renderLeftSection()}
         {renderCenterSection()}
         {renderUserSection()}

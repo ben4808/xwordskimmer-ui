@@ -29,6 +29,26 @@ $accent-color: #61dafb; // A common React blue for highlights
   max-width: 1200px; // Optional: Max width for content within header
   margin: 0 auto; // Center the container if max-width is set
   position: relative; // Needed for absolutely positioned logo
+  
+  // For collection/quiz headers, ensure center content is truly centered
+  &.collectionLayout {
+    justify-content: space-between;
+    
+    .leftSection {
+      flex: 0 0 auto; // Don't grow or shrink
+    }
+    
+    .centerContent {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+    
+    .rightSection {
+      flex: 0 0 auto; // Don't grow or shrink
+    }
+  }
 }
 
 /* Left Section for menus */
@@ -340,21 +360,6 @@ $accent-color: #61dafb; // A common React blue for highlights
   }
 }
 
-.loginButton {
-  background: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  &:hover {
-    border: 0;
-  }
-}
-
-.googleLoginButton {
-  width: auto;
-}
-
 /* Back Button Styling */
 .backButton {
   background: none;
@@ -382,7 +387,6 @@ $accent-color: #61dafb; // A common React blue for highlights
 
 /* Center Content for Collection/Quiz Headers */
 .centerContent {
-  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -402,16 +406,16 @@ $accent-color: #61dafb; // A common React blue for highlights
   }
 }
 
-/* Google Login Button Styling */
+/* Google Login Button Styling - Dark Mode */
 .googleLoginContainer {
   display: flex;
   align-items: center;
   
   // Override Google's default styling to match our dark theme
-  :global(.google-login-button) {
-    background-color: #4285f4 !important;
-    color: white !important;
-    border: none !important;
+  :global(div[role="button"]) {
+    background-color: $dark-bg-secondary !important;
+    color: $text-color-light !important;
+    border: 1px solid color.adjust($dark-bg-secondary, $lightness: 10%) !important;
     border-radius: 4px !important;
     padding: 8px 16px !important;
     font-size: 14px !important;
@@ -420,15 +424,34 @@ $accent-color: #61dafb; // A common React blue for highlights
     align-items: center !important;
     gap: 8px !important;
     cursor: pointer !important;
-    transition: background-color 0.2s ease !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    min-height: 40px !important;
     
     &:hover {
-      background-color: #3367d6 !important;
+      background-color: color.adjust($dark-bg-secondary, $lightness: 5%) !important;
+      border-color: $accent-color !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
     }
     
     &:focus {
       outline: 2px solid $accent-color !important;
       outline-offset: 2px !important;
     }
+    
+    &:active {
+      background-color: color.adjust($dark-bg-secondary, $lightness: -5%) !important;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+  }
+  
+  // Additional styling for the Google logo and text
+  :global(svg) {
+    // Let the Google logo maintain its original colors
+  }
+  
+  :global(span) {
+    color: $text-color-light !important;
   }
 }

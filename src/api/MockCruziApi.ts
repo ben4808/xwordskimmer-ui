@@ -1,9 +1,10 @@
 import { Clue } from "../models/Clue";
 import { ClueCollection } from "../models/ClueCollection";
 import { Entry } from "../models/Entry";
+import { User } from "../models/User";
 import cluesData from "./crossword_clues.json";
 import countiesData from "./IdahoCounties.json";
-import { ICruziApi } from "./ICruziApi";
+import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
 
 export class MockCruziApi implements ICruziApi {
   // Mock implementation of the Cruzi API methods
@@ -77,6 +78,46 @@ export class MockCruziApi implements ICruziApi {
   async removeClueFromCollection(collectionId: string, clueId: number): Promise<void> {
     // Mock implementation - in a real API this would remove the clue from the collection
     console.log(`Removing clue ${clueId} from collection: ${collectionId}`);
+  }
+
+  async authenticateWithGoogle(token: string): Promise<AuthResponse> {
+    // Mock implementation - simulate successful Google authentication
+    console.log('Mock Google authentication with token:', token.substring(0, 20) + '...');
+    
+    const mockUser: User = {
+      id: 'mock-user-123',
+      firstName: 'Mock',
+      lastName: 'User',
+      email: 'mock@example.com',
+      nativeLang: 'en',
+    };
+
+    return {
+      token: 'mock-jwt-token-' + Date.now(),
+      user: mockUser,
+    };
+  }
+
+  async verifyAuth(): Promise<AuthVerifyResponse> {
+    // Mock implementation - simulate token verification
+    const token = localStorage.getItem('token');
+    
+    if (!token || !token.startsWith('mock-jwt-token-')) {
+      return { valid: false, error: 'Invalid mock token' };
+    }
+
+    const mockUser: User = {
+      id: 'mock-user-123',
+      firstName: 'Mock',
+      lastName: 'User',
+      email: 'mock@example.com',
+      nativeLang: 'en',
+    };
+
+    return {
+      valid: true,
+      user: mockUser,
+    };
   }
 }
 

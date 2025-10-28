@@ -2,10 +2,10 @@
 import { Clue } from "../models/Clue";
 import { ClueCollection } from "../models/ClueCollection";
 import { UserResponse } from "../models/UserResponse";
-import { ICruziApi } from "./ICruziApi";
+import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
 import settings from "../settings.json";
 
-const baseUrl = settings.api_base_url;
+const baseUrl = settings.api_base_url + "/api";
 
 class CruziApi implements ICruziApi {
   async getCollectionList(): Promise<ClueCollection[]> {
@@ -126,6 +126,53 @@ class CruziApi implements ICruziApi {
     } catch (error) {
       console.error('Error removing clue from collection:', error);
       throw error;
+    }
+  }
+
+  async authenticateWithGoogle(token: string): Promise<AuthResponse> {
+    try {
+      const response = await fetch(`${baseUrl}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error authenticating with Google:', error);
+      throw error;
+    }
+  }
+
+  async verifyAuth(): Promise<AuthVerifyResponse> {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return { valid: false, error: 'No token found' };
+      }
+
+      const response = await fetch(`${baseUrl}/auth/verify`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        return { valid: false, error: `HTTP error! status: ${response.status}` };
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error verifying auth:', error);
+      return { valid: false, error: 'Network error during verification' };
     }
   }
 }

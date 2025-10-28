@@ -17,8 +17,8 @@ export interface ClueCollection {
     isPrivate: boolean; // true if the collection is private
     metadata1?: string;
     metadata2?: string;
+    clueCount?: number;
 
     progressData?: CollectionProgressData;
-    clueCount?: number;
     clues?: Clue[];
 };

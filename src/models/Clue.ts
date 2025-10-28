@@ -5,7 +5,7 @@ import { Sense } from "./Sense";
 export interface Clue {
     id?: string;
     entry?: Entry;
-    sense?: Sense;
+    sense?: Sense; // if linked to a specific Sense
     customClue?: string;
     customDisplayText?: string; // override for entry display text
     source?: string;  // crossword, book, etc.

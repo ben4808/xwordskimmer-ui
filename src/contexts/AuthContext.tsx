@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../models/User';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import CruziApi from '../api/CruziApi';
 
 interface AuthContextType {
   user: User | null;
@@ -30,13 +30,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userData = localStorage.getItem('user');
         
         if (token && userData) {
-          // Verify token is still valid
-          const response = await axios.get('/auth/verify', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          // Verify token is still valid using the API
+          const response = await CruziApi.verifyAuth();
           
-          if (response.data.valid) {
-            setUser(JSON.parse(userData));
+          if (response.valid && response.user) {
+            setUser(response.user);
           } else {
             // Token is invalid, clear storage
             localStorage.removeItem('token');
@@ -70,17 +68,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       setIsLoading(true);
-      // Send ID token to backend
-      const response = await axios.post('/auth/google', {
-        token: credentialResponse.credential,
-      });
       
-      console.log('Login Success:', response.data);
+      // Use the API to authenticate with Google
+      const response = await CruziApi.authenticateWithGoogle(credentialResponse.credential);
+      
+      console.log('Login Success:', response);
       
       // Store JWT and user data
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      setUser(response.data.user);
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      setUser(response.user);
     } catch (error) {
       console.error('Login Failed:', error);
     } finally {
@@ -104,7 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      <GoogleOAuthProvider clientId="your-google-client-id">
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
         {children}
       </GoogleOAuthProvider>
     </AuthContext.Provider>

@@ -74,12 +74,14 @@ import { CollectionQuizProps } from './CollectionQuizProps';
 import { replaceCharAtIndex, breakTextIntoLines, getCruziScoreColor, getTextWidth, deepClone } from '../../lib/utils';
 import { Clue } from '../../models/Clue';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCollection } from '../../contexts/CollectionContext';
 import CruziApi from '../../api/CruziApi';
 
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
   // --- State Management ---
   const { user } = useAuth();
+  const { setCurrentCollection } = useCollection();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [allUserInput, setAllUserInput] = useState<Record<number, string>>({});
   const [userInput, setUserInput] = useState<string>('');
@@ -334,6 +336,16 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       loadInitialClues();
     }
   }, [clueCollection?.id]);
+
+  // Set current collection in context when component mounts
+  useEffect(() => {
+    setCurrentCollection(clueCollection);
+    
+    // Clean up when component unmounts
+    return () => {
+      setCurrentCollection(null);
+    };
+  }, [clueCollection, setCurrentCollection]);
 
   // Initialize state when a new clue is selected
   useEffect(() => {

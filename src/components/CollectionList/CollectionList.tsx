@@ -27,6 +27,8 @@ Collection List page (/collections)
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faList } from '@fortawesome/free-solid-svg-icons';
 import { CollectionListProps } from "./CollectionListProps";
 import styles from './CollectionList.module.scss';
 import { useNavigate } from "react-router-dom";
@@ -121,12 +123,12 @@ function CollectionList(props: CollectionListProps) {
                       }}
                     >
                       <div className={styles.thumbnail}>
-                        <i className="fas fa-list"></i>
+                        <FontAwesomeIcon icon={faList} />
                       </div>
                       <div className={styles.details}>
                         <h3 className={styles.title}>{collection.title}</h3>
                         <p className={styles.meta}>
-                          By: {collection.author || collection.creator?.firstName || 'Unknown'} • Private • {collection.clueCount || collection.clues?.length || 0} clues
+                          By: {collection.author || collection.creator?.firstName || 'Unknown'} • Private • {collection.clueCount} clues
                         </p>
                       </div>
                       {collection.progressData && (() => {
@@ -172,12 +174,12 @@ function CollectionList(props: CollectionListProps) {
                     }}
                   >
                     <div className={styles.thumbnail}>
-                      <i className="fas fa-list"></i>
+                      <FontAwesomeIcon icon={faList} />
                     </div>
                     <div className={styles.details}>
                       <h3 className={styles.title}>{collection.title}</h3>
                       <p className={styles.meta}>
-                        By: {collection.author || collection.creator?.firstName || 'Unknown'} • Public • {collection.clueCount || collection.clues?.length || 0} clues
+                        By: {collection.author || collection.creator?.firstName || 'Unknown'} • Public • {collection.clueCount} clues
                       </p>
                     </div>
                     {user && collection.progressData && (() => {

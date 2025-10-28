@@ -16,8 +16,13 @@ Collection page (/collection/<id>)
 - At the top, there is a progress indication section.
     - First, is shown “<count> total clues"
     - Beside this line is a list Fontawesome icon that opens a popup window. In this popup window 
-        is a table of words and phrases in the collection, with the following fields: Word, Sense, 
-        Status, where Status is one of (Ready, Processing, Invalid)
+        is a table of words and phrases in the collection, with the following fields:
+        - Answer : The display text of the entry referenced by the clue. If there is a custom_display_text, it is used instead of the entry's display text.
+        - Sense : The summary of the referenced sense for the entry in the language of the entry. "N/A" if no sense is referenced.
+        - Clue : The custom_clue of the clue. "N/A" if no custom_clue is set.
+        - Progress : One of (Mastered, In Progress, Unseen), based on the progress of the user. If no user is logged in, the progress is "Unseen".
+        - Status : One of (Ready, Processing, Invalid), based on the loading status of the data for the clue. 
+           - "Ready" if there is no loading status provided.
     - The next line says “<count> Mastered”, “<count> In Progress”, and “<count> Unseen”, 
         separated by some space.
     - Then there is a progress bar, with green representing Mastered clues, yellow In Progress, 
@@ -32,13 +37,18 @@ Collection page (/collection/<id>)
 */
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faList, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { CollectionProps } from "./CollectionProps";
 import styles from './Collection.module.scss';
 import CruziApi from "../../api/CruziApi";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCollection } from "../../contexts/CollectionContext";
+import { Clue } from "../../models/Clue";
 
 function Collection(props: CollectionProps) {
     const { user } = useAuth();
+    const { setCurrentCollection } = useCollection();
     const [newWord, setNewWord] = useState<string>("");
     const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<string[]>([]);
     const [showAutocomplete, setShowAutocomplete] = useState<boolean>(false);
@@ -46,10 +56,42 @@ function Collection(props: CollectionProps) {
     const [toastMessage, setToastMessage] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const [isAddingWord, setIsAddingWord] = useState<boolean>(false);
+    const [clues, setClues] = useState<Clue[]>([]);
+    const [cluesLoading, setCluesLoading] = useState<boolean>(false);
     
     const autocompleteRef = useRef<HTMLDivElement>(null);
     const popupRef = useRef<HTMLDivElement>(null);
     const api = CruziApi;
+
+    // Set current collection in context when component mounts
+    useEffect(() => {
+        setCurrentCollection(props.collection);
+        
+        // Clean up when component unmounts
+        return () => {
+            setCurrentCollection(null);
+        };
+    }, [props.collection, setCurrentCollection]);
+
+    // Load clues when component mounts
+    useEffect(() => {
+        const loadClues = async () => {
+            if (!props.collection.id) return;
+            
+            setCluesLoading(true);
+            try {
+                const loadedClues = await api.getCollectionBatch(props.collection.id);
+                setClues(loadedClues);
+            } catch (error) {
+                console.error('Error loading clues:', error);
+                setClues([]);
+            } finally {
+                setCluesLoading(false);
+            }
+        };
+
+        loadClues();
+    }, [props.collection.id]);
 
     // Calculate progress data
     const totalClues = props.collection.clueCount || props.collection.clues?.length || 0;
@@ -167,7 +209,7 @@ function Collection(props: CollectionProps) {
                         onClick={() => setIsPopupOpen(true)}
                         aria-label="View collection details"
                     >
-                        <i className="fas fa-list"></i>
+                        <FontAwesomeIcon icon={faList} />
                     </button>
                 </div>
                 
@@ -254,38 +296,81 @@ function Collection(props: CollectionProps) {
                                 onClick={() => setIsPopupOpen(false)}
                                 aria-label="Close popup"
                             >
-                                <i className="fas fa-times"></i>
+                                <FontAwesomeIcon icon={faTimes} />
                             </button>
                         </div>
                         <div className={styles.popupBody}>
                             <table className={styles.wordsTable}>
                                 <thead>
                                     <tr>
-                                        <th>Word</th>
+                                        <th>Answer</th>
                                         <th>Sense</th>
+                                        <th>Clue</th>
+                                        <th>Progress</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {props.collection.clues?.map((clue, index) => (
-                                        <tr key={clue.id || index}>
-                                            <td>{clue.entry?.entry || clue.customDisplayText || 'N/A'}</td>
-                                            <td>{clue.entry?.senses?.values().next().value?.definition || 'N/A'}</td>
-                                            <td>
-                                                <span className={`${styles.status} ${
-                                                    clue.progressData && clue.progressData.correctSolves >= clue.progressData.correctSolvesNeeded ? styles.statusMastered :
-                                                    clue.progressData && clue.progressData.correctSolves > 0 ? styles.statusInProgress :
-                                                    styles.statusUnseen
-                                                }`}>
-                                                    {clue.progressData && clue.progressData.correctSolves >= clue.progressData.correctSolvesNeeded ? 'Mastered' :
-                                                     clue.progressData && clue.progressData.correctSolves > 0 ? 'In Progress' :
-                                                     'Unseen'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    )) || (
+                                    {cluesLoading ? (
                                         <tr>
-                                            <td colSpan={3} className={styles.noData}>No clues available</td>
+                                            <td colSpan={5} className={styles.noData}>Loading clues...</td>
+                                        </tr>
+                                    ) : clues.length > 0 ? clues.map((clue, index) => {
+                                        // Get the answer - use custom_display_text if available, otherwise entry display text
+                                        const answer = clue.customDisplayText || clue.entry?.displayText || clue.entry?.entry || 'N/A';
+                                        
+                                        // Get the sense summary in the entry's language
+                                        let senseText = 'N/A';
+                                        if (clue.sense?.summary && clue.entry?.lang) {
+                                            senseText = clue.sense.summary.get(clue.entry.lang) || 'N/A';
+                                        } else if (clue.entry?.senses && clue.entry.senses.size > 0) {
+                                            // If no specific sense is referenced, get the first sense
+                                            const firstSense = clue.entry.senses.values().next().value;
+                                            if (firstSense?.summary && clue.entry.lang) {
+                                                senseText = firstSense.summary.get(clue.entry.lang) || 'N/A';
+                                            }
+                                        }
+                                        
+                                        // Get the custom clue
+                                        const clueText = clue.customClue || 'N/A';
+                                        
+                                        // Determine progress based on user login status and progress data
+                                        let progressText = 'Unseen';
+                                        let progressClass = styles.statusUnseen;
+                                        if (user && clue.progressData) {
+                                            if (clue.progressData.correctSolves >= clue.progressData.correctSolvesNeeded) {
+                                                progressText = 'Mastered';
+                                                progressClass = styles.statusMastered;
+                                            } else if (clue.progressData.correctSolves > 0) {
+                                                progressText = 'In Progress';
+                                                progressClass = styles.statusInProgress;
+                                            }
+                                        }
+                                        
+                                        // Determine status - for now, assume Ready unless there's a loading status
+                                        const statusText = 'Ready';
+                                        const statusClass = styles.statusReady;
+                                        
+                                        return (
+                                            <tr key={clue.id || index}>
+                                                <td>{answer}</td>
+                                                <td>{senseText}</td>
+                                                <td>{clueText}</td>
+                                                <td>
+                                                    <span className={`${styles.status} ${progressClass}`}>
+                                                        {progressText}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className={`${styles.status} ${statusClass}`}>
+                                                        {statusText}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    }) : (
+                                        <tr>
+                                            <td colSpan={5} className={styles.noData}>No clues available</td>
                                         </tr>
                                     )}
                                 </tbody>
