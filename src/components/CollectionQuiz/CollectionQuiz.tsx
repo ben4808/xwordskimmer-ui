@@ -77,7 +77,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './CollectionQuiz.module.scss';
 import { CollectionQuizProps } from './CollectionQuizProps';
 import { replaceCharAtIndex, getTextWidth } from '../../lib/utils';
-import { normalizeAnswer, getExpectedResponse, submitAnswer } from './quizHelpers';
+import { normalizeAnswer, submitAnswer } from './quizHelpers';
 import { InputBoxState } from '../../models/InputBoxState';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCollection } from '../../contexts/CollectionContext';
@@ -109,6 +109,9 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const normalizedAnswer = useMemo(() => normalizeAnswer(rawAnswer), [rawAnswer]);
   const displayText = currentClue?.entry?.displayText || rawAnswer || '';
   
+  // Clue text - MUST be calculated before useQuizState to get expectedResponse
+  const { clueText, translatedClue, expectedResponse } = useClueText(currentClue, user, currentIndex);
+  
   // Quiz state management
   const quizState = useQuizState({
     currentClue,
@@ -139,9 +142,6 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
   const incrementCorrect = () => setCorrectAnswers(prev => prev + 1);
   const incrementIncorrect = () => setIncorrectAnswers(prev => prev + 1);
-  
-  // Clue text
-  const { clueText, translatedClue, expectedResponse } = useClueText(currentClue, user, currentIndex);
   
   // Answer validation
   useAnswerValidation({
@@ -264,7 +264,9 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const revealAnswer = async () => {
     if (isRevealed || isSolved) return;
     
-    // Get expected response according to priority list
+    // FIX #2: Get the correct expected response based on mode
+    // For crossword: use normalizedAnswer
+    // For non-crossword: use expectedResponse which comes from clueText hook
     const fullAnswer = isCrosswordClue ? normalizedAnswer : expectedResponse;
     
     // Check if user's answer was correct (before reveal) for API submission
@@ -274,12 +276,14 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       : normalizeAnswer(expectedResponse);
     const isCorrect = normalizedInput === normalizedExpected;
     
-    // Set all state updates together - React will batch them
+    // FIX #2: Set userInput to the full answer so it appears in the input box
+    setUserInput(fullAnswer || '');
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: fullAnswer || '' }));
+    
+    // Set revealed and solved state
     setIsRevealed(true);
     setIsSolved(true);
     setInputBoxState(InputBoxState.Completed);
-    setUserInput(fullAnswer || '');
-    setAllUserInput(prev => ({ ...prev, [currentIndex]: fullAnswer || '' }));
     
     // Submit user response to API
     await submitAnswer(currentClue?.id, isCorrect);
@@ -322,45 +326,62 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const fillInBlankPattern = /\{\{([^}]+)\}\}/i;
   const hasFillInBlank = fillInBlankPattern.test(clueText);
   
-  // Calculate input width based on expected response text
+  // FIX #1: Calculate input width based on expected response text
   // Width adapts to expected response text and changes with every new clue
   const [inputWidth, setInputWidth] = useState<string | undefined>(undefined);
   
   useEffect(() => {
+    // FIX #1: Reset width when clue changes to trigger recalculation
+    setInputWidth(undefined);
+    
     if (!expectedResponse || !currentClue) {
-      setInputWidth(undefined);
       return;
     }
     
     // Calculate width after DOM is ready
     const calculateWidth = () => {
       try {
-        const textWidth = getTextWidth(expectedResponse, 1.5, 'Verdana, sans-serif');
+        // FIX #1: Use a reference font size and family that matches the input styling
+        // Default to 16px (1rem) and common sans-serif font
+        const fontSize = 1.5; // rem units
+        const fontFamily = 'Verdana, sans-serif';
+        const textWidth = getTextWidth(expectedResponse, fontSize, fontFamily);
+        
         if (textWidth === 0) {
           // If calculation fails, retry after a short delay
           setTimeout(calculateWidth, 50);
           return;
         }
+        
         // Add padding based on input type:
         // - fillInBlankInput: 0.5rem padding each side = 1rem total
         // - nonCrosswordInput: 0.75rem padding each side = 1.5rem total
-        // Use 1.5rem (0.75rem each side) to accommodate both
         const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-        const paddingWidth = 1.5 * rootFontSize; // 1.5rem total padding (0.75rem each side)
+        const paddingWidth = 1.5 * rootFontSize; // 1.5rem total padding
+        
+        // Add extra buffer for borders and better visual appearance
+        const borderWidth = 4; // 2px on each side
+        const buffer = 10; // Extra pixels for comfort
+        
+        // Calculate total width
+        const calculatedWidth = textWidth + paddingWidth + borderWidth + buffer;
+        
         // Ensure minimum width based on min-width in SCSS
-        const calculatedWidth = textWidth + paddingWidth;
-        const minWidth = 150; // Match min-width from SCSS for fill-in-blank
-        setInputWidth(`${Math.max(calculatedWidth, minWidth)}px`);
+        const minWidth = hasFillInBlank ? 150 : 200;
+        const finalWidth = Math.max(calculatedWidth, minWidth);
+        
+        setInputWidth(`${finalWidth}px`);
       } catch (error) {
         console.error('Error calculating input width:', error);
-        setInputWidth(undefined);
+        // Fallback to a reasonable default
+        setInputWidth(hasFillInBlank ? '150px' : '200px');
       }
     };
     
     // Small delay to ensure DOM is ready
-    const timer = setTimeout(calculateWidth, 0);
+    const timer = setTimeout(calculateWidth, 10);
     return () => clearTimeout(timer);
-  }, [expectedResponse, currentIndex, currentClue]);
+  }, [expectedResponse, currentIndex, currentClue, hasFillInBlank]);
 
   // --- Data and Guard Clauses ---
   if (!clueCollection || isLoading) {
