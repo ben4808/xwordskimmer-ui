@@ -1,3 +1,5 @@
+import { InputBoxState } from '../models/InputBoxState';
+
 // https://stackoverflow.com/questions/38416020/deep-copy-in-es6-using-the-spread-syntax
 export function deepClone(obj: any): any {
     if(typeof obj !== 'object' || obj === null) {
@@ -171,4 +173,20 @@ export function getTextWidth(text: string, remSize: number, fontFamily: string):
   }
   
   return 0;
+}
+
+function normalizeForComparison(text: string): string {
+  const matches = text.match(/(\p{L}|\p{N}|')/gu);
+  return matches ? matches.join('').toLowerCase() : '';
+}
+
+export function verifyInputBox(userInput: string, displayText: string): InputBoxState {
+  const normalizedInput = normalizeForComparison(userInput);
+  const normalizedDisplay = normalizeForComparison(displayText);
+  if (normalizedInput.length > normalizedDisplay.length) return InputBoxState.Incorrect;
+  if (normalizedInput.length === 0) return InputBoxState.Correct;
+  for (let i = 0; i < normalizedInput.length; i++) {
+    if (normalizedInput[i] !== normalizedDisplay[i]) return InputBoxState.Incorrect;
+  }
+  return normalizedInput.length === normalizedDisplay.length ? InputBoxState.Completed : InputBoxState.Correct;
 }

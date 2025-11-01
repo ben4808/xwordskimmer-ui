@@ -1,0 +1,7 @@
+Explain the following word/phrase in the context of this crossword clue:
+
+Clue: {CLUE_TEXT}
+Answer: {ANSWER_TEXT}
+
+Provide a clear and concise explanation that helps understand why this answer fits the clue.
+

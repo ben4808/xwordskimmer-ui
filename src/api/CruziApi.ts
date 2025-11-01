@@ -30,7 +30,7 @@ class CruziApi implements ICruziApi {
 
   async getCollectionBatch(collectionId: string): Promise<Clue[]> {
     try {
-      const response = await fetch(`${baseUrl}/getCollectionBatch?id=${encodeURIComponent(collectionId)}`, {
+      const response = await fetch(`${baseUrl}/getCollectionBatch?collection_id=${encodeURIComponent(collectionId)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,89 @@ class CruziApi implements ICruziApi {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Transform raw API response to Clue objects
+      return rawData.map((raw: any) => {
+        // Convert object to Map helper
+        const objectToMap = (obj: any): Map<string, string> | undefined => {
+          if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+            return undefined;
+          }
+          return new Map(Object.entries(obj));
+        };
+
+        // Transform example sentences from { _id, en, es, gn, ... } format
+        // to { id, senseId, translations: Map } format
+        const transformExampleSentences = (exampleSentences: any[], senseId?: string): any[] => {
+          if (!exampleSentences || !Array.isArray(exampleSentences)) {
+            return [];
+          }
+          
+          return exampleSentences.map((ex: any) => {
+            const translations = new Map<string, string>();
+            // Copy all properties except _id to the translations map
+            Object.keys(ex).forEach(key => {
+              if (key !== '_id' && ex[key] !== null && ex[key] !== undefined) {
+                translations.set(key, ex[key]);
+              }
+            });
+            
+            return {
+              id: ex._id,
+              senseId: senseId || '',
+              translations: translations.size > 0 ? translations : undefined,
+            };
+          });
+        };
+
+        const clue: Clue = {
+          id: raw.id,
+          customClue: raw.customClue,
+          customDisplayText: raw.customDisplayText,
+          source: raw.source,
+        };
+
+        // Construct Entry object if present
+        if (raw.entry) {
+          clue.entry = {
+            entry: raw.entry.entry,
+            lang: raw.entry.lang,
+          };
+        }
+
+        // Construct Sense object if present
+        if (raw.sense) {
+          clue.sense = {
+            id: raw.sense.id,
+            partOfSpeech: raw.sense.partOfSpeech,
+            commonness: raw.sense.commonness,
+            summary: objectToMap(raw.sense.summary),
+            definition: objectToMap(raw.sense.definition),
+            exampleSentences: transformExampleSentences(raw.sense.exampleSentences || [], raw.sense.id),
+            familiarityScore: raw.sense.familiarityScore,
+            qualityScore: raw.sense.qualityScore,
+            sourceAi: raw.sense.sourceAi,
+            // translations not returned by populate_collection_batch stored procedure
+          };
+        }
+
+        // Construct progressData if present
+        // Note: DAO returns progressData with totalSolves, correctSolves, incorrectSolves, lastSolve (Date serialized as string)
+        // The model expects userId, clueId, correctSolvesNeeded, correctSolves, incorrectSolves, lastSolveDate
+        if (raw.progressData) {
+          clue.progressData = {
+            userId: '', // Not available in API response
+            clueId: raw.id || '',
+            correctSolvesNeeded: raw.progressData.correctSolvesNeeded, // May not be in response
+            correctSolves: raw.progressData.correctSolves || 0,
+            incorrectSolves: raw.progressData.incorrectSolves || 0,
+            lastSolveDate: raw.progressData.lastSolve ? (typeof raw.progressData.lastSolve === 'string' ? new Date(raw.progressData.lastSolve) : raw.progressData.lastSolve) : undefined,
+          };
+        }
+
+        return clue;
+      });
     } catch (error) {
       console.error('Error fetching collection batch:', error);
       throw error;

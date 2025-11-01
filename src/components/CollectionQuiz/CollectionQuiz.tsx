@@ -1,217 +1,195 @@
 /**
-Modify the code in this React component according to the given requirements and remove things 
-not in the requirements. Assume that all other components are already in an optimal, working state.
-
-General
-- The site is built in React with Typescript.
-- The entire site is responsive and works well on both phones and computers. 
-- Each component includes an SCSS module and does not use Tailwind or any other additional CSS framework.
-- The site supports login with Google OAuth and manages authentication with a JWT token. 
-    The JWT token contains a custom claim for the currently logged in username.
-- The site is styled in Dark Mode, using a standard Dark Mode color set with accent color 
-    as a pleasing light blue.
-- The header is part of the page and does not float on top of the screen.
-
-Collection Quiz page (/quiz/<collectionId>)
-- Data for this page will come from the getCollectionBatch API call, using the provided clueCollection.
-- It will request an initial batch of 20 clues, and when the users gets to the end of the batch, it
-    will request the next batch in the background, which will be added to the current batch in memory.
-
-- The first thing shown are a couple boxes indicating how many correct and incorrect answers 
-    the user has given during the session. The correct answers box has a thin green border, and the 
-    incorrect box a thin red border.
-- Next is a progress bar, where green shows correct responses and gray shows responses still needed 
-    to master the clue.
-
-The rest of the display will depend on the isCrosswordCollection flag in the clueCollection.
-If it is false:
-- Next is the clue text itself. If the clue has a fill-in-the-blank section, that section functions 
-    as the input box for the user.
-  - If the clue does not have a custom clue, the clue text will come from the sense in the clue.
-    - The first examples sentence in the sense will be used. The translation for the language of the clue
-        will be used for the clue text, and the translation for the native language of the user will be
-        used for the translated text. Or English as a fallback.
-  - The component validates the user's input on each letter entered against the correct answer for the 
-      entire clue. If the answer is "hello", typing "he" shows "he" in dark green, but typing "hi" 
-      shows "hi" in dark red).
-  - The input field is based on the entry's display text, which may include spaces or special characters. 
-      However, the input validation should only enforce that the alphanumeric characters (A-Z, 0-9, 
-      others depeding on the language) are in the correct order and should ignore case. 
-  - In any case, when all the letters are correctly entered, the input field changes to a dark green 
-      background.
-- Next is shown in smaller text the translated clue if there is one for this clue.
-- Next is an input box for clues without a fill-in-the-blank section. 
-
-If it is true:
-- Next is the clue text itself.
-- Then is the input boxes for the letters of the response. Each letter will be in its own input box, 
-    and the boxes should evoke the feel of a crossword puzzle.
-  - Clicking on a box activates that box. Entering a letter into a box will replace the letter in that 
-      box, and then advance the active box to the next box. Pressing Backspace will remove the letter
-      from that box and move the active box to the previous box.
-  - Every letter entered is validated against the correct letter for that box. If the letter is correct,
-      the letter turns dark green. If the letter is incorrect, the letter turns dark red.
-  - The input boxes are based on the entry's display text, which may include spaces or special characters. 
-      However, boxes should only appear for alphanumeric characters (A-Z, 0-9, others depeding on the 
-      language). The rest of the characters should be printed directly on the screen.
-  - In any case, when all the letters are correctly entered, all the input boxeschange to a dark green 
-      background. 
-
-- Finally there is a submit button (pressing Enter with the input box focused does the same thing).
-- After submit is pressed, the correct answer is revealed in full, the progress box is updated, 
-    and the Submit button is changed to a "Next" button which takes the user to the next clue 
-    (pressing Enter does the same thing).
-- Beside the next button is an "Explain" button. Pressing this button copies to the clipboard an AI 
-    prompt that will break down the clue word by word to help users understand. Don't include this prompt
-    in the code, as it will be loaded from a file in the future.
+ * Collection Quiz Component Requirements
+ * 
+ * Tech Stack: React + TypeScript, SCSS modules, Dark Mode UI, Google OAuth with JWT auth
+ * 
+ * Page: /quiz/<collectionId>
+ * 
+ * Data Loading:
+ * - Fetch clues via getCollectionBatch API (initial batch: <=20 clues)
+ * - When user hits the end of the batch (is on the last clue), load next batch in background
+ * 
+ * Layout (top to bottom):
+ * 1. Session score boxes (side by side):
+ *    - Correct: dark green border, super dark green background, no label
+ *    - Incorrect: dark red border, super dark red background, no label
+ * 
+ * 2. Progress bar (if user logged in):
+ *    - Current clue only (not session)
+ *    - Green = correct responses, gray = remaining needed
+ *    - No labels
+ * 
+ * 3. Clue display/input area (format depends on isCrosswordCollection flag
+ *      and whether there is a fill-in-the-blank section in the clue text)
+ * 
+ * 4. Action buttons: Reveal → Next + Explain
+ * 
+ * Non-Crossword Mode (isCrosswordCollection = false):
+ * - Clue text:
+ *   • Custom clue OR random example sentence from sense (use translation matching clue language)
+ *   • If clue text has fill-in-the-blank section, i.e. {{response}} pattern, 
+ *       that section is replaced inline with input box. The text inside the double brackets
+ *       (e.g., "name" in {{name}}) is the expected response for the input box.
+ *   • If no double brackets, show input box below clue and translated clue, and the expected 
+ *       response is the display text of the entry for the clue (not entry.entry).
+ * - Translated clue: Show below the main clue text in smaller text
+ *   • If there is a custom clue, no translated clue is shown.
+ *   • If there is no custom clue, show the translation of the used example sentence in the native
+ *       language of the user, or if there is no user, the English translation.
+ * - The input box is adapted to the width of the expected response text. This width changes with
+ *     every new clue that is shown.
+ * - Input validation:
+ *   • Validate input as a whole after every keystroke: correct = dark green, incorrect = dark red
+ *   • Use the verifyInputBox function in lib/utils.ts to validate the input.
+ *   • When validation shows "Completed", the entire input box gets a dark green background.
+ * 
+ * Crossword Mode (isCrosswordCollection = true):
+ * - Clue text: Display custom clue text
+ * - Input boxes:
+ *   • One box per alphanumeric character (A-Z, 0-9)
+ *   • Special chars/spaces displayed directly (no input box)
+ *   • Click to activate box
+ *   • Type letter → replaces letter, advances to next box
+ *   • Backspace → clears letter, moves to previous box
+ *   • Arrow keys navigate between boxes
+ *   • Validation per box: correct = dark green letter, incorrect = dark red letter
+ *   • When all correct, all boxes get dark green background
+ * 
+ * Action Buttons:
+ * - Reveal: Reveals correct answer (Enter key also triggers)
+ * - Next: Appears after reveal OR when answer is fully correct (Enter key also triggers)
+ * - Explain: Copies AI explanation prompt to clipboard (prompt loaded from file, not hardcoded)
+ *   • Explain button is shown beside the Next button and only when the Next button is visible.
+ * 
+ * User interaction flow:
+ * - User sees clue text and input area
+ * - User types input, and either completes the input sucessfully or reveals the correct answer
+ * - If the input is completed successfully, the correct count is incremented and if the user has
+ *     to press Reveal, the incorrect count is incremented.
+ * - Either way, after pressing Reveal or completing the input box successfully, the correct answer is
+ *     revealed in the input box and the Next and Explain buttons are shown.
+ * - The user presses Next and sees the next clue and input area.
+ * - User repeats process, eventually a new batch of clues is loaded and the process repeats.
+ * - User can click Explain button to copy AI explanation prompt to clipboard
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faChevronLeft, faChevronRight, faInfoCircle, faLanguage, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './CollectionQuiz.module.scss';
 import { CollectionQuizProps } from './CollectionQuizProps';
-import { replaceCharAtIndex, breakTextIntoLines, getCruziScoreColor, getTextWidth, deepClone } from '../../lib/utils';
-import { Clue } from '../../models/Clue';
+import { replaceCharAtIndex, getTextWidth } from '../../lib/utils';
+import { normalizeAnswer, getExpectedResponse, submitAnswer } from './quizHelpers';
+import { InputBoxState } from '../../models/InputBoxState';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCollection } from '../../contexts/CollectionContext';
-import CruziApi from '../../api/CruziApi';
-
+import { useClueData } from './useClueData';
+import { useQuizState } from './useQuizState';
+import { useAnswerValidation } from './useAnswerValidation';
+import { useClueText } from './useClueText';
+import { CrosswordInputs } from './CrosswordInputs';
+import { NonCrosswordInput } from './NonCrosswordInput';
+import { ClueProgressData } from '../../models/ClueProgressData';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
-  // --- State Management ---
+  // --- Hooks (all called unconditionally at top level) ---
   const { user } = useAuth();
   const { setCurrentCollection } = useCollection();
+  const { clueCollection } = props;
+  
+  // Quiz state
   const [currentIndex, setCurrentIndex] = useState(0);
   const [allUserInput, setAllUserInput] = useState<Record<number, string>>({});
-  const [userInput, setUserInput] = useState<string>('');
-  const [focusedIndex, setFocusedIndex] = useState<number | null>(0);
-  const [revealProgress, setRevealProgress] = useState<number>(0);
-  const [isSolved, setIsSolved] = useState(false);
-  const [allClues, setAllClues] = useState<Clue[]>([]);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [incorrectAnswers, setIncorrectAnswers] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingNextBatch, setIsLoadingNextBatch] = useState(false);
-
-  // Refs for DOM elements and timers
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const nonCrosswordInputRef = useRef<HTMLInputElement>(null);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const progressInterval = useRef<NodeJS.Timeout | null>(null);
-
-  // --- Derived State and Variables ---
-  const { clueCollection } = props;
+  
+  // Data loading
+  const { allClues, isLoading, isLoadingNextBatch, loadNextBatch } = useClueData(clueCollection);
+  
+  // Derived state
   const currentClue = allClues[currentIndex];
   const isCrosswordClue = clueCollection?.isCrosswordCollection || false;
   const rawAnswer = currentClue?.entry?.entry;
-  const normalizedAnswer = rawAnswer?.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const displayText = currentClue?.entry?.displayText || rawAnswer;
-
-  // --- Utility Functions ---
-  const randomizeClues = (clues: Clue[]) => {
-    return clues.sort(() => Math.random() - 0.5);
-  }
-
-  const loadInitialClues = async () => {
-    if (!clueCollection?.id) return;
-    
-    try {
-      setIsLoading(true);
-      const clues = await CruziApi.getCollectionBatch(clueCollection.id);
-      const randomizedClues = randomizeClues(deepClone(clues));
-      setAllClues(randomizedClues);
-    } catch (error) {
-      console.error('Error loading initial clues:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadNextBatch = async () => {
-    if (!clueCollection?.id || isLoadingNextBatch) return;
-    
-    try {
-      setIsLoadingNextBatch(true);
-      const newClues = await CruziApi.getCollectionBatch(clueCollection.id);
-      const randomizedNewClues = randomizeClues(deepClone(newClues));
-      setAllClues(prev => [...prev, ...randomizedNewClues]);
-    } catch (error) {
-      console.error('Error loading next batch:', error);
-    } finally {
-      setIsLoadingNextBatch(false);
-    }
-  };
-
-  const changeFocusedIndex = (index: number) => {
-    if (isCrosswordClue && index >= 0 && normalizedAnswer && index < normalizedAnswer.length) {
-      setFocusedIndex(index);
-      inputRefs.current[index]?.focus();
-      inputRefs.current[index]?.select();
-    }
-  }
-
-  const revealAnswer = async () => {
-    if (!isSolved) {
-      const fullAnswer = isCrosswordClue ? normalizedAnswer : displayText;
-      setUserInput(fullAnswer || '');
-      setAllUserInput(prev => ({ ...prev, [currentIndex]: fullAnswer || '' }));
-      setIsSolved(true);
-      
-      // Check if user's answer was correct
-      const normalizedInput = userInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      const isCorrect = normalizedInput === normalizedAnswer;
-      
-      // Submit user response to API
+  const normalizedAnswer = useMemo(() => normalizeAnswer(rawAnswer), [rawAnswer]);
+  const displayText = currentClue?.entry?.displayText || rawAnswer || '';
+  
+  // Quiz state management
+  const quizState = useQuizState({
+    currentClue,
+    currentIndex,
+    allUserInput,
+    isCrosswordClue,
+    normalizedAnswer,
+  });
+  
+  const {
+    userInput,
+    setUserInput,
+    focusedIndex,
+    setFocusedIndex,
+    inputBoxState,
+    setInputBoxState,
+    isSolved,
+    setIsSolved,
+    isRevealed,
+    setIsRevealed,
+    inputRefs,
+    nonCrosswordInputRef,
+    changeFocusedIndex,
+  } = quizState;
+  
+  // Score tracking (merged from useScoreTracking)
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [incorrectAnswers, setIncorrectAnswers] = useState(0);
+  const incrementCorrect = () => setCorrectAnswers(prev => prev + 1);
+  const incrementIncorrect = () => setIncorrectAnswers(prev => prev + 1);
+  
+  // Clue text
+  const { clueText, translatedClue, expectedResponse } = useClueText(currentClue, user, currentIndex);
+  
+  // Answer validation
+  useAnswerValidation({
+    currentClue,
+    userInput,
+    isCrosswordClue,
+    normalizedAnswer,
+    isSolved,
+    isRevealed,
+    setInputBoxState,
+    setIsSolved,
+    setUserInput,
+    getExpectedResponse: () => expectedResponse,
+    onCorrect: incrementCorrect,
+    onIncorrect: incrementIncorrect,
+  });
+  
+  // Explain prompt (merged from useExplainPrompt)
+  const [explainPrompt, setExplainPrompt] = useState<string>('');
+  useEffect(() => {
+    const loadExplainPrompt = async () => {
       try {
-        if (currentClue?.id) {
-          await CruziApi.submitUserResponse(currentClue.id, isCorrect);
+        const response = await fetch('/explain_prompt.txt');
+        if (response.ok) {
+          const text = await response.text();
+          setExplainPrompt(text);
         }
       } catch (error) {
-        console.error('Error submitting user response:', error);
+        console.error('Error loading explain prompt:', error);
+        setExplainPrompt('');
       }
-      
-      if (isCorrect) {
-        setCorrectAnswers(prev => prev + 1);
-      } else {
-        setIncorrectAnswers(prev => prev + 1);
-      }
-    }
-  };
-
-  const previousClue = () => {
-    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
-    const prevIndex = Math.max(0, currentIndex - 1);
-    setCurrentIndex(prevIndex);
-  };
-
-  const nextClue = () => {
-    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
-    const nextIndex = currentIndex + 1;
+    };
+    loadExplainPrompt();
+  }, []);
+  
+  // Set current collection in context
+  useEffect(() => {
+    setCurrentCollection(clueCollection);
     
-    // If we're near the end of current batch, load next batch in background
-    if (nextIndex >= allClues.length - 5 && !isLoadingNextBatch) {
-      loadNextBatch();
-    }
-    
-    setCurrentIndex(nextIndex);
-  };
-
-  const handleExplain = async () => {
-    const prompt = ``;
-    
-    try {
-      await navigator.clipboard.writeText(prompt);
-      // You could add a toast notification here if desired
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
-    }
-  };
+    return () => {
+      setCurrentCollection(null);
+    };
+  }, [clueCollection, setCurrentCollection]);
 
   // --- Event Handlers ---
-
+  
   const handleCrosswordInputChange = (index: number, value: string) => {
-    if (isSolved || !normalizedAnswer) return;
+    if (isSolved || isRevealed || !normalizedAnswer) return;
     const upperValue = value.toUpperCase();
     if (/^[A-Z0-9]$/.test(upperValue) || value === '') {
       let newUserInput = replaceCharAtIndex(userInput, upperValue, index);
@@ -225,33 +203,17 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     }
   };
 
-  const handleNonCrosswordInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isSolved) return;
+  const handleNonCrosswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isSolved || isRevealed) return;
     const value = e.target.value;
     setUserInput(value);
     setAllUserInput(prev => ({ ...prev, [currentIndex]: value }));
-    
-    // Check if answer is correct and update scores
-    const normalizedInput = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const isCorrect = normalizedInput === normalizedAnswer;
-    if (isCorrect && normalizedInput.length === normalizedAnswer.length) {
-      // Submit user response to API
-      try {
-        if (currentClue?.id) {
-          await CruziApi.submitUserResponse(currentClue.id, true);
-        }
-      } catch (error) {
-        console.error('Error submitting user response:', error);
-      }
-      
-      setCorrectAnswers(prev => prev + 1);
-    }
   };
 
   const handleNonCrosswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (isSolved) {
+      if (isSolved || isRevealed) {
         nextClue();
       } else {
         revealAnswer();
@@ -263,7 +225,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     if (!isCrosswordClue || focusedIndex === null || !normalizedAnswer) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (!isSolved) {
+        if (!isSolved && !isRevealed) {
           revealAnswer();
         } else {
           nextClue();
@@ -271,11 +233,12 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       }
       return;
     }
+    
     const len = normalizedAnswer.length;
 
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (!isSolved) {
+      if (!isSolved && !isRevealed) {
         revealAnswer();
       } else {
         nextClue();
@@ -296,95 +259,108 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       setUserInput(newInput);
       setAllUserInput(prev => ({ ...prev, [currentIndex]: newInput }));
     }
-  }
-
-  // --- Long Press Logic ---
-  const startLongPress = (index: number) => {
-    if (!isCrosswordClue || !normalizedAnswer) return;
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    if (progressInterval.current) clearInterval(progressInterval.current);
-    changeFocusedIndex(index);
-    setRevealProgress(0);
-
-    let progress = 0;
-    progressInterval.current = setInterval(() => {
-      progress = Math.min(100, progress + 20);
-      setRevealProgress(progress);
-    }, 100);
-
-    longPressTimer.current = setTimeout(() => {
-      const newInput = replaceCharAtIndex(userInput, normalizedAnswer[index], index);
-      setUserInput(newInput);
-      setAllUserInput(prev => ({ ...prev, [currentIndex]: newInput }));
-      stopLongPress();
-    }, 500);
   };
 
-  const stopLongPress = () => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    if (progressInterval.current) clearInterval(progressInterval.current);
-    setRevealProgress(0);
-    if (isCrosswordClue && focusedIndex !== null) {
-      changeFocusedIndex(focusedIndex);
-    }
-  };
-
-  // --- Effects ---
-  // Load initial clues when component mounts
-  useEffect(() => {
-    if (clueCollection?.id) {
-      loadInitialClues();
-    }
-  }, [clueCollection?.id]);
-
-  // Set current collection in context when component mounts
-  useEffect(() => {
-    setCurrentCollection(clueCollection);
+  const revealAnswer = async () => {
+    if (isRevealed || isSolved) return;
     
-    // Clean up when component unmounts
-    return () => {
-      setCurrentCollection(null);
-    };
-  }, [clueCollection, setCurrentCollection]);
+    // Get expected response according to priority list
+    const fullAnswer = isCrosswordClue ? normalizedAnswer : expectedResponse;
+    
+    // Check if user's answer was correct (before reveal) for API submission
+    const normalizedInput = normalizeAnswer(userInput);
+    const normalizedExpected = isCrosswordClue 
+      ? normalizedAnswer 
+      : normalizeAnswer(expectedResponse);
+    const isCorrect = normalizedInput === normalizedExpected;
+    
+    // Set all state updates together - React will batch them
+    setIsRevealed(true);
+    setIsSolved(true);
+    setInputBoxState(InputBoxState.Completed);
+    setUserInput(fullAnswer || '');
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: fullAnswer || '' }));
+    
+    // Submit user response to API
+    await submitAnswer(currentClue?.id, isCorrect);
+    
+    // According to requirements: if user has to press Reveal, it's incorrect
+    incrementIncorrect();
+  };
 
-  // Initialize state when a new clue is selected
-  useEffect(() => {
-    const savedInput = allUserInput[currentIndex] || '';
-    setUserInput(savedInput);
-    setIsSolved(false);
-
-    if (isCrosswordClue) {
-      const timer = setTimeout(() => {
-        changeFocusedIndex(0);
-      }, 0);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        nonCrosswordInputRef.current?.focus();
-      }, 0);
-      return () => clearTimeout(timer);
+  const nextClue = () => {
+    setAllUserInput(prev => ({ ...prev, [currentIndex]: userInput }));
+    const nextIndex = currentIndex + 1;
+    
+    // If we're on the last clue, load next batch in background
+    if (nextIndex >= allClues.length && !isLoadingNextBatch) {
+      loadNextBatch();
     }
-  }, [currentIndex, isCrosswordClue, allUserInput]);
+    
+    setCurrentIndex(nextIndex);
+    setIsRevealed(false);
+  };
 
-  // Check for solved state
-  useEffect(() => {
-    if (!currentClue || !normalizedAnswer) return;
-    const isClueSolved = isCrosswordClue
-      ? userInput.toUpperCase() === normalizedAnswer
-      : userInput.toUpperCase().replace(/[^A-Z0-9]/g, '') === normalizedAnswer;
-
-    if (isClueSolved && !isSolved) {
-      setIsSolved(true);
+  const handleExplain = async () => {
+    if (!explainPrompt || !currentClue) return;
+    
+    try {
+      // Replace placeholders in the prompt
+      const filledPrompt = explainPrompt
+        .replace('{CLUE_TEXT}', clueText)
+        .replace('{ANSWER_TEXT}', expectedResponse);
+      
+      await navigator.clipboard.writeText(filledPrompt);
+      // You could add a toast notification here if desired
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
     }
-  }, [userInput, isSolved, normalizedAnswer, isCrosswordClue, currentClue]);
+  };
 
-  // Cleanup timers on unmount
+  // --- Render Helpers ---
+  
+  const fillInBlankPattern = /\{\{([^}]+)\}\}/i;
+  const hasFillInBlank = fillInBlankPattern.test(clueText);
+  
+  // Calculate input width based on expected response text
+  // Width adapts to expected response text and changes with every new clue
+  const [inputWidth, setInputWidth] = useState<string | undefined>(undefined);
+  
   useEffect(() => {
-    return () => {
-      if (longPressTimer.current) clearTimeout(longPressTimer.current);
-      if (progressInterval.current) clearInterval(progressInterval.current);
+    if (!expectedResponse || !currentClue) {
+      setInputWidth(undefined);
+      return;
+    }
+    
+    // Calculate width after DOM is ready
+    const calculateWidth = () => {
+      try {
+        const textWidth = getTextWidth(expectedResponse, 1.5, 'Verdana, sans-serif');
+        if (textWidth === 0) {
+          // If calculation fails, retry after a short delay
+          setTimeout(calculateWidth, 50);
+          return;
+        }
+        // Add padding based on input type:
+        // - fillInBlankInput: 0.5rem padding each side = 1rem total
+        // - nonCrosswordInput: 0.75rem padding each side = 1.5rem total
+        // Use 1.5rem (0.75rem each side) to accommodate both
+        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const paddingWidth = 1.5 * rootFontSize; // 1.5rem total padding (0.75rem each side)
+        // Ensure minimum width based on min-width in SCSS
+        const calculatedWidth = textWidth + paddingWidth;
+        const minWidth = 150; // Match min-width from SCSS for fill-in-blank
+        setInputWidth(`${Math.max(calculatedWidth, minWidth)}px`);
+      } catch (error) {
+        console.error('Error calculating input width:', error);
+        setInputWidth(undefined);
+      }
     };
-  }, []);
+    
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(calculateWidth, 0);
+    return () => clearTimeout(timer);
+  }, [expectedResponse, currentIndex, currentClue]);
 
   // --- Data and Guard Clauses ---
   if (!clueCollection || isLoading) {
@@ -402,185 +378,107 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       </div>
     );
   }
-  
-  // --- Renderers ---
-  const renderCrosswordInputs = () => {
-    if (!displayText || !normalizedAnswer) return null;
-    const segments: JSX.Element[] = [];
-    let letterIndex = 0;
 
-    breakTextIntoLines(displayText, 8).forEach((line, lineIndex) => {
-      segments.push(
-        <div key={`line-${lineIndex}`} className={styles.wordGroup}>
-          {[...line].map((charItem, charDisplayIndex) => {
-            const charIsLetter = /[A-Z0-9]/.test(charItem.toUpperCase());
-
-            if (!charIsLetter) {
-              return (
-                <div key={`space-${lineIndex}-${charDisplayIndex}`} className={styles.spaceBox}>
-                  <span className={styles.space}>{charItem}</span>
-                </div>
-              );
-            }
-
-            const currentLetterIndex = letterIndex++;
-            const inputChar = userInput[currentLetterIndex]?.toUpperCase() || '';
-            const correctChar = normalizedAnswer[currentLetterIndex]?.toUpperCase();
-            const isCorrect = inputChar === correctChar;
-            const isIncorrect = inputChar !== '' && inputChar !== correctChar;
-            const isFocused = focusedIndex === currentLetterIndex;
-
-            return (
-              <div
-                key={currentLetterIndex}
-                className={styles.letterBox}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  startLongPress(currentLetterIndex);
-                }}
-                onMouseUp={(e) => {
-                  e.preventDefault();
-                  stopLongPress();
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  startLongPress(currentLetterIndex);
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  stopLongPress();
-                }}
-              >
-                {isFocused && revealProgress > 0 && (
-                  <div
-                    className={styles.revealProgress}
-                    style={{ height: `${revealProgress}%` }}
-                  />
-                )}
-                <input
-                  ref={(el) => (inputRefs.current[currentLetterIndex] = el)}
-                  type="text"
-                  maxLength={1}
-                  value={inputChar.trim()}
-                  onChange={(e) => handleCrosswordInputChange(currentLetterIndex, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, currentLetterIndex)}
-                  onFocus={() => changeFocusedIndex(currentLetterIndex)}
-                  className={`${styles.letterInput} ${isCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''}`}
-                  aria-label={`Letter input ${currentLetterIndex + 1}`}
-                />
-              </div>
-            );
-          })}
-        </div>
-      );
-    });
-    return segments;
-  };
-
-  const renderNonCrosswordInput = () => {
-    if (!normalizedAnswer || !displayText) return null;
-    const normalizedInput = userInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const isIncorrect = !isSolved && normalizedInput !== normalizedAnswer.slice(0, normalizedInput.length);
-    const isCorrect = isSolved || normalizedInput === normalizedAnswer.slice(0, normalizedInput.length);
-
-    // Check if clue has fill-in-the-blank section
-    const hasFillInBlank = currentClue?.customClue?.includes('_') || 
-                          currentClue?.sense?.exampleSentences?.[0]?.translations?.get(currentClue.entry?.lang || 'en')?.includes('_');
-
-    if (hasFillInBlank) {
-      // Render fill-in-the-blank input
-      const clueText = currentClue?.customClue || 
-                      currentClue?.sense?.exampleSentences?.[0]?.translations?.get(currentClue.entry?.lang || 'en') || 
-                      currentClue?.customClue || '';
-      
-      return (
-        <div className={styles.fillInBlankContainer}>
-          <div className={styles.fillInBlankText}>
-            {clueText.split('_').map((part, index, array) => (
-              <span key={index}>
-                {part}
-                {index < array.length - 1 && (
-                  <input
-                    ref={index === 0 ? nonCrosswordInputRef : undefined}
-                    type="text"
-                    value={userInput}
-                    onChange={handleNonCrosswordInputChange}
-                    onKeyDown={handleNonCrosswordKeyDown}
-                    className={`${styles.fillInBlankInput} ${isIncorrect ? styles.incorrect : ''} ${isCorrect ? styles.correct : ''}`}
-                    aria-label="Fill in the blank"
-                  />
-                )}
-              </span>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    // Regular input field
-    return (
-      <div className={styles.nonCrosswordContainer}>
-        <input
-          ref={nonCrosswordInputRef}
-          type="text"
-          value={userInput}
-          onChange={handleNonCrosswordInputChange}
-          onKeyDown={handleNonCrosswordKeyDown}
-          className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCorrect ? styles.correct : ''}`}
-          style={{ width: getTextWidth(displayText, 1.5, "Verdana") + 20 }}
-          aria-label="Answer input field"
-        />
-      </div>
-    );
-  };
-
+  // --- Main Render ---
   return (
     <div className={styles.container}>
-      {/* Score boxes */}
+      {/* Score boxes (merged from ScoreBoxes) */}
       <div className={styles.scoreBoxes}>
-        <div className={styles.scoreBox}>
-          <div className={styles.scoreLabel}>Correct</div>
+        <div className={`${styles.scoreBox} ${styles.scoreBoxCorrect}`}>
           <div className={styles.scoreValue}>{correctAnswers}</div>
         </div>
-        <div className={styles.scoreBox}>
-          <div className={styles.scoreLabel}>Incorrect</div>
+        <div className={`${styles.scoreBox} ${styles.scoreBoxIncorrect}`}>
           <div className={styles.scoreValue}>{incorrectAnswers}</div>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className={styles.progressBar}>
-        <div className={styles.progressBarTrack}>
-          <div 
-            className={styles.progressBarFill} 
-            style={{ width: `${(correctAnswers / allClues.length) * 100}%` }}
-          />
-        </div>
-        <div className={styles.progressText}>
-          {correctAnswers} of {allClues.length} mastered
-        </div>
-      </div>
+      {/* Progress bar (merged from ProgressBar) */}
+      {user && currentClue.progressData && (() => {
+        const progressData = currentClue.progressData as ClueProgressData;
+        const progressPercent = progressData.correctSolvesNeeded > 0
+          ? Math.min(100, (progressData.correctSolves / progressData.correctSolvesNeeded) * 100)
+          : 0;
+        return (
+          <div className={styles.progressBar}>
+            <div className={styles.progressBarTrack}>
+              <div 
+                className={styles.progressBarFill} 
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+        );
+      })()}
 
-      {/* Clue text - use custom clue or sense data */}
-      <div className={styles.clueText}>
-        {currentClue.customClue || 
-         (currentClue.sense?.exampleSentences?.[0]?.translations?.get(currentClue.entry?.lang || 'en') || 
-          currentClue.sense?.exampleSentences?.[0]?.translations?.get('en') || 
-          currentClue.customClue)}
-      </div>
-      
-      {/* Translated clue if available */}
-      {currentClue.sense?.translations?.get('en')?.naturalTranslations?.[0]?.entry && (
-        <div className={styles.translatedClue}>
-          {currentClue.sense.translations.get('en')?.naturalTranslations?.[0]?.entry}
-        </div>
+      {isCrosswordClue ? (
+        <>
+          {/* Clue display (merged from ClueDisplay) */}
+          {clueText && (
+            <div className={styles.clueText}>
+              {clueText}
+            </div>
+          )}
+          <CrosswordInputs
+            displayText={displayText}
+            normalizedAnswer={normalizedAnswer}
+            userInput={userInput}
+            focusedIndex={focusedIndex}
+            inputRefs={inputRefs}
+            onChange={handleCrosswordInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={changeFocusedIndex}
+          />
+        </>
+      ) : hasFillInBlank ? (
+        <>
+          <NonCrosswordInput
+            clueText={clueText}
+            userInput={userInput}
+            inputBoxState={inputBoxState}
+            inputWidth={inputWidth}
+            inputRef={nonCrosswordInputRef}
+            onChange={handleNonCrosswordInputChange}
+            onKeyDown={handleNonCrosswordKeyDown}
+            showFillInBlank={true}
+          />
+          {/* Translated clue (merged from ClueDisplay) */}
+          {translatedClue && (
+            <div className={styles.translatedClue}>
+              {translatedClue}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Clue display (merged from ClueDisplay) */}
+          {clueText && (
+            <div className={styles.clueText}>
+              {clueText}
+            </div>
+          )}
+          {translatedClue && (
+            <div className={styles.translatedClue}>
+              {translatedClue}
+            </div>
+          )}
+          <NonCrosswordInput
+            clueText={clueText}
+            userInput={userInput}
+            inputBoxState={inputBoxState}
+            inputWidth={inputWidth}
+            inputRef={nonCrosswordInputRef}
+            onChange={handleNonCrosswordInputChange}
+            onKeyDown={handleNonCrosswordKeyDown}
+            showFillInBlank={false}
+          />
+        </>
       )}
 
-      {/* Submit/Next and Explain buttons */}
+      {/* Action buttons (merged from ActionButtons) */}
       <div className={styles.buttonContainer}>
-        {!isSolved ? (
-          <button onClick={revealAnswer} className={styles.submitButton}>
-            Submit
+        {!isRevealed && !isSolved ? (
+          <button onClick={revealAnswer} className={styles.revealButton}>
+            Reveal
           </button>
         ) : (
           <div className={styles.nextButtonContainer}>
@@ -593,15 +491,6 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
           </div>
         )}
       </div>
-
-      {/* Input field based on clue type */}
-      {isCrosswordClue ? (
-        <div className={styles.inputGridContainer}>
-          {renderCrosswordInputs()}
-        </div>
-      ) : (
-        renderNonCrosswordInput()
-      )}
     </div>
   );
 };
