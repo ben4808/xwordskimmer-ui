@@ -5,10 +5,10 @@ $text-color: #e0e0e0;
 $border-color: #444;
 $accent-color: #193CB8;
 $button-hover-bg: #333;
-$correct-color: #004400; // Super dark green
-$incorrect-color: #440000; // Super dark red
-$dark-green-border: #006400; // Dark green border
-$dark-red-border: #8b0000; // Dark red border
+$correct-background: #002200; // Super dark green
+$incorrect-background: #220000; // Super dark red
+$dark-green-correct: #008b00; // Dark green
+$dark-red-incorrect: #8b0000; // Dark red
 $gray-remaining: #666; // Gray for remaining progress
 $transition-speed: 0.3s;
 
@@ -99,13 +99,13 @@ $transition-speed: 0.3s;
 }
 
 .scoreBoxCorrect {
-  border: 1px solid $dark-green-border;
-  background-color: $correct-color;
+  border: 1px solid $dark-green-correct;
+  background-color: $correct-background;
 }
 
 .scoreBoxIncorrect {
-  border: 1px solid $dark-red-border;
-  background-color: $incorrect-color;
+  border: 1px solid $dark-red-incorrect;
+  background-color: $incorrect-background;
 }
 
 .scoreValue {
@@ -135,7 +135,7 @@ $transition-speed: 0.3s;
 
 .progressBarFill {
   height: 100%;
-  background-color: $dark-green-border;
+  background-color: $dark-green-correct;
   transition: width $transition-speed;
 }
 
@@ -162,16 +162,17 @@ $transition-speed: 0.3s;
   }
 }
 
-.fillInBlankInput {
+// Shared input styling for both fill-in-the-blank and non-crossword inputs
+.fillInBlankInput,
+.nonCrosswordInput {
   font-size: 1.5rem;
   font-weight: 700;
-  padding: 0.5rem;
+  padding: 0.5rem 0;
   background-color: $secondary-bg;
   color: $text-color;
   border: 2px solid $border-color;
   border-radius: 8px;
   text-align: center;
-  min-width: 150px;
   transition: border-color $transition-speed, background-color $transition-speed, color $transition-speed;
   box-sizing: border-box;
   
@@ -181,17 +182,16 @@ $transition-speed: 0.3s;
   }
   
   &.incorrect {
-    color: $dark-red-border;
-    border-color: $dark-red-border;
+    color: $dark-red-incorrect;
   }
   
-  &.correct {
-    color: $dark-green-border;
+  &.partial {
+    color: $dark-green-correct;
   }
   
   &.completed {
-    background-color: $correct-color;
-    color: $text-color;
+    background-color: $correct-background;
+    color: $dark-green-correct;
   }
   
   @media (max-width: 768px) {
@@ -255,16 +255,16 @@ $transition-speed: 0.3s;
   }
 
   &.correct {
-    color: $dark-green-border;
+    color: $dark-green-correct;
   }
 
   &.incorrect {
-    color: $dark-red-border;
+    color: $dark-red-incorrect;
   }
   
   &.allCorrect {
-    background-color: $correct-color;
-    color: $text-color;
+    background-color: $correct-background;
+    color: $dark-green-correct;
   }
 }
 
@@ -292,39 +292,7 @@ $transition-speed: 0.3s;
   justify-content: center;
 }
 
-.nonCrosswordInput {
-  font-size: 1.5rem;
-  font-weight: 700;
-  padding: 0.75rem;
-  background-color: $secondary-bg;
-  color: $text-color;
-  border: 2px solid $border-color;
-  border-radius: 8px;
-  transition: border-color $transition-speed, background-color $transition-speed, color $transition-speed;
-  box-sizing: border-box;
-  text-align: center;
-  // Width is set inline via style prop to adapt to expected response text
-  width: auto;
-  
-  &:focus {
-    outline: none;
-    border-color: $accent-color;
-  }
-
-  &.incorrect {
-    color: $dark-red-border;
-    border-color: $dark-red-border;
-  }
-
-  &.correct {
-    color: $dark-green-border;
-  }
-  
-  &.completed {
-    background-color: $correct-color;
-    color: $text-color;
-  }
-}
+// .nonCrosswordInput styling merged with .fillInBlankInput above
 
 // --- Action Buttons ---
 .buttonContainer {

@@ -6,26 +6,26 @@ interface NonCrosswordInputProps {
   clueText: string;
   userInput: string;
   inputBoxState: InputBoxState;
-  inputWidth?: string;
   inputRef: React.RefObject<HTMLInputElement>;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   showFillInBlank: boolean;
+  inputWidth: number;
 }
 
 export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
   clueText,
   userInput,
   inputBoxState,
-  inputWidth,
   inputRef,
   onChange,
   onKeyDown,
   showFillInBlank,
+  inputWidth,
 }) => {
   const isIncorrect = inputBoxState === InputBoxState.Incorrect;
   const isCompleted = inputBoxState === InputBoxState.Completed;
-  const isCorrect = inputBoxState === InputBoxState.Correct || inputBoxState === InputBoxState.Completed;
+  const isPartial = inputBoxState === InputBoxState.Partial;
 
   if (showFillInBlank && clueText) {
     // Render fill-in-the-blank input in place
@@ -45,8 +45,8 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
               value={userInput}
               onChange={onChange}
               onKeyDown={onKeyDown}
-              className={`${styles.fillInBlankInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isCorrect && !isCompleted ? styles.correct : ''}`}
-              style={{ width: inputWidth }}
+              className={`${styles.fillInBlankInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isPartial ? styles.partial : ''}`}
+              style={{ width: `${inputWidth}px` }}
               aria-label="Fill in the blank"
             />
             {after}
@@ -68,8 +68,8 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
             value={userInput}
             onChange={onChange}
             onKeyDown={onKeyDown}
-            className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isCorrect && !isCompleted ? styles.correct : ''}`}
-            style={{ width: inputWidth }}
+            className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isPartial ? styles.partial : ''}`}
+            style={{ width: `${inputWidth}px` }}
             aria-label="Answer input field"
           />
         </div>
@@ -86,8 +86,8 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
         value={userInput}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isCorrect && !isCompleted ? styles.correct : ''}`}
-        style={{ width: inputWidth }}
+        className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isPartial ? styles.partial : ''}`}
+        style={{ width: `${inputWidth}px` }}
         aria-label="Answer input field"
       />
     </div>

@@ -1,5 +1,5 @@
 export enum InputBoxState {
-    Correct = "Correct",
+    Partial = "Partial",
     Incorrect = "Incorrect",
     Completed = "Completed",
 };

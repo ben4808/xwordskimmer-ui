@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Clue } from '../../models/Clue';
 import { InputBoxState } from '../../models/InputBoxState';
 import { verifyInputBox } from '../../lib/utils';
-import { checkAnswerCorrectness, submitAnswer, getExpectedResponse, normalizeAnswer } from './quizHelpers';
+import { normalizeAnswer } from './quizHelpers';
 
 interface UseAnswerValidationParams {
   currentClue: Clue | undefined;
@@ -52,7 +52,6 @@ export function useAnswerValidation({
         // Reveal the exact expected answer when completed successfully
         setUserInput(expectedAnswer);
         setIsSolved(true);
-        submitAnswer(currentClue.id, true);
         onCorrect();
       }
     }
@@ -66,36 +65,8 @@ export function useAnswerValidation({
     if (userInputNormalized === normalizedAnswer && userInputNormalized.length === normalizedAnswer.length) {
       // For crossword mode, keep user input as-is (it's already correct)
       setIsSolved(true);
-      submitAnswer(currentClue.id, true);
       onCorrect();
     }
   }, [userInput, normalizedAnswer, isCrosswordClue, isSolved, isRevealed, currentClue, setIsSolved, onCorrect]);
-
-  const validateAndSubmit = async (beforeReveal: boolean = false) => {
-    if (!currentClue) return false;
-    
-    const expectedResponse = getExpectedResponse();
-    const isCorrect = checkAnswerCorrectness(
-      beforeReveal ? userInput : (isCrosswordClue ? normalizedAnswer : expectedResponse),
-      expectedResponse,
-      isCrosswordClue,
-      normalizedAnswer
-    );
-    
-    if (beforeReveal) {
-      await submitAnswer(currentClue.id, isCorrect);
-      if (isCorrect) {
-        onCorrect();
-      } else {
-        onIncorrect();
-      }
-    }
-    
-    return isCorrect;
-  };
-
-  return {
-    validateAndSubmit,
-  };
 }
 

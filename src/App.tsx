@@ -105,9 +105,19 @@ function AppContent() {
   const [collections, setCollections] = useState([] as ClueCollection[]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null as any);
+  const location = useLocation();
   let api = CruziApi;
 
+  // Fetch collections when needed
+  // Skip on /collections route since CollectionList component handles it
+  // Still fetch on /collection/:id routes since CollectionRoute needs it
   useEffect(() => {
+    // Don't fetch on collections list page - CollectionList component handles it
+    if (location.pathname === '/collections' || location.pathname === '/') {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await api.getCollectionList();
@@ -120,7 +130,7 @@ function AppContent() {
     };
 
     fetchData();
-  }, []);
+  }, [location.pathname]);
 
   let paramDate = useParams().date ? parseDateFromURL(useParams().date!) : new Date();
 

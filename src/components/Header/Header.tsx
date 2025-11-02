@@ -135,7 +135,8 @@ const Header = (props: HeaderProps) => {
             aria-label={`User menu for ${user.firstName}`}
           >
             <span className={styles.avatar}>
-              {user.firstName.charAt(0).toUpperCase()}
+              {user.firstName?.charAt(0).toUpperCase() || ''}
+              {user.lastName?.charAt(0).toUpperCase() || ''}
             </span>
             <span className={styles.userName}>{user.firstName}</span>
           </button>

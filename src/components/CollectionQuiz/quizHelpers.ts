@@ -1,5 +1,4 @@
 import { Clue } from '../../models/Clue';
-import CruziApi from '../../api/CruziApi';
 
 /**
  * Normalizes an answer string for comparison by converting to uppercase and removing non-alphanumeric characters
@@ -12,10 +11,14 @@ export function normalizeAnswer(answer: string | undefined): string {
 /**
  * Gets the expected response for a clue according to priority:
  * 1. customDisplayText if present
- * 2. Fill-in-the-blank text from brackets if present
+ * 2. Fill-in-the-blank text from brackets if present (in clueText parameter or customClue)
  * 3. Entry's displayText
+ * 
+ * @param clue - The clue object
+ * @param clueText - Optional: The actual clue text being used (from customClue or selected example sentence).
+ *                   If provided, brackets will be extracted from this text to ensure consistency.
  */
-export function getExpectedResponse(clue: Clue | undefined): string {
+export function getExpectedResponse(clue: Clue | undefined, clueText?: string): string {
   if (!clue) return '';
   
   // Priority 1: customDisplayText
@@ -24,8 +27,18 @@ export function getExpectedResponse(clue: Clue | undefined): string {
   }
   
   // Priority 2: Fill-in-the-blank text from brackets
+  const bracketPattern = /\{\{([^}]+)\}\}/i;
+  
+  // If clueText is provided, use it (this ensures we extract from the same text selected in useClueText)
+  if (clueText) {
+    const bracketMatch = clueText.match(bracketPattern);
+    if (bracketMatch && bracketMatch[1]) {
+      return bracketMatch[1].trim();
+    }
+  }
+  
+  // Fallback: Check customClue if clueText wasn't provided
   if (clue.customClue) {
-    const bracketPattern = /\{\{([^}]+)\}\}/i;
     const bracketMatch = clue.customClue.match(bracketPattern);
     if (bracketMatch && bracketMatch[1]) {
       return bracketMatch[1].trim();
@@ -51,18 +64,5 @@ export function checkAnswerCorrectness(
     : normalizeAnswer(expectedAnswer);
   
   return normalizedInput === normalizedExpected;
-}
-
-/**
- * Submits a user response to the API
- */
-export async function submitAnswer(clueId: string | undefined, isCorrect: boolean): Promise<void> {
-  if (!clueId) return;
-  
-  try {
-    await CruziApi.submitUserResponse(clueId, isCorrect);
-  } catch (error) {
-    console.error('Error submitting user response:', error);
-  }
 }
 

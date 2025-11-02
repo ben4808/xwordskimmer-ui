@@ -61,8 +61,9 @@ export function useClueText(clue: Clue | undefined, user: User | undefined, curr
   }, [clue, selectedExampleSentence, user]);
 
   const expectedResponse = useMemo(() => {
-    return getExpectedResponse(clue);
-  }, [clue]);
+    // Pass clueText to ensure we extract brackets from the same selected example sentence
+    return getExpectedResponse(clue, clueText);
+  }, [clue, clueText]);
 
   return {
     clueText,

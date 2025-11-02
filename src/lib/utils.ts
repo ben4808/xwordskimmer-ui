@@ -157,9 +157,9 @@ export function replaceCharAtIndex(originalString: string, charToAdd: string, in
   return firstPart + charToAdd + secondPart;
 }
 
-export function getTextWidth(text: string, remSize: number, fontFamily: string): number {
+export function getTextWidth(text: string, remFontSize: number, fontFamily: string): number {
   const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const pixelFontSize = remSize * rootFontSize;
+  const pixelFontSize = remFontSize * rootFontSize;
   
   const font = `${pixelFontSize}px ${fontFamily}`;
   
@@ -184,9 +184,9 @@ export function verifyInputBox(userInput: string, displayText: string): InputBox
   const normalizedInput = normalizeForComparison(userInput);
   const normalizedDisplay = normalizeForComparison(displayText);
   if (normalizedInput.length > normalizedDisplay.length) return InputBoxState.Incorrect;
-  if (normalizedInput.length === 0) return InputBoxState.Correct;
+  if (normalizedInput.length === 0) return InputBoxState.Partial;
   for (let i = 0; i < normalizedInput.length; i++) {
     if (normalizedInput[i] !== normalizedDisplay[i]) return InputBoxState.Incorrect;
   }
-  return normalizedInput.length === normalizedDisplay.length ? InputBoxState.Completed : InputBoxState.Correct;
+  return normalizedInput.length === normalizedDisplay.length ? InputBoxState.Completed : InputBoxState.Partial;
 }

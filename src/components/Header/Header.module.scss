@@ -304,13 +304,14 @@ $accent-color: #61dafb; // A common React blue for highlights
   cursor: pointer;
   color: #ffffff;
   font-size: 1rem;
+  padding: 0.3rem;
 }
 
 .avatar {
   background-color: #3a3a3a;
   color: #ffffff;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
