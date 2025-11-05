@@ -142,7 +142,6 @@ body {
   cursor: pointer;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   border: 1px solid $border-color;
-  position: relative; // For progress bar positioning
   padding: 10px 0;
 
   &:hover {
@@ -215,13 +214,11 @@ body {
 
 // Progress bar styles
 .progressBar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 4px;
   display: flex;
   background-color: $border-color;
+  margin-top: 8px;
+  width: 100%;
 
   .progressMastered {
     background-color: #4caf50; // Green for mastered

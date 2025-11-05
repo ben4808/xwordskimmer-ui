@@ -1,32 +1,33 @@
 /**
-Modify the code in this React component according to the given requirements and remove things 
-not in the requirements. Assume that all other components are already in an optimal, working state.
-
 General
 - The site is built in React with Typescript.
 - The entire site is responsive and works well on both phones and computers. 
 - Each component includes an SCSS module and does not use Tailwind or any other additional CSS framework.
 - The site supports login with Google OAuth and manages authentication with a JWT token. 
-    The JWT token contains a custom claim for the currently logged in username.
+    The login API also provides user information to the client.
 The site is styled in Dark Mode, using a standard Dark Mode color set with accent color 
     as a pleasing light blue.
 The header is part of the page and does not float on top of the screen.
 
 Collection List page (/collections)
 - This view shows a list of clue collections that the user has access to. For each clue collection, 
-    there is shown a box with a generic thumbnail image on the left and the following two lines 
-    on the right of it: on the first line, the collection title; on the second line, (“By: <Author>”, 
-    Public/Unlisted, clue count), separated by "•" characters.
+    there is shown a box with a generic thumbnail image on the left and the following three lines 
+    on the right of it: 
+    1. The collection title
+    2. (“By: <Author>”, Public/Unlisted, clue count), separated by "•" characters.
+    3. A progress bar, with green representing Mastered clues, yellow In Progress, and gray Unseen.
+      There are no labels for the bar, just a rectangular bar with three sections. The progress bar
+      does not show up if there is no logged in user. If there is a user but no progress data, all
+      Unseen clues are assumed.
 - The thumbnail will be a FontAwesome icon for a collection or list.
-- If the user is logged in, across the bottom of the entire collection box will be a progress bar, 
-    with green representing Mastered clues, yellow In Progress, and gray Unseen.
 - Clicking a collection takes the user to the Collection page for that collection.
 - There are 1 or 2 sections of collections shown:	
-  1. Your Collections, showing all collections that have been authored or accessed collections by that user, sorted by last accessed date. Only applies to logged in users.
+  1. Your Collections, showing all collections that the user has authored, or collection for which
+     the user has progress data. Sorted by last accessed date. Only applies to logged in users.
   2. Public Collections, showing all public collections, sorted alphabetically by title.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { CollectionListProps } from "./CollectionListProps";
@@ -53,12 +54,23 @@ function CollectionList(props: CollectionListProps) {
         const response = await api.getCollectionList();
         setCollections(response);
         
-        // Separate collections based on privacy and user ownership
-        const publicCols = response.filter(collection => !collection.isPrivate);
-        const userCols = response.filter(collection => 
-          collection.isPrivate && 
-          user && 
-          collection.creator?.id === user.id
+        // Separate collections: "Your Collections" includes collections authored by user or with progress data
+        const userCols: ClueCollection[] = [];
+        if (user) {
+          userCols.push(...response.filter(collection => 
+            // User authored collections (any privacy level)
+            (collection.creator?.id === user.id) ||
+            // Collections with progress data (any privacy level) - API should only return current user's progress
+            (collection.progressData && (!collection.progressData.userId || collection.progressData.userId === user.id))
+          ));
+        }
+        
+        // Get user collection IDs to exclude from public collections
+        const userCollectionIds = new Set(userCols.map(col => col.id));
+        
+        // Public collections exclude those already in "Your Collections"
+        const publicCols = response.filter(collection => 
+          !collection.isPrivate && !userCollectionIds.has(collection.id)
         );
         
         // Sort public collections alphabetically by title
@@ -90,6 +102,85 @@ function CollectionList(props: CollectionListProps) {
       return (value / total) * 100;
     };
 
+    // Helper function to render progress bar
+    const renderProgressBar = (collection: ClueCollection) => {
+      if (!user) return null;
+      
+      const completed = collection.progressData?.completed || 0;
+      const inProgress = collection.progressData?.in_progress || 0;
+      const unseen = collection.progressData?.unseen ?? (collection.clueCount || 0);
+      const total = completed + inProgress + unseen;
+      
+      if (total === 0) return null;
+      
+      return (
+        <div className={styles.progressBar}>
+          <div 
+            className={styles.progressMastered} 
+            style={{width: `${calculateProgressPercentage(completed, total)}%`}}
+          ></div>
+          <div 
+            className={styles.progressInProgress} 
+            style={{width: `${calculateProgressPercentage(inProgress, total)}%`}}
+          ></div>
+          <div 
+            className={styles.progressUnseen} 
+            style={{width: `${calculateProgressPercentage(unseen, total)}%`}}
+          ></div>
+        </div>
+      );
+    };
+
+    // Helper function to render collection card
+    const renderCollectionCard = (collection: ClueCollection, showPrivacyStatus: boolean = true) => {
+      const privacyText = showPrivacyStatus 
+        ? (collection.isPrivate ? 'Unlisted' : 'Public')
+        : 'Public';
+      
+      return (
+        <div
+          className={styles.collectionCard}
+          onClick={() => handleCollectionClick(collection)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleCollectionClick(collection);
+            }
+          }}
+        >
+          <div className={styles.thumbnail}>
+            <FontAwesomeIcon icon={faList} />
+          </div>
+          <div className={styles.details}>
+            <h3 className={styles.title}>{collection.title}</h3>
+            <p className={styles.meta}>
+              By: {collection.author || collection.creator?.firstName || 'Unknown'} • {privacyText} • {collection.clueCount} clues
+            </p>
+            {renderProgressBar(collection)}
+          </div>
+        </div>
+      );
+    };
+
+    // Helper function to render collection section
+    const renderCollectionSection = (title: string, collections: ClueCollection[], showPrivacyStatus: boolean = true) => {
+      if (collections.length === 0) return null;
+      
+      return (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>{title}</h2>
+          <div className={styles.collectionList}>
+            {collections.map((collection) => (
+              <Fragment key={collection.id}>
+                {renderCollectionCard(collection, showPrivacyStatus)}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
     return (
     <div className={styles.collectionListPage}>
       <div className={styles.header}>
@@ -105,106 +196,10 @@ function CollectionList(props: CollectionListProps) {
         {!isLoading && !error && collections.length > 0 && (
           <div className={styles.collectionsContainer}>
             {/* Your Collections Section - only show if user is logged in and has collections */}
-            {user && userCollections.length > 0 && (
-              <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Your Collections</h2>
-                <div className={styles.collectionList}>
-                  {userCollections.map((collection) => (
-                    <div
-                      key={collection.id}
-                      className={styles.collectionCard}
-                      onClick={() => handleCollectionClick(collection)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          handleCollectionClick(collection);
-                        }
-                      }}
-                    >
-                      <div className={styles.thumbnail}>
-                        <FontAwesomeIcon icon={faList} />
-                      </div>
-                      <div className={styles.details}>
-                        <h3 className={styles.title}>{collection.title}</h3>
-                        <p className={styles.meta}>
-                          By: {collection.author || collection.creator?.firstName || 'Unknown'} • Private • {collection.clueCount} clues
-                        </p>
-                      </div>
-                      {collection.progressData && (() => {
-                        const total = collection.progressData.completed + collection.progressData.in_progress + collection.progressData.unseen;
-                        return (
-                          <div className={styles.progressBar}>
-                            <div 
-                              className={styles.progressMastered} 
-                              style={{width: `${calculateProgressPercentage(collection.progressData.completed, total)}%`}}
-                            ></div>
-                            <div 
-                              className={styles.progressInProgress} 
-                              style={{width: `${calculateProgressPercentage(collection.progressData.in_progress, total)}%`}}
-                            ></div>
-                            <div 
-                              className={styles.progressUnseen} 
-                              style={{width: `${calculateProgressPercentage(collection.progressData.unseen, total)}%`}}
-                            ></div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+            {user && renderCollectionSection('Your Collections', userCollections, true)}
+            
             {/* Public Collections Section */}
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Public Collections</h2>
-              <div className={styles.collectionList}>
-                {publicCollections.map((collection) => (
-                  <div
-                    key={collection.id}
-                    className={styles.collectionCard}
-                    onClick={() => handleCollectionClick(collection)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        handleCollectionClick(collection);
-                      }
-                    }}
-                  >
-                    <div className={styles.thumbnail}>
-                      <FontAwesomeIcon icon={faList} />
-                    </div>
-                    <div className={styles.details}>
-                      <h3 className={styles.title}>{collection.title}</h3>
-                      <p className={styles.meta}>
-                        By: {collection.author || collection.creator?.firstName || 'Unknown'} • Public • {collection.clueCount} clues
-                      </p>
-                    </div>
-                    {user && collection.progressData && (() => {
-                      const total = collection.progressData.completed + collection.progressData.in_progress + collection.progressData.unseen;
-                      return (
-                        <div className={styles.progressBar}>
-                          <div 
-                            className={styles.progressMastered} 
-                            style={{width: `${calculateProgressPercentage(collection.progressData.completed, total)}%`}}
-                          ></div>
-                          <div 
-                            className={styles.progressInProgress} 
-                            style={{width: `${calculateProgressPercentage(collection.progressData.in_progress, total)}%`}}
-                          ></div>
-                          <div 
-                            className={styles.progressUnseen} 
-                            style={{width: `${calculateProgressPercentage(collection.progressData.unseen, total)}%`}}
-                          ></div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderCollectionSection('Public Collections', publicCollections, false)}
           </div>
         )}
       </div>

@@ -132,6 +132,7 @@ $success-color: #4caf50; // Green for success states
 
 .progressBar {
   display: flex;
+  width: 80%;
   height: 8px;
   background-color: $border-color;
   border-radius: 4px;
@@ -328,12 +329,15 @@ $success-color: #4caf50; // Green for success states
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   max-width: 800px;
   width: 100%;
-  max-height: 80vh;
+  max-height: 85vh;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 
   @include for-phone-only {
     max-height: 90vh;
+    min-height: 300px;
   }
 }
 
@@ -379,71 +383,15 @@ $success-color: #4caf50; // Green for success states
 .popupBody {
   padding: 20px;
   overflow-y: auto;
+  overflow-x: visible;
   flex: 1;
+  min-height: 0;
 
   @include for-phone-only {
     padding: 15px;
   }
 }
 
-.wordsTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-
-  th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid $border-color;
-
-    @include for-phone-only {
-      padding: 8px;
-      font-size: 0.8rem;
-    }
-  }
-
-  th {
-    background-color: $secondary-bg;
-    color: $accent-color;
-    font-weight: bold;
-    position: sticky;
-    top: 0;
-  }
-
-  td {
-    color: $text-color;
-  }
-
-  .noData {
-    text-align: center;
-    color: $light-text-color;
-    font-style: italic;
-    padding: 20px;
-  }
-}
-
-.status {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
-
-  &.statusMastered {
-    background-color: color.adjust($success-color, $alpha: -0.8);
-    color: $success-color;
-  }
-
-  &.statusInProgress {
-    background-color: color.adjust(#ffc107, $alpha: -0.8);
-    color: #ffc107;
-  }
-
-  &.statusUnseen {
-    background-color: color.adjust(#6c757d, $alpha: -0.8);
-    color: #6c757d;
-  }
-}
 
 // Toast Notification
 .toast {

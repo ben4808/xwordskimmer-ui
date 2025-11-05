@@ -1,0 +1,204 @@
+@use "sass:color";
+
+// Define a dark mode color palette
+$primary-bg: #1a1a1a;
+$secondary-bg: #2a2a2a;
+$card-bg: #333;
+$text-color: #e0e0e0;
+$light-text-color: #b0b0b0;
+$accent-color: #8bb4ff; // A soft blue for accents
+$border-color: #444;
+$error-color: #ff6b6b; // A distinct red for errors
+$success-color: #4caf50; // Green for success states
+
+// Mixin for responsive design
+@mixin for-phone-only {
+  @media (max-width: 599px) {
+    @content;
+  }
+}
+
+.wordsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  position: relative;
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid $border-color;
+
+    @include for-phone-only {
+      padding: 8px;
+      font-size: 0.8rem;
+    }
+  }
+
+  th {
+    background-color: $secondary-bg;
+    color: $accent-color;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  td {
+    color: $text-color;
+  }
+
+  .noData {
+    text-align: center;
+    color: $light-text-color;
+    font-style: italic;
+    padding: 20px;
+  }
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+
+  &.statusReady {
+    background-color: color.adjust($success-color, $alpha: -0.8);
+    color: $success-color;
+  }
+
+  &.statusProcessing {
+    background-color: color.adjust(#ffc107, $alpha: -0.8);
+    color: #ffc107;
+  }
+
+  &.statusInvalid {
+    background-color: color.adjust($error-color, $alpha: -0.8);
+    color: $error-color;
+  }
+}
+
+.tableContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: visible;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: color.adjust($secondary-bg, $lightness: 5%);
+  }
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.sortIcon {
+  font-size: 0.9rem;
+  color: $accent-color;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.filterIcon {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: $accent-color;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  margin-left: auto;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.filterDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.filterOption {
+  padding: 10px 16px;
+  color: $text-color;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: color.adjust($card-bg, $lightness: 5%);
+  }
+}
+
+.filterOptionActive {
+  padding: 10px 16px;
+  color: $accent-color;
+  cursor: pointer;
+  background-color: color.adjust($accent-color, $alpha: -0.9);
+  font-weight: bold;
+
+  &:hover {
+    background-color: color.adjust($accent-color, $alpha: -0.85);
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  margin-top: 16px;
+  border-top: 1px solid $border-color;
+}
+
+.paginationButton {
+  padding: 8px 16px;
+  background-color: $secondary-bg;
+  color: $accent-color;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, border-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust($secondary-bg, $lightness: 5%);
+    border-color: $accent-color;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.paginationInfo {
+  color: $light-text-color;
+  font-size: 0.9rem;
+}
+

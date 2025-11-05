@@ -2,6 +2,7 @@
 import { Clue } from "../models/Clue";
 import { ClueCollection } from "../models/ClueCollection";
 import { UserResponse } from "../models/UserResponse";
+import { CollectionClueRow } from "../models/CollectionClueRow";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
 import settings from "../settings.json";
 
@@ -89,6 +90,8 @@ class CruziApi implements ICruziApi {
           clue.entry = {
             entry: raw.entry.entry,
             lang: raw.entry.lang,
+            displayText: raw.entry.displayText,
+            loadingStatus: raw.entry.loadingStatus,
           };
         }
 
@@ -126,6 +129,47 @@ class CruziApi implements ICruziApi {
       });
     } catch (error) {
       console.error('Error fetching collection batch:', error);
+      throw error;
+    }
+  }
+
+  async getCollectionClues(
+    collectionId: string,
+    sortBy?: string,
+    sortDirection?: string,
+    progressFilter?: string,
+    statusFilter?: string,
+    page?: number
+  ): Promise<CollectionClueRow[]> {
+    try {
+      const params = new URLSearchParams();
+      params.append('collection_id', collectionId);
+      if (sortBy) params.append('sort_by', sortBy);
+      if (sortDirection) params.append('sort_direction', sortDirection);
+      if (progressFilter && progressFilter !== 'All') params.append('progress_filter', progressFilter);
+      if (statusFilter && statusFilter !== 'All') params.append('status_filter', statusFilter);
+      if (page) params.append('page', page.toString());
+
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/getCollectionClues?${params.toString()}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching collection clues:', error);
       throw error;
     }
   }

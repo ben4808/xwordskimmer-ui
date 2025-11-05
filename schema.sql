@@ -51,6 +51,7 @@ create table "entry" (
   entry_type text,
   familiarity_score int,
   quality_score int,
+  loading_status text not null default 'Ready', -- Ready, Processing, Invalid
   primary key("entry", lang)
 );
 
