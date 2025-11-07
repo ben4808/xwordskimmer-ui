@@ -48,6 +48,7 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
               className={`${styles.fillInBlankInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isPartial ? styles.partial : ''}`}
               style={{ width: `${inputWidth}px` }}
               aria-label="Fill in the blank"
+              spellCheck={false}
             />
             {after}
           </div>
@@ -71,6 +72,7 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
             className={`${styles.nonCrosswordInput} ${isIncorrect ? styles.incorrect : ''} ${isCompleted ? styles.completed : ''} ${isPartial ? styles.partial : ''}`}
             style={{ width: `${inputWidth}px` }}
             aria-label="Answer input field"
+            spellCheck={false}
           />
         </div>
       </>

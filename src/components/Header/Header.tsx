@@ -31,7 +31,8 @@ Header for Collection page
 
 Header for the Collection Quiz page:
 - On the left side of the header is a Back button that takes the user back to the Collection page.
-- The middle and right sides are the same as the Collection page.
+- In the middle is the name of the active Collection.
+- On the right side is nothing.
  */
 
 import { useNavigate } from 'react-router-dom';
@@ -307,7 +308,7 @@ const Header = (props: HeaderProps) => {
       <div className={`${styles.container} ${(headerType === 'collection' || headerType === 'quiz') ? styles.collectionLayout : ''}`}>
         {renderLeftSection()}
         {renderCenterSection()}
-        {renderUserSection()}
+        {headerType !== 'quiz' && renderUserSection()}
       </div>
     </header>
   );

@@ -60,9 +60,9 @@ export class MockCruziApi implements ICruziApi {
     }
   }
 
-  async submitUserResponse(clueId: string, isCorrect: boolean): Promise<void> {
+  async submitUserResponse(clueId: string, collectionId: string, isCorrect: boolean): Promise<void> {
     // Mock implementation - in a real API this would update the database
-    console.log(`User response for clue ${clueId}: ${isCorrect ? 'correct' : 'incorrect'}`);
+    console.log(`User response for clue ${clueId} in collection ${collectionId}: ${isCorrect ? 'correct' : 'incorrect'}`);
   }
 
   async reopenCollection(collectionId: string): Promise<void> {

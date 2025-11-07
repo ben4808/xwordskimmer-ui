@@ -12,6 +12,7 @@ import { useClueText } from './useClueText';
 import { CrosswordInputs } from './CrosswordInputs';
 import { NonCrosswordInput } from './NonCrosswordInput';
 import { ClueProgressData } from '../../models/ClueProgressData';
+import CruziApi from '../../api/CruziApi';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
   // --- Hooks (all called unconditionally at top level) ---
@@ -105,8 +106,24 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     setIsSolved,
     setUserInput,
     getExpectedResponse: () => expectedResponse,
-    onCorrect: incrementCorrect,
-    onIncorrect: incrementIncorrect,
+    onCorrect: () => {
+      incrementCorrect();
+      // Submit correct response to API (only if user is logged in)
+      if (user && currentClue?.id && clueCollection?.id) {
+        CruziApi.submitUserResponse(currentClue.id.toString(), clueCollection.id.toString(), true).catch(err => {
+          console.error('Error submitting correct response:', err);
+        });
+      }
+    },
+    onIncorrect: () => {
+      incrementIncorrect();
+      // Submit incorrect response to API (only if user is logged in)
+      if (user && currentClue?.id && clueCollection?.id) {
+        CruziApi.submitUserResponse(currentClue.id.toString(), clueCollection.id.toString(), false).catch(err => {
+          console.error('Error submitting incorrect response:', err);
+        });
+      }
+    },
   });
   
   // Explain prompt (merged from useExplainPrompt)
@@ -126,6 +143,10 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     };
     loadExplainPrompt();
   }, []);
+
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [showToast, setShowToast] = useState<boolean>(false);
   
   // Set current collection in context
   useEffect(() => {
@@ -230,6 +251,12 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     
     // According to requirements: if user has to press Reveal, it's incorrect
     incrementIncorrect();
+    // Submit incorrect response to API (only if user is logged in)
+    if (user && currentClue?.id && clueCollection?.id) {
+      CruziApi.submitUserResponse(currentClue.id.toString(), clueCollection.id.toString(), false).catch(err => {
+        console.error('Error submitting incorrect response:', err);
+      });
+    }
   };
 
   // Load next batch when reaching the last clue of current batch
@@ -256,7 +283,10 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
         .replace('{ANSWER_TEXT}', expectedResponse);
       
       await navigator.clipboard.writeText(filledPrompt);
-      // You could add a toast notification here if desired
+      // Show toast notification
+      setToastMessage('Copied to clipboard');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
@@ -287,33 +317,39 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   // --- Main Render ---
   return (
     <div className={styles.container}>
-      {/* Score boxes (merged from ScoreBoxes) */}
-      <div className={styles.scoreBoxes}>
-        <div className={`${styles.scoreBox} ${styles.scoreBoxCorrect}`}>
-          <div className={styles.scoreValue}>{correctAnswers}</div>
-        </div>
-        <div className={`${styles.scoreBox} ${styles.scoreBoxIncorrect}`}>
-          <div className={styles.scoreValue}>{incorrectAnswers}</div>
-        </div>
-      </div>
-
-      {/* Progress bar (merged from ProgressBar) */}
-      {user && currentClue.progressData && (() => {
-        const progressData = currentClue.progressData as ClueProgressData;
-        const progressPercent = progressData.correctSolvesNeeded > 0
-          ? Math.min(100, (progressData.correctSolves / progressData.correctSolvesNeeded) * 100)
-          : 0;
-        return (
-          <div className={styles.progressBar}>
-            <div className={styles.progressBarTrack}>
-              <div 
-                className={styles.progressBarFill} 
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+      {/* Score boxes and Progress bar container */}
+      <div className={styles.scoreAndProgressContainer}>
+        {/* Score boxes (merged from ScoreBoxes) */}
+        <div className={styles.scoreBoxes}>
+          <div className={`${styles.scoreBox} ${styles.scoreBoxCorrect}`}>
+            <div className={styles.scoreValue}>{correctAnswers}</div>
           </div>
-        );
-      })()}
+          <div className={`${styles.scoreBox} ${styles.scoreBoxIncorrect}`}>
+            <div className={styles.scoreValue}>{incorrectAnswers}</div>
+          </div>
+        </div>
+
+        {/* Progress bar (merged from ProgressBar) */}
+        {user && (() => {
+          // If no progress data, assume 0 correct, 0 incorrect, and 2 correct answers needed
+          const progressData = currentClue.progressData as ClueProgressData | undefined;
+          const correctSolves = progressData?.correctSolves ?? 0;
+          const correctSolvesNeeded = progressData?.correctSolvesNeeded ?? 2;
+          const progressPercent = correctSolvesNeeded > 0
+            ? Math.min(100, (correctSolves / correctSolvesNeeded) * 100)
+            : 0;
+          return (
+            <div className={styles.progressBar}>
+              <div className={styles.progressBarTrack}>
+                <div 
+                  className={styles.progressBarFill} 
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
+      </div>
 
       {isCrosswordClue ? (
         <>
@@ -396,6 +432,13 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
           </div>
         )}
       </div>
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className={styles.toast}>
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 };

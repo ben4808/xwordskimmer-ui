@@ -64,6 +64,7 @@ export const CrosswordInputs: React.FC<CrosswordInputsProps> = ({
                 onFocus={() => onFocus(currentLetterIndex)}
                 className={`${styles.letterInput} ${isCorrect || allCorrect ? styles.correct : ''} ${isIncorrect ? styles.incorrect : ''} ${allCorrect ? styles.allCorrect : ''}`}
                 aria-label={`Letter input ${currentLetterIndex + 1}`}
+                spellCheck={false}
               />
             </div>
           );

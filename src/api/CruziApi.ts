@@ -31,11 +31,17 @@ class CruziApi implements ICruziApi {
 
   async getCollectionBatch(collectionId: string): Promise<Clue[]> {
     try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${baseUrl}/getCollectionBatch?collection_id=${encodeURIComponent(collectionId)}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
       });
 
       if (!response.ok) {
@@ -174,18 +180,25 @@ class CruziApi implements ICruziApi {
     }
   }
 
-  async submitUserResponse(clueId: string, isCorrect: boolean): Promise<void> {
+  async submitUserResponse(clueId: string, collectionId: string, isCorrect: boolean): Promise<void> {
     try {
       const userResponse: Partial<UserResponse> = {
         clueId: clueId.toString(),
+        collectionId: collectionId.toString(),
         isCorrect: isCorrect,
       };
 
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${baseUrl}/submitUserResponse`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(userResponse),
       });
 

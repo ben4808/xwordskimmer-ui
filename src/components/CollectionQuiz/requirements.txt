@@ -15,6 +15,7 @@ Layout
 2. Progress Bar (If Logged In)
   - Scope: Current clue only.
   - Visuals: A single bar with no labels. Gray backgound, green progress based on the proportion of correct answers against correct answers needed. 
+  - If there is a logged in user but no progress data available, assume 0 correct, 0 incorrect, and 2 correct answers needed.
       
 3. Non-Crossword Mode (isCrosswordCollection = false)
 - Clue Text Source (Priority):
@@ -51,6 +52,9 @@ Layout
   - Loads next clue from batch. 
 - Explain button. Visible alongside the Next button. Trigger: Button click.
   - Copies AI explanation prompt to clipboard. The prompt lives at /explain_prompt.txt.
+  - Also shows a toast saying "Copied to clipboard".
+- When the user gets an answer correct or incorrect, a call should be made to submitUserResponse in ICruziApi with the relevant data.
+  - This should only be done when there is a logged in user.
 
 6. Notes
 - The clues should be shown in the order that they are returned from getCollectionBatch. New batches should be seamlessly

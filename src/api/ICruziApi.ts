@@ -25,7 +25,7 @@ export interface ICruziApi {
     statusFilter?: string,
     page?: number
   ): Promise<CollectionClueRow[]>;
-  submitUserResponse(clueId: string, isCorrect: boolean): Promise<void>;
+  submitUserResponse(clueId: string, collectionId: string, isCorrect: boolean): Promise<void>;
   reopenCollection(collectionId: string): Promise<void>;
   addCluesToCollection(collectionId: string, clues: Clue[]): Promise<void>;
   removeClueFromCollection(collectionId: string, clueId: number): Promise<void>;
