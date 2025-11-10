@@ -14,10 +14,10 @@ Collection page (/collection/<id>)
     - First, is shown "<count> total clues"
     - Beside this line is a list Fontawesome icon that opens a popup window. In this popup window 
         is a table of words and phrases in the collection (see CollectionTable component for details).
-    - The next line says "<count> Mastered", "<count> In Progress", and "<count> Unseen", 
+    - The next line says "<count> Completed", "<count> In Progress", and "<count> Unseen", 
         separated by some space. Any clue without progress data is assumed to be Unseen.
         - Not shown if there is no logged in user.
-    - Right below these counts is a progress bar, with green representing Mastered clues, yellow In Progress, 
+    - Right below these counts is a progress bar, with green representing Completed clues, yellow In Progress, 
       and gray Unseen. There are no labels for the bar, just a rectangular bar with three sections.
       Absense of progress data is assumed to be Unseen.
         - Not shown if there is no logged in user.
@@ -69,7 +69,7 @@ function Collection(props: CollectionProps) {
     const progressData = props.collection.progressData;
     
     // Calculate progress stats from props
-    const mastered = user && progressData ? progressData.completed : 0;
+    const completed = user && progressData ? progressData.completed : 0;
     const inProgress = user && progressData ? progressData.in_progress : 0;
     const unseen = user && progressData ? progressData.unseen : (user ? totalClues : 0);
 
@@ -189,15 +189,15 @@ function Collection(props: CollectionProps) {
                 {user && (
                     <>
                         <div className={styles.progressStats}>
-                            <span className={styles.stat}>{mastered} Mastered</span>
+                            <span className={styles.stat}>{completed} Completed</span>
                             <span className={styles.stat}>{inProgress} In Progress</span>
                             <span className={styles.stat}>{unseen} Unseen</span>
                         </div>
                         
                         <div className={styles.progressBar}>
                             <div 
-                                className={styles.progressMastered} 
-                                style={{width: `${calculateProgressPercentage(mastered, totalClues)}%`}}
+                                className={styles.progressCompleted} 
+                                style={{width: `${calculateProgressPercentage(completed, totalClues)}%`}}
                             ></div>
                             <div 
                                 className={styles.progressInProgress} 

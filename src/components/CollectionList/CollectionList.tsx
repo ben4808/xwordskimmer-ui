@@ -15,7 +15,7 @@ Collection List page (/collections)
     on the right of it: 
     1. The collection title
     2. (“By: <Author>”, Public/Unlisted, clue count), separated by "•" characters.
-    3. A progress bar, with green representing Mastered clues, yellow In Progress, and gray Unseen.
+    3. A progress bar, with green representing Completed clues, yellow In Progress, and gray Unseen.
       There are no labels for the bar, just a rectangular bar with three sections. The progress bar
       does not show up if there is no logged in user. If there is a user but no progress data, all
       Unseen clues are assumed.
@@ -116,7 +116,7 @@ function CollectionList(props: CollectionListProps) {
       return (
         <div className={styles.progressBar}>
           <div 
-            className={styles.progressMastered} 
+            className={styles.progressCompleted} 
             style={{width: `${calculateProgressPercentage(completed, total)}%`}}
           ></div>
           <div 
@@ -183,10 +183,6 @@ function CollectionList(props: CollectionListProps) {
 
     return (
     <div className={styles.collectionListPage}>
-      <div className={styles.header}>
-        <h1 className={styles.pageTitle}>Collections</h1>
-      </div>
-
       <div className={styles.contentArea}>
         {isLoading && <div className={styles.loading}>Loading collections...</div>}
         {error && <div className={styles.error}>{error}</div>}

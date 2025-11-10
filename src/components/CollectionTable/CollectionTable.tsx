@@ -16,13 +16,13 @@ This dropdown should be triggered by a filter fontawesome icon next to the colum
 - Clue
    - "N/A" if no data is returned.
 - Progress
-   - If the result is "Unseen" or "Mastered", show this text.
+   - If the result is "Unseen" or "Completed", show this text.
    - Otherwise, parse out the number of correct solves and the solves needed. But still display 
      the text as for example "2/4" or "3/10".
-   - This column is sortable. In sorting, Mastered clues come first (sorted alphabetically),
+   - This column is sortable. In sorting, Completed clues come first (sorted alphabetically),
       followed by In Progress clues (sorted by the number of solves needed descending), followed
 	  by "Unseen" clues (sorted alphabetically).
-   - This column is filterable by the 3 major categories (Unseen, In Progress, Mastered)
+   - This column is filterable by the 3 major categories (Unseen, In Progress, Completed)
 - Status
    - This column is filterable by the 3 major categories (Ready, Processing, Invalid)
 
@@ -39,7 +39,7 @@ import { CollectionClueRow } from "../../models/CollectionClueRow";
 
 type SortColumn = 'Answer' | 'Progress' | null;
 type SortDirection = 'asc' | 'desc';
-type ProgressFilter = 'All' | 'Unseen' | 'In Progress' | 'Mastered';
+type ProgressFilter = 'All' | 'Unseen' | 'In Progress' | 'Completed';
 type StatusFilter = 'All' | 'Ready' | 'Processing' | 'Invalid';
 
 function CollectionTable(props: CollectionTableProps) {
@@ -199,10 +199,10 @@ function CollectionTable(props: CollectionTableProps) {
                                         In Progress
                                     </div>
                                     <div 
-                                        className={progressFilter === 'Mastered' ? styles.filterOptionActive : styles.filterOption}
-                                        onClick={() => handleProgressFilterChange('Mastered')}
+                                        className={progressFilter === 'Completed' ? styles.filterOptionActive : styles.filterOption}
+                                        onClick={() => handleProgressFilterChange('Completed')}
                                     >
-                                        Mastered
+                                        Completed
                                     </div>
                                 </div>
                             )}

@@ -138,7 +138,7 @@ $success-color: #4caf50; // Green for success states
   border-radius: 4px;
   overflow: hidden;
 
-  .progressMastered {
+  .progressCompleted {
     background-color: $success-color;
     height: 100%;
     transition: width 0.3s ease;

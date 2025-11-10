@@ -1,7 +1,6 @@
 
 import { Clue } from "../models/Clue";
 import { ClueCollection } from "../models/ClueCollection";
-import { UserResponse } from "../models/UserResponse";
 import { CollectionClueRow } from "../models/CollectionClueRow";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
 import settings from "../settings.json";
@@ -11,11 +10,17 @@ const baseUrl = settings.api_base_url + "/api";
 class CruziApi implements ICruziApi {
   async getCollectionList(): Promise<ClueCollection[]> {
     try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${baseUrl}/getCollectionList`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
       });
 
       if (!response.ok) {
@@ -182,7 +187,7 @@ class CruziApi implements ICruziApi {
 
   async submitUserResponse(clueId: string, collectionId: string, isCorrect: boolean): Promise<void> {
     try {
-      const userResponse: Partial<UserResponse> = {
+      const userResponse: any = {
         clueId: clueId.toString(),
         collectionId: collectionId.toString(),
         isCorrect: isCorrect,

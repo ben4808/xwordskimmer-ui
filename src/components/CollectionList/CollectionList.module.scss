@@ -58,20 +58,6 @@ body {
   }
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid $border-color;
-
-  @include for-tablet-portrait-up {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
 .pageTitle {
   font-size: 2.2rem;
   font-weight: bold;
@@ -220,8 +206,8 @@ body {
   margin-top: 8px;
   width: 100%;
 
-  .progressMastered {
-    background-color: #4caf50; // Green for mastered
+  .progressCompleted {
+    background-color: #4caf50; // Green for completed
     height: 100%;
   }
 
