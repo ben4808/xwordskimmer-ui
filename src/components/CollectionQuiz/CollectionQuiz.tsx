@@ -57,6 +57,13 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     setIsRevealed(false);
     setInputBoxState(InputBoxState.Partial);
 
+    // Initialize local progress state from clue data
+    const progressData = currentClue?.progressData as ClueProgressData | undefined;
+    setCurrentClueProgress({
+      correctSolves: progressData?.correctSolves ?? 0,
+      correctSolvesNeeded: progressData?.correctSolvesNeeded ?? 2
+    });
+
     // Calculate input width based on expected response (only for non-crossword clues)
     if (!isCrosswordClue && expectedResponse) {
       const textWidth = getTextWidth(expectedResponse, 1.5, 'Verdana, sans-serif');
@@ -78,7 +85,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     }
     // Only depend on currentIndex and isCrosswordClue, not allUserInput
     // This prevents the effect from running when we save the revealed answer
-  }, [currentIndex, isCrosswordClue, expectedResponse]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentIndex, isCrosswordClue, expectedResponse, currentClue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const changeFocusedIndex = (index: number) => {
     if (isCrosswordClue && index >= 0 && normalizedAnswer && index < normalizedAnswer.length) {
@@ -93,6 +100,12 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
   const incrementCorrect = () => setCorrectAnswers(prev => prev + 1);
   const incrementIncorrect = () => setIncorrectAnswers(prev => prev + 1);
+
+  // Local progress tracking for current clue
+  const [currentClueProgress, setCurrentClueProgress] = useState<{
+    correctSolves: number;
+    correctSolvesNeeded: number;
+  }>({ correctSolves: 0, correctSolvesNeeded: 2 });
   
   // Answer validation
   useAnswerValidation({
@@ -108,6 +121,11 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     getExpectedResponse: () => expectedResponse,
     onCorrect: () => {
       incrementCorrect();
+      // Update local progress state immediately
+      setCurrentClueProgress(prev => ({
+        ...prev,
+        correctSolves: prev.correctSolves + 1
+      }));
       // Submit correct response to API (only if user is logged in)
       if (user && currentClue?.id && clueCollection?.id) {
         CruziApi.submitUserResponse(currentClue.id.toString(), clueCollection.id.toString(), true).catch(err => {
@@ -117,6 +135,11 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     },
     onIncorrect: () => {
       incrementIncorrect();
+      // Update local progress state immediately - add 2 to correctSolvesNeeded
+      setCurrentClueProgress(prev => ({
+        ...prev,
+        correctSolvesNeeded: prev.correctSolvesNeeded + 2
+      }));
       // Submit incorrect response to API (only if user is logged in)
       if (user && currentClue?.id && clueCollection?.id) {
         CruziApi.submitUserResponse(currentClue.id.toString(), clueCollection.id.toString(), false).catch(err => {
@@ -251,6 +274,11 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     
     // According to requirements: if user has to press Reveal, it's incorrect
     incrementIncorrect();
+    // Update local progress state immediately - add 2 to correctSolvesNeeded
+    setCurrentClueProgress(prev => ({
+      ...prev,
+      correctSolvesNeeded: prev.correctSolvesNeeded + 2
+    }));
     // Submit incorrect response to API (only if user is logged in)
     if (user && currentClue?.id && clueCollection?.id) {
       CruziApi.submitUserResponse(currentClue.id.toString(), clueCollection.id.toString(), false).catch(err => {
@@ -331,18 +359,17 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
 
         {/* Progress bar (merged from ProgressBar) */}
         {user && (() => {
-          // If no progress data, assume 0 correct, 0 incorrect, and 2 correct answers needed
-          const progressData = currentClue.progressData as ClueProgressData | undefined;
-          const correctSolves = progressData?.correctSolves ?? 0;
-          const correctSolvesNeeded = progressData?.correctSolvesNeeded ?? 2;
+          // Use local progress state that updates immediately on answers
+          const correctSolves = currentClueProgress.correctSolves;
+          const correctSolvesNeeded = currentClueProgress.correctSolvesNeeded;
           const progressPercent = correctSolvesNeeded > 0
             ? Math.min(100, (correctSolves / correctSolvesNeeded) * 100)
             : 0;
           return (
             <div className={styles.progressBar}>
               <div className={styles.progressBarTrack}>
-                <div 
-                  className={styles.progressBarFill} 
+                <div
+                  className={styles.progressBarFill}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
