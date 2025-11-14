@@ -16,6 +16,7 @@ export interface AuthVerifyResponse {
 
 export interface ICruziApi {
   getCollectionList(): Promise<ClueCollection[]>;
+  getCollectionById(collectionId: string): Promise<ClueCollection | null>;
   getCollectionBatch(collectionId: string): Promise<Clue[]>;
   getCollectionClues(
     collectionId: string,
@@ -28,7 +29,8 @@ export interface ICruziApi {
   submitUserResponse(clueId: string, collectionId: string, isCorrect: boolean): Promise<void>;
   reopenCollection(collectionId: string): Promise<void>;
   addCluesToCollection(collectionId: string, clues: Clue[]): Promise<void>;
-  removeClueFromCollection(collectionId: string, clueId: number): Promise<void>;
+  removeClueFromCollection(collectionId: string, clueId: string): Promise<void>;
+  updateClueSense(clueId: string, senseId: string | null): Promise<void>;
   authenticateWithGoogle(token: string): Promise<AuthResponse>;
   verifyAuth(): Promise<AuthVerifyResponse>;
 };

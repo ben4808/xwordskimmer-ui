@@ -9,6 +9,11 @@ import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
 export class MockCruziApi implements ICruziApi {
   // Mock implementation of the Cruzi API methods
   
+  async getCollectionById(collectionId: string): Promise<ClueCollection | null> {
+    const collections = await this.getCollectionList();
+    return collections.find(c => c.id === collectionId) || null;
+  }
+
   async getCollectionList(): Promise<ClueCollection[]> {
     let clues = readIdahoCounties();
 

@@ -21,15 +21,14 @@ Collection page (/collection/<id>)
       and gray Unseen. There are no labels for the bar, just a rectangular bar with three sections.
       Absense of progress data is assumed to be Unseen.
         - Not shown if there is no logged in user.
-- Next there is a text box with placeholder text “Add a word or phrase” and a Add button right next to it. 
-    This adds a new word or phrase to the collection, confirmed with a toast. Pressing Enter with 
-    the textbox focused does the same thing as pushing the Add button. The textbox has autocomplete 
-    capability, sending autocomplete requests to an API call (/api/autocomplete). A word doesn’t need to 
-    be in the autocomplete list to be added.
+- Next there is a text box with placeholder text "Add a word or phrase" and a Add button right next to it.
+    This adds a new word or phrase to the collection, confirmed with a toast. Pressing Enter with
+    the textbox focused does the same thing as pushing the Add button.
 - A "Start Quiz" button that takes the user to the Collection Quiz page for this collection.
 */
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { CollectionProps } from "./CollectionProps";
@@ -38,53 +37,96 @@ import CruziApi from "../../api/CruziApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCollection } from "../../contexts/CollectionContext";
 import CollectionTable from "../CollectionTable/CollectionTable";
+import { displayTextToEntry } from "../../lib/utils";
+import { ClueCollection } from "../../models/ClueCollection";
 
 function Collection(props: CollectionProps) {
+    const { id: collectionId } = useParams<{ id: string }>();
     const { user } = useAuth();
     const { setCurrentCollection } = useCollection();
+    const [collection, setCollection] = useState<ClueCollection | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const [newWord, setNewWord] = useState<string>("");
-    const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<string[]>([]);
-    const [showAutocomplete, setShowAutocomplete] = useState<boolean>(false);
     const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
     const [toastMessage, setToastMessage] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const [isAddingWord, setIsAddingWord] = useState<boolean>(false);
-    
-    const autocompleteRef = useRef<HTMLDivElement>(null);
+
     const popupRef = useRef<HTMLDivElement>(null);
     const api = CruziApi;
 
-    // Set current collection in context when component mounts
+    // Fetch collection data
+    const fetchCollection = useCallback(async () => {
+        if (!collectionId) return;
+
+        setIsLoading(true);
+        setError(null);
+        try {
+            const fetchedCollection = await api.getCollectionById(collectionId);
+            if (fetchedCollection) {
+                setCollection(fetchedCollection);
+                setCurrentCollection(fetchedCollection);
+            } else {
+                setError("Collection not found");
+            }
+        } catch (err) {
+            console.error('Error fetching collection:', err);
+            setError("Failed to load collection");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [collectionId, api, setCurrentCollection]);
+
+    // Fetch collection on mount and when collectionId changes
     useEffect(() => {
-        setCurrentCollection(props.collection);
-        
+        if (collectionId) {
+            fetchCollection();
+        }
+
         // Clean up when component unmounts
         return () => {
             setCurrentCollection(null);
         };
-    }, [props.collection, setCurrentCollection]);
+    }, [collectionId, setCurrentCollection, fetchCollection]);
 
-    // Get progress data from props
-    const totalClues = props.collection.clueCount || 0;
-    const progressData = props.collection.progressData;
-    
-    // Calculate progress stats from props
+    // Close popup when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+                setIsPopupOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // Handle loading and error states
+    if (isLoading) {
+        return <div>Loading collection...</div>;
+    }
+
+    if (error || !collection) {
+        return <div>Error: {error || "Collection not found"}</div>;
+    }
+
+    // Get progress data from collection state
+    const totalClues = collection.clueCount || 0;
+    const progressData = collection.progressData;
+
+    // Calculate progress stats from collection
     const completed = user && progressData ? progressData.completed : 0;
     const inProgress = user && progressData ? progressData.in_progress : 0;
     const unseen = user && progressData ? progressData.unseen : (user ? totalClues : 0);
 
-    // Handle autocomplete - TEMPORARILY DISABLED
-    const handleAutocomplete = useCallback(async (query: string) => {
-        // Autocomplete functionality temporarily disabled
-        setAutocompleteSuggestions([]);
-        setShowAutocomplete(false);
-    }, []);
 
     // Handle word input change
     const handleWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setNewWord(value);
-        handleAutocomplete(value);
     };
 
     // Handle adding a new word
@@ -93,35 +135,28 @@ function Collection(props: CollectionProps) {
 
         setIsAddingWord(true);
         try {
+            let sourceText = "user_" + (user ? user.id : "guest");
+            
             // Create a new clue object for the word
-            const newClue = {
-                id: Date.now().toString(), // Temporary ID
-                clue: `Definition for ${newWord}`,
+            const newInfo = {
                 entry: {
-                    entry: newWord,
-                    lang: 'en', // Default language
+                    entry: displayTextToEntry(newWord),
+                    lang: collection.lang,
                     displayText: newWord,
-                    translation: null
                 },
-                isCrosswordClue: false,
-                progressData: {
-                    userId: user?.id || 'anonymous',
-                    clueId: Date.now().toString(),
-                    correctSolves: 0,
-                    correctSolvesNeeded: 3,
-                    incorrectSolves: 0
-                }
+                source: sourceText,
             };
 
             // Use CruziApi to add the clue to the collection
-            await api.addCluesToCollection(props.collection.id!, [newClue]);
-            
+            await api.addCluesToCollection(collection.id!, [newInfo]);
+
             setToastMessage(`"${newWord}" added to collection`);
             setShowToast(true);
             setNewWord("");
-            setAutocompleteSuggestions([]);
-            setShowAutocomplete(false);
-            
+
+            // Refetch collection data to update clue count and progress
+            await fetchCollection();
+
             // Hide toast after 3 seconds
             setTimeout(() => setShowToast(false), 3000);
         } catch (error) {
@@ -141,29 +176,6 @@ function Collection(props: CollectionProps) {
             handleAddWord();
         }
     };
-
-    // Handle autocomplete selection
-    const handleSuggestionClick = (suggestion: string) => {
-        setNewWord(suggestion);
-        setShowAutocomplete(false);
-    };
-
-    // Close autocomplete when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (autocompleteRef.current && !autocompleteRef.current.contains(event.target as Node)) {
-                setShowAutocomplete(false);
-            }
-            if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-                setIsPopupOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
 
     // Calculate progress percentages
     const calculateProgressPercentage = (value: number, total: number): number => {
@@ -231,27 +243,12 @@ function Collection(props: CollectionProps) {
                         {isAddingWord ? "Adding..." : "Add"}
                     </button>
                 </div>
-                
-                {/* Autocomplete Dropdown */}
-                {showAutocomplete && autocompleteSuggestions.length > 0 && (
-                    <div className={styles.autocompleteDropdown} ref={autocompleteRef}>
-                        {autocompleteSuggestions.map((suggestion, index) => (
-                            <div
-                                key={index}
-                                className={styles.autocompleteItem}
-                                onClick={() => handleSuggestionClick(suggestion)}
-                            >
-                                {suggestion}
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
 
             {/* Start Quiz Button */}
             <div className={styles.quizSection}>
                 <button
-                    onClick={() => props.onStartQuiz(props.collection.id!)}
+                    onClick={() => props.onStartQuiz(collection.id!)}
                     className={styles.startQuizButton}
                 >
                     Start Quiz
@@ -273,8 +270,8 @@ function Collection(props: CollectionProps) {
                             </button>
                         </div>
                         <div className={styles.popupBody}>
-                            <CollectionTable 
-                                collectionId={props.collection.id!}
+                            <CollectionTable
+                                collectionId={collection.id!}
                             />
                         </div>
                     </div>

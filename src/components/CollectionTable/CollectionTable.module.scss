@@ -202,3 +202,109 @@ $success-color: #4caf50; // Green for success states
   font-size: 0.9rem;
 }
 
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: $success-color;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 3000;
+  font-weight: bold;
+  animation: slideInUp 0.3s ease;
+
+  @include for-phone-only {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    text-align: center;
+  }
+}
+
+.deleteButton {
+  background: none;
+  border: none;
+  color: $error-color;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 1rem;
+
+  &:hover {
+    background-color: color.adjust($error-color, $alpha: -0.9);
+    color: lighten($error-color, 10%);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.senseCell {
+  position: relative;
+  cursor: pointer;
+}
+
+.senseContainer {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.senseDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  min-width: 200px;
+  max-width: 300px;
+  overflow: hidden;
+}
+
+.senseOption {
+  padding: 8px 12px;
+  color: $text-color;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid color.adjust($border-color, $lightness: 10%);
+  font-size: 0.85rem;
+  line-height: 1.4;
+
+  &:hover {
+    background-color: color.adjust($card-bg, $lightness: 5%);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.senseOptionSelected {
+  background-color: color.adjust($accent-color, $alpha: -0.9);
+  color: $accent-color;
+  font-weight: bold;
+
+  &:hover {
+    background-color: color.adjust($accent-color, $alpha: -0.85);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+

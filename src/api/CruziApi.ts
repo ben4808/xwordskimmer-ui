@@ -34,6 +34,36 @@ class CruziApi implements ICruziApi {
     }
   }
 
+  async getCollectionById(collectionId: string): Promise<ClueCollection | null> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/getCollectionById/${encodeURIComponent(collectionId)}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching collection:', error);
+      throw error;
+    }
+  }
+
   async getCollectionBatch(collectionId: string): Promise<Clue[]> {
     try {
       const token = localStorage.getItem('token');
@@ -237,12 +267,39 @@ class CruziApi implements ICruziApi {
 
   async addCluesToCollection(collectionId: string, clues: Clue[]): Promise<void> {
     try {
+      // Transform Clue objects to the format expected by the handler
+      const transformedClues = clues.map(clue => {
+        const transformed: any = {
+          entry: clue.entry,
+        };
+
+        // If sense exists, put it in an array under 'senses'
+        if (clue.sense) {
+          transformed.senses = [clue.sense];
+        }
+
+        // If any custom clue properties exist, put them in a 'clue' object
+        const customClueProps: any = {};
+        if (clue.customClue !== undefined) customClueProps.customClue = clue.customClue;
+        if (clue.customDisplayText !== undefined) customClueProps.customDisplayText = clue.customDisplayText;
+        if (clue.source !== undefined) customClueProps.source = clue.source;
+        if (clue.customClueTranslations !== undefined) {
+          customClueProps.translatedClues = Object.fromEntries(clue.customClueTranslations);
+        }
+
+        if (Object.keys(customClueProps).length > 0) {
+          transformed.clue = customClueProps;
+        }
+
+        return transformed;
+      });
+
       const response = await fetch(`${baseUrl}/addCluesToCollection?id=${encodeURIComponent(collectionId)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(clues),
+        body: JSON.stringify(transformedClues),
       });
 
       if (!response.ok) {
@@ -254,7 +311,7 @@ class CruziApi implements ICruziApi {
     }
   }
 
-  async removeClueFromCollection(collectionId: string, clueId: number): Promise<void> {
+  async removeClueFromCollection(collectionId: string, clueId: string): Promise<void> {
     try {
       const response = await fetch(`${baseUrl}/removeClueFromCollection`, {
         method: 'POST',
@@ -269,6 +326,25 @@ class CruziApi implements ICruziApi {
       }
     } catch (error) {
       console.error('Error removing clue from collection:', error);
+      throw error;
+    }
+  }
+
+  async updateClueSense(clueId: string, senseId: string | null): Promise<void> {
+    try {
+      const response = await fetch(`${baseUrl}/updateClueSense`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clueId, senseId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error updating clue sense:', error);
       throw error;
     }
   }

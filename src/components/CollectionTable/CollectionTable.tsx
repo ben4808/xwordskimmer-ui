@@ -13,6 +13,9 @@ This dropdown should be triggered by a filter fontawesome icon next to the colum
    - This column is sortable alphabetically forward and backward.
 - Sense
    - "N/A" if no data is returned.
+   - If there is a Sense, hovering over it should reveal a drop down menu. Clicking on the drop down
+     will show a list of all the senses for the entry referenced by the clue. Clicking on another sense
+     will send an API call in the background to update the clue to use that sense.
 - Clue
    - "N/A" if no data is returned.
 - Progress
@@ -25,6 +28,11 @@ This dropdown should be triggered by a filter fontawesome icon next to the colum
    - This column is filterable by the 3 major categories (Unseen, In Progress, Completed)
 - Status
    - This column is filterable by the 3 major categories (Ready, Processing, Invalid)
+- (Delete button, no heading shown)
+  - In this column is shown for each clue a delete button in the form of a trash can font-awesome icon. 
+    Clicking this button will delete the clue from the collection using the removeClueFromCollection 
+    API call. An "are you sure?" warning will popup before completing the operation.
+    A toast should be shown to confirm the deletion.
 
 At the bottom of the table, there should be a pagination control with 100 results per page.
 */
@@ -33,7 +41,7 @@ import { useState, useRef, useEffect } from "react";
 import { CollectionTableProps } from "./CollectionTableProps";
 import styles from './CollectionTable.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSort, faSortUp, faSortDown, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortUp, faSortDown, faFilter, faTrash } from '@fortawesome/free-solid-svg-icons';
 import CruziApi from "../../api/CruziApi";
 import { CollectionClueRow } from "../../models/CollectionClueRow";
 
@@ -55,9 +63,13 @@ function CollectionTable(props: CollectionTableProps) {
     const [showProgressFilter, setShowProgressFilter] = useState<boolean>(false);
     const [showStatusFilter, setShowStatusFilter] = useState<boolean>(false);
     const [hasMorePages, setHasMorePages] = useState<boolean>(false);
+    const [toastMessage, setToastMessage] = useState<string>("");
+    const [showToast, setShowToast] = useState<boolean>(false);
 
     const progressFilterRef = useRef<HTMLDivElement>(null);
     const statusFilterRef = useRef<HTMLDivElement>(null);
+    const [showSenseDropdown, setShowSenseDropdown] = useState<string | null>(null);
+    const senseDropdownRef = useRef<HTMLDivElement>(null);
 
     // Fetch clues whenever sort, filter, or page changes
     useEffect(() => {
@@ -107,6 +119,9 @@ function CollectionTable(props: CollectionTableProps) {
             if (statusFilterRef.current && !statusFilterRef.current.contains(event.target as Node)) {
                 setShowStatusFilter(false);
             }
+            if (senseDropdownRef.current && !senseDropdownRef.current.contains(event.target as Node)) {
+                setShowSenseDropdown(null);
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -134,6 +149,69 @@ function CollectionTable(props: CollectionTableProps) {
     const handleStatusFilterChange = (filter: StatusFilter) => {
         setStatusFilter(filter);
         setShowStatusFilter(false);
+    };
+
+    const handleDeleteClue = async (clueId: string, answer: string) => {
+        const confirmed = window.confirm(`Are you sure you want to delete the clue "${answer}" from this collection?`);
+        if (!confirmed) return;
+
+        try {
+            await CruziApi.removeClueFromCollection(collectionId, clueId);
+
+            // Refresh the clues list
+            const sortBy = sortColumn || 'Answer';
+            const sortDir = sortDirection;
+            const progressFilterValue = progressFilter !== 'All' ? progressFilter : undefined;
+            const statusFilterValue = statusFilter !== 'All' ? statusFilter : undefined;
+
+            const results = await CruziApi.getCollectionClues(
+                collectionId,
+                sortBy,
+                sortDir,
+                progressFilterValue,
+                statusFilterValue,
+                currentPage
+            );
+
+            setClues(results);
+            setHasMorePages(results.length === 100);
+
+            // Show success toast
+            setToastMessage(`Clue "${answer}" has been deleted from the collection.`);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        } catch (error) {
+            console.error('Error deleting clue:', error);
+            setToastMessage("Error deleting clue. Please try again.");
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }
+    };
+
+    const handleUpdateSense = async (clueId: string, senseId: string | null) => {
+        try {
+            await CruziApi.updateClueSense(clueId, senseId);
+            setShowSenseDropdown(null);
+
+            // Update the local state instead of refetching all data
+            setClues(prevClues =>
+                prevClues.map(clue =>
+                    clue.id === clueId
+                        ? { ...clue, sense: senseId }
+                        : clue
+                )
+            );
+
+            // Show success toast
+            setToastMessage("Sense updated successfully.");
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        } catch (error) {
+            console.error('Error updating sense:', error);
+            setToastMessage("Error updating sense. Please try again.");
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }
     };
 
     const getSortIcon = (column: SortColumn) => {
@@ -249,12 +327,13 @@ function CollectionTable(props: CollectionTableProps) {
                                 </div>
                             )}
                         </th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {cluesLoading ? (
                         <tr>
-                            <td colSpan={5} className={styles.noData}>Loading clues...</td>
+                            <td colSpan={6} className={styles.noData}>Loading clues...</td>
                         </tr>
                     ) : clues.length > 0 ? clues.map((clue, index) => {
                         // Determine status class
@@ -269,7 +348,34 @@ function CollectionTable(props: CollectionTableProps) {
                         return (
                             <tr key={clue.id || index}>
                                 <td>{clue.answer}</td>
-                                <td>{clue.sense}</td>
+                                <td
+                                    className={clue.senses && clue.senses.length > 0 ? styles.senseCell : ''}
+                                    onMouseEnter={() => clue.senses && clue.senses.length > 0 && setShowSenseDropdown(clue.id)}
+                                    onMouseLeave={() => setShowSenseDropdown(null)}
+                                >
+                                    <div className={styles.senseContainer}>
+                                        <span>{clue.sense || 'N/A'}</span>
+                                        {showSenseDropdown === clue.id && clue.senses && clue.senses.length > 0 && (
+                                            <div ref={senseDropdownRef} className={styles.senseDropdown}>
+                                                {clue.senses.map((sense) => (
+                                                    <div
+                                                        key={sense.sense_id}
+                                                        className={`${styles.senseOption} ${sense.sense_id === clue.sense ? styles.senseOptionSelected : ''}`}
+                                                        onClick={() => handleUpdateSense(clue.id, sense.sense_id)}
+                                                    >
+                                                        {sense.sense_summary}
+                                                    </div>
+                                                ))}
+                                                <div
+                                                    className={styles.senseOption}
+                                                    onClick={() => handleUpdateSense(clue.id, null)}
+                                                >
+                                                    Remove sense
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </td>
                                 <td>{clue.clue}</td>
                                 <td>{clue.progress}</td>
                                 <td>
@@ -277,11 +383,20 @@ function CollectionTable(props: CollectionTableProps) {
                                         {statusText}
                                     </span>
                                 </td>
+                                <td>
+                                    <button
+                                        className={styles.deleteButton}
+                                        onClick={() => handleDeleteClue(clue.id, clue.answer)}
+                                        title="Delete clue from collection"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} />
+                                    </button>
+                                </td>
                             </tr>
                         );
                     }) : (
                         <tr>
-                            <td colSpan={5} className={styles.noData}>No clues available</td>
+                            <td colSpan={6} className={styles.noData}>No clues available</td>
                         </tr>
                     )}
                 </tbody>
@@ -305,6 +420,11 @@ function CollectionTable(props: CollectionTableProps) {
                     >
                         Next
                     </button>
+                </div>
+            )}
+            {showToast && (
+                <div className={styles.toast}>
+                    {toastMessage}
                 </div>
             )}
         </div>

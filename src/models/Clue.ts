@@ -6,10 +6,10 @@ export interface Clue {
     id?: string;
     entry?: Entry;
     sense?: Sense; // if linked to a specific Sense
-    customClue?: string;
-    customDisplayText?: string; // override for entry display text
-    source?: string;  // crossword, book, etc.
-
-    translatedClues?: Map<string, string>; // <lang, clue>
     progressData?: ClueProgressData;
+    customClue?: string; 
+    customDisplayText?: string; 
+    customClueTranslations?: Map<string, string>; // <lang, clue>, auxiliary, customClue is canonical
+    customEntryTranslations?: Map<string, string>; // <lang, entry>, auxiliary, entry is canonical
+    source?: string;  // crossword, book, etc.
 };

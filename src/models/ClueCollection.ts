@@ -7,6 +7,7 @@ export interface ClueCollection {
     id?: string;
     puzzle?: Puzzle;
     title: string;
+    lang: string;
     author?: string;
     creator?: User;
     description?: string;

@@ -63,7 +63,9 @@ export function dateToURL(date: Date): string {
 
 export function displayTextToEntry(text: string): string {
   // Convert display text to entry format
-  return text.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  // This regular expression now preserves a wide range of alphanumeric characters,
+  // accented and tilded letters from various languages, and apostrophes.
+  return text.replace(/[^a-zA-Z0-9áéíóúüñãõẽĩũỹÁÉÍÓÚÜÑÃÕẼĨŨỸ']/g, '').toUpperCase();
 }
 
 function getAlphanumericIndexes(text: string): number[] {

@@ -5,5 +5,6 @@ export interface CollectionClueRow {
     clue: string;
     progress: string;
     status: string;
+    senses: { sense_id: string; sense_summary: string }[];
 }
 

@@ -28,6 +28,7 @@ create table clue_collection (
   id text not null primary key,
   puzzle_id text,
   title text not null,
+  lang text not null,
   author text,
   creator_id text,
   "description" text,
@@ -138,7 +139,7 @@ create table collection__clue (
   primary key(collection_id, clue_id)
 );
 
-create table crossword_clue_translation (
+create table custom_clue_translation (
   clue_id text not null,
   lang text not null,
   literal_translation text,
@@ -147,7 +148,7 @@ create table crossword_clue_translation (
   primary key(clue_id, lang)
 );
 
-create table crossword_entry_translation (
+create table custom_entry_translation (
   clue_id text not null,
   "entry" text not null,
   lang text not null,

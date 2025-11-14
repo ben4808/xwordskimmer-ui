@@ -11,25 +11,12 @@ import CruziApi from './api/CruziApi';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CollectionProvider, useCollection } from './contexts/CollectionContext';
 
-// Component to handle collection route with dynamic collection loading
-function CollectionRoute({ collections, loading }: { collections: ClueCollection[], loading: boolean }) {
-  const { id } = useParams();
-  
-  if (loading) {
-    return <div>Loading collection...</div>;
-  }
-  
-  const collection = collections.find(c => c.id === id);
-  
-  if (!collection) {
-    return <div>Collection not found</div>;
-  }
-  
+// Component to handle collection route - Collection component fetches its own data now
+function CollectionRoute() {
   return (
-    <Collection 
-      collection={collection} 
-      onBack={() => window.history.back()} 
-      onStartQuiz={(id) => window.location.href = `/quiz/${id}`} 
+    <Collection
+      onBack={() => window.history.back()}
+      onStartQuiz={(id) => window.location.href = `/quiz/${id}`}
     />
   );
 }
@@ -110,10 +97,11 @@ function AppContent() {
 
   // Fetch collections when needed
   // Skip on /collections route since CollectionList component handles it
-  // Still fetch on /collection/:id routes since CollectionRoute needs it
+  // Skip on /collection/:id routes since Collection component fetches its own data
   useEffect(() => {
     // Don't fetch on collections list page - CollectionList component handles it
-    if (location.pathname === '/collections' || location.pathname === '/') {
+    // Don't fetch on collection/:id routes - Collection component handles it
+    if (location.pathname === '/collections' || location.pathname === '/' || location.pathname.startsWith('/collection/')) {
       setLoading(false);
       return;
     }
@@ -146,7 +134,7 @@ function AppContent() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/collections" element={<CollectionList />} />
-        <Route path="/collection/:id" element={<CollectionRoute collections={collections} loading={loading} />} />
+        <Route path="/collection/:id" element={<CollectionRoute />} />
         <Route path="/quiz/:id" element={<QuizRoute collections={collections} loading={loading} />} />
         <Route path="*" element={<CollectionList />} />
       </Route>
