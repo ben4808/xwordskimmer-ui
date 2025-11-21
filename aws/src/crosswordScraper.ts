@@ -1,6 +1,6 @@
 import { generatePuzFile } from './lib/puzFiles';
 import { Puzzle } from './models/Puzzle';
-import { PuzzleSource, Sources } from './models/PuzzleSource';
+import { PuzzleSource, PuzzleSources } from './models/PuzzleSource';
 import { writeFile } from 'fs/promises';
 
 let scrapePuzzle = async (source: PuzzleSource, date: Date): Promise<Puzzle> => {
@@ -32,9 +32,9 @@ async function writeBlobToFile(blob: Blob, filePath: string): Promise<void> {
 export const scrapePuzzles = async (): Promise<Puzzle[]> => {
   let scrapedPuzzles = [] as Puzzle[]
   let sources = [
-    Sources.NYT, 
-    Sources.WSJ, 
-    Sources.Newsday
+    PuzzleSources.NYT, 
+    PuzzleSources.WSJ, 
+    PuzzleSources.Newsday
   ] as PuzzleSource[]; // Add other sources as needed
   let date = new Date(); // Use today's date or modify as needed
 

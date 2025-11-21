@@ -5,12 +5,13 @@ import { ILoaderDao } from './daos/ILoaderDao';
 import LoaderDao from './daos/LoaderDao';
 import { processPuzData } from './lib/puzFiles';
 import { arrayToMap, generateId, mapValues } from './lib/utils';
+import { Clue } from './models/Clue';
 import { ClueCollection } from './models/ClueCollection';
 import { Entry } from './models/Entry';
 import { ObscurityResult } from './models/ObscurityResult';
 import { Puzzle } from './models/Puzzle';
-import fs from 'fs';
 import { QualityResult } from './models/QualityResult';
+import fs from 'fs';
 
 let dao: ILoaderDao = new LoaderDao();
 let aiProvider: IAiProvider = new GeminiAiProvider();
@@ -37,24 +38,24 @@ let runCrosswordLoadingTasks = async () => {
 
 let processPuzzle = async (puzzle: Puzzle): Promise<void> => {
   try {
-      console.log(`Processing puzzle for ${puzzle.publicationId}`);
+      console.log(`Processing puzzle for ${puzzle.publication}`);
       await dao.savePuzzle(puzzle);
       let clueCollection = puzzleToClueCollection(puzzle);
       await dao.saveClueCollection(clueCollection);
-      await dao.addCluesToCollection(clueCollection.id, clueCollection.clues);
+      await dao.addCluesToCollection(clueCollection.id!, clueCollection.clues!);
 
-      console.log(`${puzzle.publicationId} clues saved: ${clueCollection.clues.length}`);
+      console.log(`${puzzle.publication} clues saved: ${clueCollection.clues!.length}`);
 
-      let entries = clueCollection.clues.map(clue => clue.entry.get(clue.lang) as Entry);
+      let entries = clueCollection.clues!.map(clue => clue.entry!);
       let entriesMap: Map<string, Entry> = arrayToMap(entries, entry => entry.entry);
-      
+
       let originalLang = 'en';
       let translatedLang = "es";
 
-      let translateResults = await aiProvider.getTranslateResultsAsync(clueCollection.clues, originalLang, translatedLang, mockData);
+      let translateResults = await aiProvider.getTranslateResultsAsync(clueCollection.clues!, originalLang, translatedLang, mockData);
       await dao.addTranslateResults(translateResults);
 
-      console.log(`${puzzle.publicationId} translations saved.`);
+      console.log(`${puzzle.publication} translations saved.`);
 
       let obscurityResults = await aiProvider.getObscurityResultsAsync(entries, translatedLang, mockData);
       populateEntryObscurityInfo(entriesMap, obscurityResults);
@@ -63,32 +64,37 @@ let processPuzzle = async (puzzle: Puzzle): Promise<void> => {
 
       await dao.addObscurityQualityResults(entries, aiProvider.sourceAI);
 
-      console.log(`${puzzle.publicationId} scores saved.`);
+      console.log(`${puzzle.publication} scores saved.`);
   } catch (error) {
-    console.error(`Error processing puzzle ${puzzle.publicationId}`, error);
+    console.error(`Error processing puzzle ${puzzle.publication}`, error);
   }
 }
 
 let puzzleToClueCollection = (puzzle: Puzzle): ClueCollection => {
   let lang = puzzle.lang || 'en';
 
-  let clueCollection = {
-    name:  puzzle.title,
-    puzzleId:  puzzle.id,
+  let clues: Clue[] = mapValues(puzzle.entries).map(puzEntry => ({
+    id: generateId(),
+    entry: {
+      entry: puzEntry.entry,
+      lang: lang,
+    },
+    customClue: puzEntry.clue,
+    source: "cw",
+  }));
+
+  let clueCollection: ClueCollection = {
+    puzzle: puzzle,
+    title: puzzle.title,
+    lang: lang,
     createdDate: new Date(),
-    clues: mapValues(puzzle.entries).map(puzEntry => ({
-      id: generateId(),
-      entry: new Map<string, Entry>([[lang, {
-        entry: puzEntry.entry,
-        lang: lang,
-        length: puzEntry.entry.length,
-      }]]),
-      lang: puzzle.lang || 'en',
-      clue: puzEntry.clue,
-      metadata1: puzEntry.index || '',
-      source: "cw",
-    })),
-  } as ClueCollection;
+    modifiedDate: new Date(),
+    source: puzzle.publication || "unknown",
+    isCrosswordCollection: true,
+    isPrivate: false,
+    clueCount: clues.length,
+    clues: clues,
+  };
 
   return clueCollection;
 }
@@ -99,7 +105,7 @@ let populateEntryObscurityInfo = (entriesMap: Map<string, Entry>, obscurityResul
     if (entry) {
       entry.displayText = result.displayText;
       entry.entryType = result.entryType;
-      entry.obscurityScore = result.obscurityScore;
+      entry.familiarityScore = result.obscurityScore;
     } else {
       console.warn(`Entry not found for obscurity result: ${result.entry}`);
     }
@@ -119,8 +125,8 @@ let populateEntryQualityInfo = (entriesMap: Map<string, Entry>, qualityResults: 
 
 let getSamplePuzzles = async (): Promise<Puzzle[]> => {
   let buffer = await loadSamplePuzAsync();
-  let puzzle = await processPuzData(new Blob([buffer], { type: 'application/octet-stream' }));
-  puzzle!.publicationId = "NYT";
+  let puzzle = await processPuzData(new Blob([new Uint8Array(buffer)], { type: 'application/octet-stream' }));
+  puzzle!.publication = "NYT";
   puzzle!.lang = "en";
   return [puzzle!];
 }

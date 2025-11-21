@@ -1,15 +1,15 @@
+import { ClueProgressData } from "./ClueProgressData";
 import { Entry } from "./Entry";
-import { TranslateResult } from "./TranslateResult";
+import { Sense } from "./Sense";
 
 export interface Clue {
     id?: string;
-    entry: Map<string, Entry>; // <entry, Entry>
-    lang: string;
-    clue: string;
-    responseTemplate?: string;
-    source?: string;
-    metadata1?: string;  // puzzle index
-    metadata2?: string;
-
-    translateResults?: Map<string, TranslateResult>; // <lang, TranslateResult>
+    entry?: Entry;
+    sense?: Sense; // if linked to a specific Sense
+    progressData?: ClueProgressData;
+    customClue?: string;
+    customDisplayText?: string;
+    customClueTranslations?: Map<string, string>; // <lang, clue>, auxiliary, customClue is canonical
+    customEntryTranslations?: Map<string, string>; // <lang, entry>, auxiliary, entry is canonical
+    source?: string;  // crossword, book, etc.
 };

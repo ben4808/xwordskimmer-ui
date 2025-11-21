@@ -112,13 +112,13 @@ export class NYTSource implements PuzzleSource {
         }
 
         let puzzle = newPuzzle(width, height);
-        puzzle.publicationId = this.id;
+        puzzle.publication = this.id;
         puzzle.title = title;
         puzzle.authors = authors;
         puzzle.copyright = copyright;
         puzzle.notes = notes;
         puzzle.date = puzDate;
-        puzzle.source = source;
+        puzzle.sourceLink = source;
         puzzle.grid = grid;
         puzzle.entries = puzEntries;
         puzzle.lang = "en"; // NYT puzzles are always in English

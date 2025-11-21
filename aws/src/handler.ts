@@ -1,6 +1,4 @@
 import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda';
-import { Puzzle } from './models/Puzzle';
-import { PuzzleSource, Sources } from './models/PuzzleSource';
 
 /* 
 npx tsc

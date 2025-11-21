@@ -228,12 +228,12 @@ export function generatePuzFile(puzzle: Puzzle): Blob {
     insertString(bytes, puzzle.title + "\0", pos);
     pos += puzzle.title.length + 1;
     let authorPos = pos;
-    let authorStr = puzzle.authors.join(", ");
+    let authorStr = puzzle.authors?.join(", ") || "";
     insertString(bytes, authorStr + "\0", pos);
     pos += authorStr.length + 1;
     let copyrightPos = pos;
     insertString(bytes, puzzle.copyright + "\0", pos);
-    pos += puzzle.copyright.length + 1;
+    pos += puzzle.copyright?.length || 0 + 1;
 
     let sortedKeys = sortEntryKeysForPuz(mapKeys(puzzle.entries));
     let cluesPos = pos;
@@ -319,7 +319,7 @@ export function generatePuzFile(puzzle: Puzzle): Blob {
     cksum = cksum_region(bytes, gridPos, squaresTotal, cksum);
     if (puzzle.title.length > 0) cksum = cksum_region(bytes, titlePos, puzzle.title.length+1, cksum);
     if (authorStr.length > 0) cksum = cksum_region(bytes, authorPos, authorStr.length+1, cksum);
-    if (puzzle.copyright.length > 0) cksum = cksum_region(bytes, copyrightPos, puzzle.copyright.length+1, cksum);
+    if (puzzle.copyright?.length || 0 > 0) cksum = cksum_region(bytes, copyrightPos, puzzle.copyright?.length || 0 + 1, cksum);
     let cluePos = cluesPos;
     for(let i = 0; i < sortedKeys.length; i++) {
         let puzEntry = puzzle.entries.get(sortedKeys[i])!;
@@ -334,7 +334,7 @@ export function generatePuzFile(puzzle: Puzzle): Blob {
     let c_part = 0;
     if (puzzle.title.length > 0) c_part = cksum_region(bytes, titlePos, puzzle.title.length+1, c_part);
     if (authorStr.length > 0) c_part= cksum_region(bytes, authorPos, authorStr.length+1, c_part);
-    if (puzzle.copyright.length > 0) c_part = cksum_region(bytes, copyrightPos, puzzle.copyright.length+1, c_part);
+    if (puzzle.copyright?.length || 0 > 0) c_part = cksum_region(bytes, copyrightPos, puzzle.copyright?.length || 0 + 1, c_part);
     cluePos = cluesPos;
     for(let i = 0; i < sortedKeys.length; i++) {
         let puzEntry = puzzle.entries.get(sortedKeys[i])!;
