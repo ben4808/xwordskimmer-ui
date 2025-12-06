@@ -1,7 +1,7 @@
 import { sqlQuery } from "./postgres";
 import { Sense } from "../models/Sense";
 
-const getSensesForEntry = async (entry: string, lang: string): Promise<Sense[]> => {
+export const getSensesForEntry = async (entry: string, lang: string): Promise<Sense[]> => {
   const results = await sqlQuery(true, "get_senses_for_entry", [
     { name: "p_entry", value: entry },
     { name: "p_lang", value: lang },
@@ -19,10 +19,7 @@ const getSensesForEntry = async (entry: string, lang: string): Promise<Sense[]> 
   } as Sense));
 };
 
-export default upsertEntryInfo;
-export { getSensesForEntry };
-
-const upsertEntryInfo = async (
+export const upsertEntryInfo = async (
   entry: string,
   lang: string,
   senses: Sense[],
@@ -48,8 +45,6 @@ const upsertEntryInfo = async (
   };
 
   await sqlQuery(true, "upsert_entry_info", [
-    { name: "p_entry_info", value: entryInfoData },
+    { name: "p_entry_info", value: JSON.stringify(entryInfoData) },
   ]);
 };
-
-export default upsertEntryInfo;

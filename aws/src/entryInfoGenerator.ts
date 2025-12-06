@@ -1,6 +1,6 @@
 import fs from 'fs';
 import getEntryInfoQueueTop10 from './daos/getEntryInfoQueueTop10';
-import upsertEntryInfo, { getSensesForEntry } from './daos/upsertEntryInfo';
+import {upsertEntryInfo, getSensesForEntry } from './daos/upsertEntryInfo';
 import { addExampleSentenceQueueEntries } from './daos/addExampleSentenceQueueEntry';
 import { Sense } from './models/Sense';
 import { EntryTranslation } from './models/EntryTranslation';
@@ -157,15 +157,16 @@ export async function entryInfoGenerator(): Promise<void> {
     // Process each entry
     for (const item of queueItems) {
       try {
-        console.log(`Processing entry: ${item.entry} (${item.lang})`);
+        console.log(`Processing entry: ${item.entry} (${item.lang}) - ${item.existing_sense_summaries.length} existing senses`);
 
         // Step 2: Create prompt with existing sense summaries
         const referenceSenses = item.existing_sense_summaries.length > 0
-          ? item.existing_sense_summaries.join(', ')
+          ? item.existing_sense_summaries.map(summary => `"${summary}"`).join(', ')
           : '(None)';
 
         let prompt = promptTemplate
           .replace('[[PHRASE]]', item.entry)
+          .replace('[[LANGUAGE CODE]]', item.lang)
           .replace('[[REFERECE SENSES]]', referenceSenses);
 
         // Step 3: Call Gemini API
