@@ -4,7 +4,7 @@ import { ExampleSentence } from "./ExampleSentence";
 export interface Sense {
   id?: string;
   partOfSpeech?: string;
-  commonness?: string;
+  commonness?: string; 
   summary?: Map<string, string>; // <lang, summary>
   definition?: Map<string, string>; // <lang, definition>
   exampleSentences?: ExampleSentence[];

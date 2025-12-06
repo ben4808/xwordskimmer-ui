@@ -235,7 +235,7 @@ $success-color: #4caf50; // Green for success states
 
   &:hover {
     background-color: color.adjust($error-color, $alpha: -0.9);
-    color: lighten($error-color, 10%);
+    color: color.adjust($error-color, $lightness: 10%);
   }
 
   &:active {

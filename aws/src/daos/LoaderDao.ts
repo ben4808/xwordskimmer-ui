@@ -4,6 +4,9 @@ import saveClueCollection from "./saveClueCollection";
 import addCluesToCollection from "./addCluesToCollection";
 import addTranslateResults from "./addTranslateResults";
 import addObscurityQualityResults from "./addObscurityQualityResults";
+import getEntryInfoQueueTop10 from "./getEntryInfoQueueTop10";
+import upsertEntryInfo from "./upsertEntryInfo";
+import addExampleSentenceQueueEntry, { addExampleSentenceQueueEntries } from "./addExampleSentenceQueueEntry";
 
 class LoaderDao implements ILoaderDao {
     savePuzzle = savePuzzle;
@@ -15,6 +18,14 @@ class LoaderDao implements ILoaderDao {
     addTranslateResults = addTranslateResults;
 
     addObscurityQualityResults = addObscurityQualityResults;
+
+    getEntryInfoQueueTop10 = getEntryInfoQueueTop10;
+
+    upsertEntryInfo = upsertEntryInfo;
+
+    addExampleSentenceQueueEntry = addExampleSentenceQueueEntry;
+
+    addExampleSentenceQueueEntries = addExampleSentenceQueueEntries;
 }
 
 export default LoaderDao;

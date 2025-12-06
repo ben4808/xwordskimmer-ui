@@ -52,7 +52,7 @@ create table "entry" (
   entry_type text,
   familiarity_score int,
   quality_score int,
-  loading_status text not null default 'Ready', -- Ready, Processing, Invalid
+  loading_status text not null default 'Ready', -- Ready, Processing, Error, Invalid
   primary key("entry", lang)
 );
 
@@ -189,6 +189,12 @@ create table entry_info_queue (
   id serial primary key,
   "entry" text not null,
   lang text not null,
+  added_at timestamp not null default now()
+);
+
+create table example_sentence_queue (
+  id serial primary key,
+  sense_id text not null,
   added_at timestamp not null default now()
 );
 
