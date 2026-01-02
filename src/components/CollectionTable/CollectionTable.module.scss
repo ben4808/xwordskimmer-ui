@@ -250,8 +250,29 @@ $success-color: #4caf50; // Green for success states
 
 .senseContainer {
   position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
+}
+
+.senseDropdownTrigger {
+  opacity: 0;
+  color: $accent-color;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  user-select: none;
+  padding: 2px 4px;
+  border-radius: 2px;
+
+  &:hover {
+    background-color: color.adjust($accent-color, $alpha: -0.9);
+  }
+}
+
+.senseCell:hover .senseDropdownTrigger {
+  opacity: 1;
 }
 
 .senseDropdown {

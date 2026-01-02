@@ -70,6 +70,7 @@ function CollectionTable(props: CollectionTableProps) {
     const statusFilterRef = useRef<HTMLDivElement>(null);
     const [showSenseDropdown, setShowSenseDropdown] = useState<string | null>(null);
     const senseDropdownRef = useRef<HTMLDivElement>(null);
+    const [senseDropdownTrigger, setSenseDropdownTrigger] = useState<string | null>(null);
 
     // Fetch clues whenever sort, filter, or page changes
     useEffect(() => {
@@ -121,6 +122,9 @@ function CollectionTable(props: CollectionTableProps) {
             }
             if (senseDropdownRef.current && !senseDropdownRef.current.contains(event.target as Node)) {
                 setShowSenseDropdown(null);
+            }
+            if (senseDropdownTrigger !== showSenseDropdown) {
+                setSenseDropdownTrigger(null);
             }
         };
 
@@ -188,18 +192,20 @@ function CollectionTable(props: CollectionTableProps) {
         }
     };
 
-    const handleUpdateSense = async (clueId: string, senseId: string | null) => {
+    const handleUpdateSense = async (clueId: string, senseId: string) => {
         try {
             await CruziApi.updateClueSense(clueId, senseId);
             setShowSenseDropdown(null);
 
             // Update the local state instead of refetching all data
             setClues(prevClues =>
-                prevClues.map(clue =>
-                    clue.id === clueId
-                        ? { ...clue, sense: senseId }
-                        : clue
-                )
+                prevClues.map(clue => {
+                    if (clue.id === clueId) {
+                        const selectedSense = clue.senses?.find(s => s.sense_id === senseId);
+                        return { ...clue, sense: selectedSense?.sense_summary || senseId };
+                    }
+                    return clue;
+                })
             );
 
             // Show success toast
@@ -348,31 +354,37 @@ function CollectionTable(props: CollectionTableProps) {
                         return (
                             <tr key={clue.id || index}>
                                 <td>{clue.answer}</td>
-                                <td
-                                    className={clue.senses && clue.senses.length > 0 ? styles.senseCell : ''}
-                                    onMouseEnter={() => clue.senses && clue.senses.length > 0 && setShowSenseDropdown(clue.id)}
-                                    onMouseLeave={() => setShowSenseDropdown(null)}
-                                >
+                                <td className={styles.senseCell}>
                                     <div className={styles.senseContainer}>
                                         <span>{clue.sense || 'N/A'}</span>
-                                        {showSenseDropdown === clue.id && clue.senses && clue.senses.length > 0 && (
-                                            <div ref={senseDropdownRef} className={styles.senseDropdown}>
-                                                {clue.senses.map((sense) => (
-                                                    <div
-                                                        key={sense.sense_id}
-                                                        className={`${styles.senseOption} ${sense.sense_id === clue.sense ? styles.senseOptionSelected : ''}`}
-                                                        onClick={() => handleUpdateSense(clue.id, sense.sense_id)}
-                                                    >
-                                                        {sense.sense_summary}
-                                                    </div>
-                                                ))}
-                                                <div
-                                                    className={styles.senseOption}
-                                                    onClick={() => handleUpdateSense(clue.id, null)}
+                                        {clue.senses && clue.senses.length > 0 && (
+                                            <>
+                                                <span
+                                                    className={styles.senseDropdownTrigger}
+                                                    onMouseEnter={() => setSenseDropdownTrigger(clue.id)}
+                                                    onMouseLeave={() => setSenseDropdownTrigger(null)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowSenseDropdown(showSenseDropdown === clue.id ? null : clue.id);
+                                                    }}
+                                                    title="Change sense"
                                                 >
-                                                    Remove sense
-                                                </div>
-                                            </div>
+                                                    ▼
+                                                </span>
+                                                {showSenseDropdown === clue.id && (
+                                                    <div ref={senseDropdownRef} className={styles.senseDropdown}>
+                                                        {clue.senses.map((sense) => (
+                                                            <div
+                                                                key={sense.sense_id}
+                                                                className={`${styles.senseOption} ${sense.sense_id === clue.sense ? styles.senseOptionSelected : ''}`}
+                                                                onClick={() => handleUpdateSense(clue.id, sense.sense_id)}
+                                                            >
+                                                                {sense.sense_summary}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </td>
