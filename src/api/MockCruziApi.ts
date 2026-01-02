@@ -5,8 +5,15 @@ import { User } from "../models/User";
 import cluesData from "./crossword_clues.json";
 import countiesData from "./IdahoCounties.json";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
+import { CollectionClueRow } from "../models/CollectionClueRow";
 
 export class MockCruziApi implements ICruziApi {
+  getCollectionClues(collectionId: string, sortBy?: string, sortDirection?: string, progressFilter?: string, statusFilter?: string, page?: number): Promise<CollectionClueRow[]> {
+    throw new Error("Method not implemented.");
+  }
+  updateClueSense(clueId: string, senseId: string | null): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
   // Mock implementation of the Cruzi API methods
   
   async getCollectionById(collectionId: string): Promise<ClueCollection | null> {
@@ -28,6 +35,7 @@ export class MockCruziApi implements ICruziApi {
         isPrivate: false,
         clueCount: clues.length,
         clues: clues,
+        lang: "en",
     };
 
     let monday: ClueCollection = {
@@ -40,6 +48,7 @@ export class MockCruziApi implements ICruziApi {
         isPrivate: false,
         clueCount: readCrosswordClues().length,
         clues: readCrosswordClues(),
+        lang: "en",
     };
 
     let laTimes: ClueCollection = {
@@ -52,6 +61,7 @@ export class MockCruziApi implements ICruziApi {
       isPrivate: false,
       clueCount: readCrosswordClues().length,
       clues: readCrosswordClues(),
+      lang: "en",
     };
 
     return [counties, monday, laTimes];
@@ -80,7 +90,7 @@ export class MockCruziApi implements ICruziApi {
     console.log(`Adding ${clues.length} clues to collection: ${collectionId}`);
   }
 
-  async removeClueFromCollection(collectionId: string, clueId: number): Promise<void> {
+  async removeClueFromCollection(collectionId: string, clueId: string): Promise<void> {
     // Mock implementation - in a real API this would remove the clue from the collection
     console.log(`Removing clue ${clueId} from collection: ${collectionId}`);
   }
