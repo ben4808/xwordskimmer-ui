@@ -3,9 +3,8 @@ import { Clue } from "../models/Clue";
 import { ClueCollection } from "../models/ClueCollection";
 import { CollectionClueRow } from "../models/CollectionClueRow";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
-import settings from "../settings.json";
 
-const baseUrl = settings.api_base_url + "/api";
+const baseUrl = window.location.origin + "/api";
 
 class CruziApi implements ICruziApi {
   async getCollectionList(): Promise<ClueCollection[]> {

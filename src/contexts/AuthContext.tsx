@@ -2,6 +2,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User } from '../models/User';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import CruziApi from '../api/CruziApi';
+import settings from '../settings.json';
+
+interface Settings {
+  google_client_id: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -101,7 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider clientId={(settings as Settings).google_client_id}>
         {children}
       </GoogleOAuthProvider>
     </AuthContext.Provider>
