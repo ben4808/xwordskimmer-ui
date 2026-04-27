@@ -1,9 +1,9 @@
-/*
+
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
-*/
+
 
 create table puzzle (
   id text not null primary key,
@@ -29,15 +29,15 @@ create table clue_collection (
   puzzle_id text,
   title text not null,
   lang text not null,
-  author text,
+  author text, -- One of author or creator_id might be populated
   creator_id text,
   "description" text,
-  is_crossword_collection boolean not null default false, -- affects the UI
   is_private boolean not null default false,
   created_date timestamp not null,
   modified_date timestamp not null,
   metadata1 text, -- AI composite score
   metadata2 text,
+  source text, -- Book it came from? AI source? Important in case I need to remove copyrighted data.
   clue_count int not null default 0
 );
 
@@ -50,8 +50,9 @@ create table "entry" (
   "length" int not null,
   display_text text,
   entry_type text,
-  familiarity_score int,
-  quality_score int,
+  -- directly set if no senses exist, otherwise average of sense scores
+  avg_familiarity_score int,
+  avg_quality_score int,
   loading_status text not null default 'Ready', -- Ready, Processing, Error, Invalid
   primary key("entry", lang)
 );
@@ -60,7 +61,7 @@ create table entry_tags (
   "entry" text not null,
   lang text not null,
   tag text not null,
-  value text,
+  "value" text,
   primary key("entry", lang, tag)
 );
 
@@ -77,26 +78,22 @@ create table sense (
   id text not null primary key,
   "entry" text not null,
   lang text not null,
+  summary text,
+  "definition" text,
   part_of_speech text,
   commonness text,
   familiarity_score int,
   quality_score int,
+  similar_entries text[],
   source_ai text
-);
-
-create table sense_translation (
-  sense_id text not null,
-  lang text not null,
-  summary text not null,
-  "definition" text,
-  primary key(sense_id, lang)
 );
 
 create table sense_entry_translation (
   sense_id text not null,
   "entry" text not null,
   lang text not null,
-  display_text text not null,
+  natural_translations text[],
+  colloquial_translations text[],
   primary key(sense_id, "entry", lang)
 );
 
@@ -106,10 +103,10 @@ create table example_sentence (
 );
 
 create table example_sentence_translation (
-  example_id text not null,
+  example_sentence_id text not null,
   lang text not null,
   sentence text not null,
-  primary key(example_id, lang)
+  primary key(example_sentence_id, lang)
 );
 
 create table sense_entry_score (
@@ -122,12 +119,11 @@ create table sense_entry_score (
 
 create table clue (
   id text not null primary key,
-  "entry" text not null, -- in some cases only for reference
-  lang text not null, -- in some cases only for reference
+  "entry" text not null, -- in some cases only for reference if there is a sense provided
+  lang text not null, -- in some cases only for reference if there is a sense provided
   sense_id text, -- optional, if linked to a specific sense
   custom_clue text,
-  custom_display_text text,
-  source text -- Book it came from? AI source? Important in case I need to remove copyrighted data.
+  custom_display_text text
 );
 
 create table collection__clue (
@@ -137,24 +133,6 @@ create table collection__clue (
   metadata1 text, -- Clue index in puzzle
   metadata2 text,
   primary key(collection_id, clue_id)
-);
-
-create table custom_clue_translation (
-  clue_id text not null,
-  lang text not null,
-  literal_translation text,
-  natural_translation text not null,
-  source_ai text not null,
-  primary key(clue_id, lang)
-);
-
-create table custom_entry_translation (
-  clue_id text not null,
-  "entry" text not null,
-  lang text not null,
-  display_text text not null,
-  source_ai text not null,
-  primary key(clue_id, "entry", lang)
 );
 
 create table "user" (
@@ -182,6 +160,13 @@ create table user__clue (
   correct_solves int not null,
   incorrect_solves int not null,
   last_solve date,
+  primary key(user_id, clue_id)
+);
+
+create table user__puzzle_clue (
+  user_id text not null,
+  clue_id text not null,
+  hints_used int not null,
   primary key(user_id, clue_id)
 );
 
