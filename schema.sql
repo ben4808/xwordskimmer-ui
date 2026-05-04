@@ -1,9 +1,9 @@
-
+/*
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
-
+*/
 
 create table puzzle (
   id text not null primary key,
@@ -37,7 +37,7 @@ create table clue_collection (
   modified_date timestamp not null,
   metadata1 text, -- AI composite score
   metadata2 text,
-  source text, -- Book it came from? AI source? Important in case I need to remove copyrighted data.
+  "source" text, -- Book it came from? AI source? Important in case I need to remove copyrighted data.
   clue_count int not null default 0
 );
 
@@ -187,4 +187,18 @@ create table collection_access (
   collection_id text not null,
   user_id text not null,
   primary key(collection_id, user_id)
+);
+
+create table crossword_familiarity_queue (
+  id serial primary key,
+  "entry" text not null,
+  lang text not null,
+  added_at timestamp not null default now()
+);
+
+create table crossword_quality_queue (
+  id serial primary key,
+  "entry" text not null,
+  lang text not null,
+  added_at timestamp not null default now()
 );
