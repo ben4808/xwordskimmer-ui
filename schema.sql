@@ -50,9 +50,10 @@ create table "entry" (
   "length" int not null,
   display_text text,
   entry_type text,
-  -- directly set if no senses exist, otherwise average of sense scores
-  avg_familiarity_score int,
-  avg_quality_score int,
+  -- directly set if no senses exist, otherwise the highest sense score
+  familiarity_score int,
+  quality_score int,
+  crossword_score int,
   loading_status text not null default 'Ready', -- Ready, Processing, Error, Invalid
   primary key("entry", lang)
 );
