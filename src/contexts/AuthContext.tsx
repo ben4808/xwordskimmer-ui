@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../models/User';
+import { User } from 'cruzi-models';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import CruziApi from '../api/CruziApi';
 import settings from '../settings.json';

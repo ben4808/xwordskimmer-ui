@@ -1,4 +1,4 @@
-import { Clue } from '../../models/Clue';
+import { Clue } from 'cruzi-models';
 
 /**
  * Normalizes an answer string for comparison by converting to uppercase and removing non-alphanumeric characters
@@ -46,7 +46,7 @@ export function getExpectedResponse(clue: Clue | undefined, clueText?: string): 
   }
   
   // Priority 3: Entry's displayText
-  return clue.entry?.displayText || '';
+  return clue.entry.displayText || '';
 }
 
 /**

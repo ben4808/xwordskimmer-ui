@@ -33,7 +33,7 @@ import { faList } from '@fortawesome/free-solid-svg-icons';
 import { CollectionListProps } from "./CollectionListProps";
 import styles from './CollectionList.module.scss';
 import { useNavigate } from "react-router-dom";
-import { ClueCollection } from "../../models/ClueCollection";
+import { ClueCollection } from "cruzi-models";
 import CruziApi from "../../api/CruziApi";
 import { useAuth } from "../../contexts/AuthContext";
 

@@ -43,7 +43,7 @@ import styles from './CollectionTable.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faFilter, faTrash } from '@fortawesome/free-solid-svg-icons';
 import CruziApi from "../../api/CruziApi";
-import { CollectionClueRow } from "../../models/CollectionClueRow";
+import { CollectionClueRow } from "cruzi-models";
 
 type SortColumn = 'Answer' | 'Progress' | null;
 type SortDirection = 'asc' | 'desc';

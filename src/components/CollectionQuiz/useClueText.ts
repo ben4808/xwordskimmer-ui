@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { Clue } from '../../models/Clue';
-import { User } from '../../models/User';
+import { Clue, User } from 'cruzi-models';
 import { getExpectedResponse } from './quizHelpers';
 
 /**
@@ -15,7 +14,7 @@ function useSelectedExampleSentence(clue: Clue | undefined, currentIndex: number
       return null;
     }
     
-    const clueLang = clue.entry?.lang || 'en';
+    const clueLang = clue.entry.lang || 'en';
     // Find example sentences with translation in clue language
     const matchingSentences = clue.sense.exampleSentences.filter(
       es => es.translations?.has(clueLang)
@@ -45,7 +44,7 @@ export function useClueText(clue: Clue | undefined, user: User | undefined, curr
     
     // No custom clue - use the selected example sentence
     if (selectedExampleSentence) {
-      const clueLang = clue.entry?.lang || 'en';
+      const clueLang = clue.entry.lang || 'en';
       return selectedExampleSentence.translations?.get(clueLang) || '';
     }
     

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clue } from '../../models/Clue';
-import { ClueCollection } from '../../models/ClueCollection';
+import { Clue, ClueCollection } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 
 /**

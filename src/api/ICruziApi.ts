@@ -1,7 +1,4 @@
-import { ClueCollection } from '../models/ClueCollection';
-import { Clue } from '../models/Clue';
-import { User } from '../models/User';
-import { CollectionClueRow } from '../models/CollectionClueRow';
+import { Clue, ClueCollection, CollectionClueRow, User } from 'cruzi-models';
 
 export interface AuthResponse {
   token: string;

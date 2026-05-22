@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Clue } from '../../models/Clue';
+import { Clue } from 'cruzi-models';
 import { InputBoxState } from '../../models/InputBoxState';
 import { verifyInputBox } from '../../lib/utils';
 import { normalizeAnswer } from './quizHelpers';

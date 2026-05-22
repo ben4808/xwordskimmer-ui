@@ -53,7 +53,6 @@ create table "entry" (
   -- directly set if no senses exist, otherwise the highest sense score
   familiarity_score int,
   quality_score int,
-  crossword_score int,
   loading_status text not null default 'Ready', -- Ready, Processing, Error, Invalid
   primary key("entry", lang)
 );
@@ -157,10 +156,11 @@ create table user__collection (
 create table user__clue (
   user_id text not null,
   clue_id text not null,
-  correct_solves_needed int not null,
-  correct_solves int not null,
-  incorrect_solves int not null,
+  correct_solves_needed int,
+  correct_solves int,
+  incorrect_solves int,
   last_solve date,
+  hints_used int,
   primary key(user_id, clue_id)
 );
 

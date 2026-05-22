@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { ClueCollection } from '../models/ClueCollection';
+import { ClueCollection } from 'cruzi-models';
 
 interface CollectionContextType {
   currentCollection: ClueCollection | null;

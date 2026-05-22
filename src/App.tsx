@@ -5,7 +5,7 @@ import CollectionQuiz from './components/CollectionQuiz/CollectionQuiz';
 import CollectionList from './components/CollectionList/CollectionList';
 import Collection from './components/Collection/Collection';
 import { useEffect, useState } from 'react';
-import { ClueCollection } from './models/ClueCollection';
+import { ClueCollection } from 'cruzi-models';
 import { parseDateFromURL } from './lib/utils';
 import CruziApi from './api/CruziApi';
 import { AuthProvider, useAuth } from './contexts/AuthContext';

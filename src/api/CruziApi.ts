@@ -1,7 +1,5 @@
 
-import { Clue } from "../models/Clue";
-import { ClueCollection } from "../models/ClueCollection";
-import { CollectionClueRow } from "../models/CollectionClueRow";
+import { Clue, ClueCollection, CollectionClueRow, Entry } from "cruzi-models";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
 
 const baseUrl = window.location.origin + "/api";
@@ -86,82 +84,114 @@ class CruziApi implements ICruziApi {
       
       // Transform raw API response to Clue objects
       return rawData.map((raw: any) => {
-        // Convert object to Map helper
-        const objectToMap = (obj: any): Map<string, string> | undefined => {
-          if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+        const tagsFromRaw = (tags: any): Map<string, string> | undefined => {
+          if (!tags || typeof tags !== 'object' || Array.isArray(tags)) {
             return undefined;
           }
-          return new Map(Object.entries(obj));
+          return new Map(
+            Object.entries(tags).map(([k, v]) => [k, v == null ? '' : String(v)])
+          );
         };
 
-        // Transform example sentences from { _id, en, es, gn, ... } format
-        // to { id, senseId, translations: Map } format
+        const toOptionalString = (value: any): string | undefined => {
+          if (value == null) return undefined;
+          if (typeof value === 'string') return value;
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            const keys = Object.keys(value);
+            const preferred =
+              value.en ??
+              (keys.length > 0 ? (value as Record<string, unknown>)[keys[0]] : undefined);
+            return typeof preferred === 'string' ? preferred : undefined;
+          }
+          return undefined;
+        };
+
+        const buildEntry = (rawEntry: any): Entry => ({
+          entry: rawEntry.entry ?? '',
+          lang: rawEntry.lang ?? 'en',
+          rootEntry: rawEntry.rootEntry,
+          displayText: rawEntry.displayText,
+          entryType: rawEntry.entryType,
+          familiarityScore: rawEntry.familiarityScore,
+          qualityScore: rawEntry.qualityScore,
+          crosswordScore: rawEntry.crosswordScore,
+          cruziScore: rawEntry.cruziScore,
+          loadingStatus: rawEntry.loadingStatus,
+          tags: tagsFromRaw(rawEntry.tags),
+        });
+
         const transformExampleSentences = (exampleSentences: any[], senseId?: string): any[] => {
           if (!exampleSentences || !Array.isArray(exampleSentences)) {
             return [];
           }
-          
+
           return exampleSentences.map((ex: any) => {
             const translations = new Map<string, string>();
-            // Copy all properties except _id to the translations map
-            Object.keys(ex).forEach(key => {
-              if (key !== '_id' && ex[key] !== null && ex[key] !== undefined) {
-                translations.set(key, ex[key]);
+            Object.keys(ex).forEach((key) => {
+              if (
+                key === '_id' ||
+                key === 'source_ai' ||
+                key === 'sourceAi' ||
+                ex[key] === null ||
+                ex[key] === undefined
+              ) {
+                return;
               }
+              translations.set(key, ex[key]);
             });
-            
+
             return {
               id: ex._id,
               senseId: senseId || '',
               translations: translations.size > 0 ? translations : undefined,
+              source_ai: ex.source_ai ?? ex.sourceAi,
             };
           });
         };
 
+        const entry: Entry = raw.entry ? buildEntry(raw.entry) : { entry: '', lang: raw.lang || 'en' };
+
         const clue: Clue = {
           id: raw.id,
+          lang: raw.lang || entry.lang,
+          entry,
           customClue: raw.customClue,
           customDisplayText: raw.customDisplayText,
-          source: raw.source,
+          order: raw.order,
+          metadata1: raw.metadata1 ?? raw.source,
+          metadata2: raw.metadata2,
         };
 
-        // Construct Entry object if present
-        if (raw.entry) {
-          clue.entry = {
-            entry: raw.entry.entry,
-            lang: raw.entry.lang,
-            displayText: raw.entry.displayText,
-            loadingStatus: raw.entry.loadingStatus,
-          };
-        }
-
-        // Construct Sense object if present
         if (raw.sense) {
           clue.sense = {
             id: raw.sense.id,
+            entry,
             partOfSpeech: raw.sense.partOfSpeech,
             commonness: raw.sense.commonness,
-            summary: objectToMap(raw.sense.summary),
-            definition: objectToMap(raw.sense.definition),
+            summary: toOptionalString(raw.sense.summary),
+            definition: toOptionalString(raw.sense.definition),
             exampleSentences: transformExampleSentences(raw.sense.exampleSentences || [], raw.sense.id),
             familiarityScore: raw.sense.familiarityScore,
             qualityScore: raw.sense.qualityScore,
             sourceAi: raw.sense.sourceAi,
-            // translations not returned by populate_collection_batch stored procedure
+            similarEntries: Array.isArray(raw.sense.similarEntries)
+              ? raw.sense.similarEntries.map((e: any) => buildEntry(e))
+              : undefined,
           };
         }
 
-        // Construct progressData if present
-        // Note: DAO returns progressData with totalSolves, correctSolves, incorrectSolves, lastSolve (Date serialized as string)
-        // The model expects userId, clueId, correctSolvesNeeded, correctSolves, incorrectSolves, lastSolveDate
         if (raw.progressData) {
           clue.progressData = {
-            userId: '', // Not available in API response
+            userId: '',
             clueId: raw.id || '',
-            correctSolvesNeeded: raw.progressData.correctSolvesNeeded, // May not be in response
+            correctSolvesNeeded: raw.progressData.correctSolvesNeeded,
             correctSolves: raw.progressData.correctSolves || 0,
             incorrectSolves: raw.progressData.incorrectSolves || 0,
-            lastSolveDate: raw.progressData.lastSolve ? (typeof raw.progressData.lastSolve === 'string' ? new Date(raw.progressData.lastSolve) : raw.progressData.lastSolve) : undefined,
+            lastSolveDate: raw.progressData.lastSolve
+              ? typeof raw.progressData.lastSolve === 'string'
+                ? new Date(raw.progressData.lastSolve)
+                : raw.progressData.lastSolve
+              : undefined,
           };
         }
 
@@ -281,10 +311,7 @@ class CruziApi implements ICruziApi {
         const customClueProps: any = {};
         if (clue.customClue !== undefined) customClueProps.customClue = clue.customClue;
         if (clue.customDisplayText !== undefined) customClueProps.customDisplayText = clue.customDisplayText;
-        if (clue.source !== undefined) customClueProps.source = clue.source;
-        if (clue.customClueTranslations !== undefined) {
-          customClueProps.translatedClues = Object.fromEntries(clue.customClueTranslations);
-        }
+        if (clue.metadata1 !== undefined) customClueProps.source = clue.metadata1;
 
         if (Object.keys(customClueProps).length > 0) {
           transformed.clue = customClueProps;

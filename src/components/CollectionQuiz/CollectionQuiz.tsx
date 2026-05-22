@@ -11,7 +11,7 @@ import { useAnswerValidation } from './useAnswerValidation';
 import { useClueText } from './useClueText';
 import { CrosswordInputs } from './CrosswordInputs';
 import { NonCrosswordInput } from './NonCrosswordInput';
-import { ClueProgressData } from '../../models/ClueProgressData';
+import { ClueProgressData } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
@@ -29,7 +29,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   
   // Derived state
   const currentClue = allClues[currentIndex];
-  const isCrosswordClue = clueCollection?.isCrosswordCollection || false;
+  const isCrosswordClue = Boolean(clueCollection?.puzzle);
   const rawAnswer = currentClue?.entry?.entry;
   const normalizedAnswer = useMemo(() => normalizeAnswer(rawAnswer), [rawAnswer]);
   const displayText = currentClue?.entry?.displayText || rawAnswer || '';

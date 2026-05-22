@@ -38,7 +38,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useCollection } from "../../contexts/CollectionContext";
 import CollectionTable from "../CollectionTable/CollectionTable";
 import { displayTextToEntry } from "../../lib/utils";
-import { ClueCollection } from "../../models/ClueCollection";
+import { ClueCollection } from "cruzi-models";
 
 function Collection(props: CollectionProps) {
     const { id: collectionId } = useParams<{ id: string }>();

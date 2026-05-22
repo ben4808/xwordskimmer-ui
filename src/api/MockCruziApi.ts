@@ -1,11 +1,7 @@
-import { Clue } from "../models/Clue";
-import { ClueCollection } from "../models/ClueCollection";
-import { Entry } from "../models/Entry";
-import { User } from "../models/User";
+import { Clue, ClueCollection, CollectionClueRow, Puzzle, User } from "cruzi-models";
 import cluesData from "./crossword_clues.json";
 import countiesData from "./IdahoCounties.json";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
-import { CollectionClueRow } from "../models/CollectionClueRow";
 
 export class MockCruziApi implements ICruziApi {
   getCollectionClues(collectionId: string, sortBy?: string, sortDirection?: string, progressFilter?: string, statusFilter?: string, page?: number): Promise<CollectionClueRow[]> {
@@ -31,7 +27,6 @@ export class MockCruziApi implements ICruziApi {
         modifiedDate: new Date(2025, 8, 5),
         source: "Lists",
         author: "Ben Zoon",
-        isCrosswordCollection: false,
         isPrivate: false,
         clueCount: clues.length,
         clues: clues,
@@ -44,7 +39,7 @@ export class MockCruziApi implements ICruziApi {
         createdDate: new Date(2025, 5, 5),
         modifiedDate: new Date(2025, 5, 6),
         source: "NYT",
-        isCrosswordCollection: true,
+        puzzle: mockCrosswordPuzzle(),
         isPrivate: false,
         clueCount: readCrosswordClues().length,
         clues: readCrosswordClues(),
@@ -57,7 +52,7 @@ export class MockCruziApi implements ICruziApi {
       createdDate: new Date(2025, 5, 5),
       modifiedDate: new Date(2025, 5, 6),
       source: "LA Times",
-      isCrosswordCollection: true,
+      puzzle: mockCrosswordPuzzle(),
       isPrivate: false,
       clueCount: readCrosswordClues().length,
       clues: readCrosswordClues(),
@@ -136,23 +131,34 @@ export class MockCruziApi implements ICruziApi {
   }
 }
 
+function mockCrosswordPuzzle(): Puzzle {
+  return {
+    title: "Mock puzzle",
+    date: new Date(),
+    width: 15,
+    height: 15,
+    grid: [],
+    entries: new Map(),
+  };
+}
+
 function readCrosswordClues(): Clue[] {
   let results : Clue[] = cluesData.map((clue) => {
     return {    
       id: clue.response.replace(/\s+/g, '').toUpperCase(),
+      lang: "en",
       customClue: clue.clue,
       entry: {
         entry: clue.response.replace(/\s+/g, '').toUpperCase(),
         lang: "en",
-        length: clue.response.replace(/\s+/g, '').toUpperCase().length,
         displayText: clue.response,
         entryType: "Word",
         familiarityScore: 3,
         qualityScore: 3,
         cruziScore: Math.round(Math.random() * 50),
-      } as Entry,
-      source: "NYT",
-    } as Clue;
+      },
+      metadata1: "NYT",
+    };
   });
 
   return results;
@@ -166,35 +172,35 @@ function readIdahoCounties(): Clue[] {
     // Clue: county name -> answer: county capital
     clues.push({    
       id: idIdx++ + "",
+      lang: "en",
       customClue: county.name,
       entry: {
         entry: county.capital.replace(/\s+/g, '').toUpperCase(),
         lang: "en",
-        length: county.capital.replace(/\s+/g, '').toUpperCase().length,
         displayText: county.capital,
         entryType: "Word",
         familiarityScore: 3,
         qualityScore: 3,
         cruziScore: Math.round(Math.random() * 50),
-      } as Entry,
-      source: "IdahoCounties",
+      },
+      metadata1: "IdahoCounties",
     });
 
     // Clue: county code -> answer: county name
     clues.push({    
       id: idIdx++ + "",
+      lang: "en",
       customClue: county.code,
       entry: {
         entry: county.name.replace(/\s+/g, '').toUpperCase(),
         lang: "en",
-        length: county.name.replace(/\s+/g, '').toUpperCase().length,
         displayText: county.name,
         entryType: "Word",
         familiarityScore: 3,
         qualityScore: 3,
         cruziScore: Math.round(Math.random() * 50),
-      } as Entry,
-      source: "IdahoCounties",
+      },
+      metadata1: "IdahoCounties",
     });
   });
 
