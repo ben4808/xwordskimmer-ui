@@ -1,35 +1,68 @@
-Page: /crossword/<publication>/<MM-DD-YYYY>
+URL Pattern: /crossword/:publication/:date (Format: MM-DD-YYYY)
 
-Tech Stack: React + TypeScript, SCSS Modules (no Tailwind or similar), Dark Mode UI, Google OAuth (JWT).
+Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
 
-Data Loading: 
-- Fetch data for the selected crossword using the getCrossword API.
-- Submit user responses using the submitCrosswordResponse API.
+Data Layer:
+- getCrossword(publication, date): Fetches data for the selected crossword.
+  - This call will return all clues in the crossword, but only answers 6 letters or longer should
+    be considered for this solver.
+- submitCrosswordResponse(payload): Submits responses for logged-in users upon clue completion.
 
-LAYOUT
-Header: 
-- Back button (with left arrow) 
-- Name of the crossword
+LAYOUT & UI COMPONENTS
 
-Header line 2:
-- Hints used counter for this crossword: "Hints used: <count>"
-- Display of which clue is active "Clue <num> of <total>". Keep in mind that the total will be the total >= 6 letters long.
-- On each side of the active clue display, an arrow that moves to the previous or next clue.
+Header (Row 1)
+Back Button: Left arrow icon. Navigates to /crosswordList (preserves "in-progress" state).
+Title: Displays the crossword name.
 
-Clue:
-- Prominently display the clue text
+Navigation & Tracker (Row 2)
+Hints Counter: Displays "Hints used: <count>". Styled with dark red text and a dark red border.
+ - This is a hints counter for the entire crossword, though the hint count for the particular clue
+   is maintained off screen becuase it will be reported to submitCrosswordResponse.
+Clue Carousel: Format: "<Prev Arrow> Clue <index> of <total> <Next Arrow>" 
+ - Note: total only counts clues where the answer length is >= 6 letters.
 
-Answer Stats:
-- Display how long the answer is: "<length> letters"
-- Familiarity score (in a box with a colored background)
-- Quality score (in a box with a colored background)
+Clue (Row 3)
+Prominently display the clue text
 
-Answer Box: 
-- Text box for the user to type in their answer.
+Answer Stats (Row 4)
+Answer Metadata: Displays "<length> letters".
+Score Badges (Familiarity & Quality): Database scores are multiplied by 10 (e.g., 35 in DB = 3.5 in UI).
+Styling: Light gray border.
+Background Color Map: 0: Black, 1.0 to 5.0: Dynamic gradient ranging from Red (1.0) to Amber (3.0) to Green (5.0).
 
-Action Buttons:
-- Buttons such as Hint, Explain, Finish. The buttons displayed depend on the state of the clue.
+Custom Answer Input (Row 5)
+Font: Roboto Mono (monospaced for precise letter alignment).
+Behavior & Rules:
+- All text forces uppercase.
+- Initial State: The first letter of the answer is automatically revealed as a hint (does not increment "Hints Used").
+- Placeholder/Preview Text: A permanent, greyed-out string representing the answer length. Unrevealed slots use bullet points (•).
+- User Input: As the user types, characters overlay the preview text in standard brightness.
+- The user cannot place the cursor at an arbitrary position, only after the last user-entered letter.
+- Validation Styling:
+   - If all currently typed letters match their exact position in the solution: All user-typed text turns green.
+   - If any typed letter is incorrect: All user-typed text turns red.
 
-BEHAVIOR
-- When the Back button is clicked, the user is taken back to the CrosswordList page
-  (potentially leaving the crossword in an in progress state)
+Action Footer (Row 6)
+Dynamic button visibility based on completion state:
+- Unsolved State: Only the Hint button is visible.
+- Solved State: Hint disappears. Explain and Next (or Finish) appear.
+  - Next: Advances to the next filtered clue.
+  - Finish (Last Clue Only): Replaces "Next". Navigates back to the crossword list.
+  - Explain: Copies an AI prompt to the clipboard: "Explain why <clue> was used as a crossword clue for <answer>."
+
+CORE LOGIC & STATE MANAGEMENT
+
+Hint Logic
+When the Hint button is clicked:
+- Increment the crossword's total "Hints Used" counter by 1.
+- Reveal a random hidden letter in the preview text.
+  Priority rule: Do not overwrite a user-typed letter unless the only remaining hidden letters in the puzzle are 
+  currently occupied by incorrect user-typed inputs.
+
+Solved State Triggers
+A clue is automatically marked as "Solved" when all correct letters are revealed (via user typing, hints, or a combination).
+UI Update: All letters immediately transition to green, non-greyed-out text.
+API Trigger: If a user is authenticated via Google OAuth, automatically fire submitCrosswordResponse passing the final hint count.
+
+
+

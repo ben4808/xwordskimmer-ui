@@ -1,16 +1,289 @@
 @use "sass:color";
 
 $primary-bg: #121212;
-$secondary-bg: #1e1e1e;
-$card-bg: #2a2a2a;
 $text-color: #e0e0e0;
 $light-text-color: #b0b0b0;
 $border-color: #444;
-$accent-color: #8bb4ff;
-$button-hover-bg: #333;
-$dark-green-correct: #008b00;
-$in-progress-yellow: #b8860b;
-$in-progress-bg: rgba(184, 134, 11, 0.35);
-$completed-bg: rgba(0, 139, 0, 0.35);
-$error-color: #ff6b6b;
+$hints-red: #8b0000;
+$hints-border: #6b0000;
+$correct-green: #00c853;
+$incorrect-red: #ff5252;
+$preview-grey: #666;
+$badge-border: #aaa;
+$button-bg: #2a2a2a;
+$button-hover: #333;
 $transition-speed: 0.3s;
+
+.page {
+  min-height: 100vh;
+  background-color: $primary-bg;
+  color: $text-color;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 1.1rem;
+  color: $light-text-color;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid $border-color;
+  color: $text-color;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color $transition-speed;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.trackerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.hintsCounter {
+  color: $hints-red;
+  border: 1px solid $hints-border;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.carousel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.carouselButton {
+  background: $button-bg;
+  border: 1px solid $border-color;
+  color: $text-color;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition-speed;
+
+  &:hover:not(:disabled) {
+    background-color: $button-hover;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.carouselLabel {
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.clueText {
+  font-size: 1.5rem;
+  line-height: 1.45;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  font-weight: 500;
+}
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.letterCount {
+  font-size: 1rem;
+  color: $light-text-color;
+}
+
+.scoreBadges {
+  display: flex;
+  gap: 10px;
+}
+
+.scoreBadge {
+  border: 1px solid $badge-border;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text-color;
+  min-width: 52px;
+  text-align: center;
+}
+
+.answerInputContainer {
+  position: relative;
+  width: 100%;
+  cursor: text;
+  padding: 12px 0;
+}
+
+.answerDisplay {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.75rem;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  user-select: none;
+}
+
+.charCell {
+  position: relative;
+  display: inline-block;
+  min-width: 1.1em;
+  text-align: center;
+}
+
+.previewChar {
+  color: $preview-grey;
+}
+
+.typedChar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  transition: color $transition-speed;
+}
+
+.revealedChar {
+  color: $text-color;
+}
+
+.typedCorrect {
+  color: $correct-green;
+}
+
+.typedIncorrect {
+  color: $incorrect-red;
+}
+
+.hiddenInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: text;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.75rem;
+  letter-spacing: 0.12em;
+  border: none;
+  background: transparent;
+  color: transparent;
+  caret-color: $text-color;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.hintButton,
+.explainButton,
+.nextButton {
+  border: 1px solid $border-color;
+  background: $button-bg;
+  color: $text-color;
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color $transition-speed;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+}
+
+.solvedActions {
+  display: flex;
+  gap: 12px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: $button-bg;
+  border: 1px solid $border-color;
+  color: $text-color;
+  padding: 12px 24px;
+  border-radius: 8px;
+  z-index: 100;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .clueText {
+    font-size: 1.2rem;
+  }
+
+  .answerDisplay {
+    font-size: 1.35rem;
+  }
+}

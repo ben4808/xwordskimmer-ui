@@ -65,7 +65,9 @@ class CruziApi implements ICruziApi {
     }
   }
 
-  async getCrossword(crosswordId: string): Promise<ClueCollection> {
+  async getCrossword(
+    lookup: { id: string } | { publicationId: string; date: string }
+  ): Promise<ClueCollection> {
     try {
       const token = localStorage.getItem('token');
       const headers: HeadersInit = {
@@ -75,7 +77,13 @@ class CruziApi implements ICruziApi {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const params = new URLSearchParams({ id: crosswordId });
+      const params = new URLSearchParams();
+      if ('id' in lookup) {
+        params.set('id', lookup.id);
+      } else {
+        params.set('publicationId', lookup.publicationId);
+        params.set('date', lookup.date);
+      }
       const response = await fetch(`${baseUrl}/getCrossword?${params.toString()}`, {
         method: 'GET',
         headers,

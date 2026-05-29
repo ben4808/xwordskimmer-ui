@@ -14,7 +14,9 @@ export interface AuthVerifyResponse {
 export interface ICruziApi {
   getCrosswordList(date: string): Promise<ClueCollection[]>;
   getCrosswordCalendar(publicationId: string, month: number, year: number): Promise<CrosswordCalendarDay[]>;
-  getCrossword(crosswordId: string): Promise<ClueCollection>;
+  getCrossword(
+    params: { id: string } | { publicationId: string; date: string }
+  ): Promise<ClueCollection>;
   submitCrosswordResponse(response: CrosswordResponse): Promise<void>;
 
   getCollectionList(): Promise<ClueCollection[]>;
