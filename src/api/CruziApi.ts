@@ -1,10 +1,122 @@
-
-import { Clue, ClueCollection, CollectionClueRow, Entry } from "cruzi-models";
+import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, Entry } from "cruzi-models";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
-
 const baseUrl = window.location.origin + "/api";
 
 class CruziApi implements ICruziApi {
+  async getCrosswordList(date: string): Promise<ClueCollection[]> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const params = new URLSearchParams({ date });
+      const response = await fetch(`${baseUrl}/getCrosswordList?${params.toString()}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (response.status === 404) {
+        return [];
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching crossword list:', error);
+      throw error;
+    }
+  }
+
+  async getCrosswordCalendar(publicationId: string, month: number, year: number): Promise<CrosswordCalendarDay[]> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const monthYear = `${String(month).padStart(2, '0')}-${year}`;
+      const params = new URLSearchParams({
+        publicationId,
+        monthYear,
+      });
+      const response = await fetch(`${baseUrl}/getCrosswordCalendar?${params.toString()}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching crossword calendar:', error);
+      throw error;
+    }
+  }
+
+  async getCrossword(crosswordId: string): Promise<ClueCollection> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const params = new URLSearchParams({ id: crosswordId });
+      const response = await fetch(`${baseUrl}/getCrossword?${params.toString()}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching crossword:', error);
+      throw error;
+    }
+  }
+
+  async submitCrosswordResponse(crosswordResponse: CrosswordResponse): Promise<void> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/submitCrosswordResponse`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(crosswordResponse),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error submitting crossword response:', error);
+      throw error;
+    }
+  }
+
   async getCollectionList(): Promise<ClueCollection[]> {
     try {
       const token = localStorage.getItem('token');
@@ -114,10 +226,7 @@ class CruziApi implements ICruziApi {
           entryType: rawEntry.entryType,
           familiarityScore: rawEntry.familiarityScore,
           qualityScore: rawEntry.qualityScore,
-          crosswordScore: rawEntry.crosswordScore,
-          cruziScore: rawEntry.cruziScore,
           loadingStatus: rawEntry.loadingStatus,
-          tags: tagsFromRaw(rawEntry.tags),
         });
 
         const transformExampleSentences = (exampleSentences: any[], senseId?: string): any[] => {
@@ -151,21 +260,18 @@ class CruziApi implements ICruziApi {
 
         const entry: Entry = raw.entry ? buildEntry(raw.entry) : { entry: '', lang: raw.lang || 'en' };
 
-        const clue: Clue = {
+        const clue: ClueWithProgress = {
           id: raw.id,
           lang: raw.lang || entry.lang,
           entry,
           customClue: raw.customClue,
           customDisplayText: raw.customDisplayText,
-          order: raw.order,
-          metadata1: raw.metadata1 ?? raw.source,
-          metadata2: raw.metadata2,
         };
 
         if (raw.sense) {
           clue.sense = {
             id: raw.sense.id,
-            entry,
+            entry: raw.sense.entry ?? '',
             partOfSpeech: raw.sense.partOfSpeech,
             commonness: raw.sense.commonness,
             summary: toOptionalString(raw.sense.summary),
@@ -182,8 +288,6 @@ class CruziApi implements ICruziApi {
 
         if (raw.progressData) {
           clue.progressData = {
-            userId: '',
-            clueId: raw.id || '',
             correctSolvesNeeded: raw.progressData.correctSolvesNeeded,
             correctSolves: raw.progressData.correctSolves || 0,
             incorrectSolves: raw.progressData.incorrectSolves || 0,
@@ -210,7 +314,7 @@ class CruziApi implements ICruziApi {
     progressFilter?: string,
     statusFilter?: string,
     page?: number
-  ): Promise<CollectionClueRow[]> {
+  ): Promise<CollectionClueTableRow[]> {
     try {
       const params = new URLSearchParams();
       params.append('collection_id', collectionId);
@@ -311,7 +415,6 @@ class CruziApi implements ICruziApi {
         const customClueProps: any = {};
         if (clue.customClue !== undefined) customClueProps.customClue = clue.customClue;
         if (clue.customDisplayText !== undefined) customClueProps.customDisplayText = clue.customDisplayText;
-        if (clue.metadata1 !== undefined) customClueProps.source = clue.metadata1;
 
         if (Object.keys(customClueProps).length > 0) {
           transformed.clue = customClueProps;

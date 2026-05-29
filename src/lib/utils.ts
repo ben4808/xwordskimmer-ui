@@ -61,6 +61,31 @@ export function dateToURL(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+/** Parse mm/dd/yyyy from /crosswords?date= query param; defaults to today. */
+export function parseCrosswordDateFromQuery(dateParam: string | null): Date {
+  if (!dateParam) {
+    return new Date();
+  }
+  const parts = dateParam.split('/');
+  if (parts.length === 3) {
+    const month = parseInt(parts[0], 10) - 1;
+    const day = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    if (!isNaN(month) && !isNaN(day) && !isNaN(year)) {
+      return new Date(year, month, day);
+    }
+  }
+  return new Date();
+}
+
+/** Format date as mm/dd/yyyy for /crosswords?date= and getCrosswordList API. */
+export function formatCrosswordDateForQuery(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
+}
+
 export function displayTextToEntry(text: string): string {
   // Convert display text to entry format
   // This regular expression now preserves a wide range of alphanumeric characters,

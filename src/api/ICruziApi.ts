@@ -1,4 +1,4 @@
-import { Clue, ClueCollection, CollectionClueRow, User } from 'cruzi-models';
+import { Clue, ClueCollection, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, User } from 'cruzi-models';
 
 export interface AuthResponse {
   token: string;
@@ -12,6 +12,11 @@ export interface AuthVerifyResponse {
 }
 
 export interface ICruziApi {
+  getCrosswordList(date: string): Promise<ClueCollection[]>;
+  getCrosswordCalendar(publicationId: string, month: number, year: number): Promise<CrosswordCalendarDay[]>;
+  getCrossword(crosswordId: string): Promise<ClueCollection>;
+  submitCrosswordResponse(response: CrosswordResponse): Promise<void>;
+
   getCollectionList(): Promise<ClueCollection[]>;
   getCollectionById(collectionId: string): Promise<ClueCollection | null>;
   getCollectionBatch(collectionId: string): Promise<Clue[]>;
@@ -22,7 +27,7 @@ export interface ICruziApi {
     progressFilter?: string,
     statusFilter?: string,
     page?: number
-  ): Promise<CollectionClueRow[]>;
+  ): Promise<CollectionClueTableRow[]>;
   submitUserResponse(clueId: string, collectionId: string, isCorrect: boolean): Promise<void>;
   reopenCollection(collectionId: string): Promise<void>;
   addCluesToCollection(collectionId: string, clues: Clue[]): Promise<void>;

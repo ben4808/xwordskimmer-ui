@@ -1,0 +1,35 @@
+Page: /crossword/<publication>/<MM-DD-YYYY>
+
+Tech Stack: React + TypeScript, SCSS Modules (no Tailwind or similar), Dark Mode UI, Google OAuth (JWT).
+
+Data Loading: 
+- Fetch data for the selected crossword using the getCrossword API.
+- Submit user responses using the submitCrosswordResponse API.
+
+LAYOUT
+Header: 
+- Back button (with left arrow) 
+- Name of the crossword
+
+Header line 2:
+- Hints used counter for this crossword: "Hints used: <count>"
+- Display of which clue is active "Clue <num> of <total>". Keep in mind that the total will be the total >= 6 letters long.
+- On each side of the active clue display, an arrow that moves to the previous or next clue.
+
+Clue:
+- Prominently display the clue text
+
+Answer Stats:
+- Display how long the answer is: "<length> letters"
+- Familiarity score (in a box with a colored background)
+- Quality score (in a box with a colored background)
+
+Answer Box: 
+- Text box for the user to type in their answer.
+
+Action Buttons:
+- Buttons such as Hint, Explain, Finish. The buttons displayed depend on the state of the clue.
+
+BEHAVIOR
+- When the Back button is clicked, the user is taken back to the CrosswordList page
+  (potentially leaving the crossword in an in progress state)

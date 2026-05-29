@@ -1,0 +1,26 @@
+Tech Stack: React + TypeScript, SCSS Modules (no Tailwind or similar), Dark Mode UI, Google OAuth (JWT).
+
+Data Loading: 
+- Fetch data for dates in month via getCrosswordCalendar API.
+- API Response Schema: Will be returned as an array of CrosswordCalendarDay objects.
+
+Display: Overlays the CrosswordList component. The overlay is triggered when the user clicks the Calendar/Stats button.
+
+Layout
+Header: 
+- Selected month (e.g. May 2026)
+- Control so the user can select another month.
+- On the right side, a dropdown of supported crossword sources (reference Publication.ts in cruzi-models, show the full
+  source name in the dropdown). If no user logged in, skip this drop-down.
+
+Calendar: Show a calendar of the selected month.
+- If there is no logged in user, it's not necessary to even call getCrosswordCalendar. Just show a calendar for that month.
+- If there is a logged in user, each day should:
+  - If the crossword is in progress, give the day a yellow-ish background and show the hints used number in the day's box.
+  - If the crossword is completed, give the day a green-ish background and show the hints used number in the day's box.
+  - Otherwise just show a normal day with no hints used.
+
+Behavior:
+- When a day is clicked, the component closes and the selected date is set in the CrosswordList component. 
+- When the month is changed, the data is re-fetched for that month.
+- When the selected publication is changed from the dropdown, the data is re-fetched for that publication.

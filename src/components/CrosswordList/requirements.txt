@@ -1,6 +1,6 @@
 Page: /crosswords?date=mm/dd/yyyy
 
-Tech Stack: React + TypeScript, SCSS Modules, Dark Mode UI, Google OAuth (JWT).
+Tech Stack: React + TypeScript, SCSS Modules (no Tailwind or similar), Dark Mode UI, Google OAuth (JWT).
 
 Data Loading: 
 - Fetch crosswords for date via getCrosswords API. Re-fetch crosswords when date changes.
@@ -9,15 +9,16 @@ Data Loading:
 Layout
 1. Selected Date and Calendar icon (Top, Side-by-Side)
   - In the format "Wednesday, May 13, 2026"
-  - The calendar icon opens the CrosswordCalendar component (separate component). 
+  - The calendar icon opens the CrosswordCalendar component (separate component, overlays this component). 
+    Includes FontAwesome icon and label "Calendar/Stats".
   - By default the selected date is today's date.
   
-2. A list of crosswords for the selected date. For each crossword, there is a box with a generic thumbnail image on the left and the following three lines to the right of it: 
+2. A list of crosswords for the selected date. For each crossword, there is a box with a generic thumbnail image on the left 
+   and the following three lines to the right of it: 
     1. The crossword title
     2. "By: <Author> • <Clue Count> 6 letters or longer"
-    3. A progress bar, with green representing Completed clues, yellow In Progress, and gray Unseen.
-      There are no labels for the bar, just a rectangular bar with three sections. The progress bar
-      does not show up if there is no logged in user. If there is a user but no progress data, all
-      Unseen clues are assumed.
+    3. A progress bar, with green representing Completed clues and gray otherwise. There are no labels for the bar, 
+       just a rectangular bar. The progress bar does not show up if there is no logged in user. If there is a user but no
+       progress for a clue, it should be considered incomplete.
 - The thumbnail will be crossword_thumb.png.
-- Clicking a crossword takes the user to the Crossword Solver page for that crossword.
+- Clicking a crossword takes the user to the Crossword Solver page for that crossword. (separate component)
