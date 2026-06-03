@@ -1,144 +1,28 @@
-import { BrowserRouter, Outlet, Route, Routes, useParams, useLocation, useNavigate } from 'react-router-dom';
-import './App.css'
-import Header from './components/Header/Header'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import './App.css';
+import Header from './components/Header/Header';
 import CollectionQuiz from './components/CollectionQuiz/CollectionQuiz';
 import CollectionList from './components/CollectionList/CollectionList';
+import CrosswordList from './components/CrosswordList/CrosswordList';
 import Collection from './components/Collection/Collection';
-import { useEffect, useState } from 'react';
-import { ClueCollection } from 'cruzi-models';
-import { parseDateFromURL } from './lib/utils';
-import CruziApi from './api/CruziApi';
+import CrosswordSolver from './components/CrosswordSolver/CrosswordSolver';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { CollectionProvider, useCollection } from './contexts/CollectionContext';
+import { CollectionProvider } from './contexts/CollectionContext';
 
-// Component to handle collection route - Collection component fetches its own data now
-function CollectionRoute() {
-  return (
-    <Collection
-      onBack={() => window.history.back()}
-      onStartQuiz={(id) => window.location.href = `/quiz/${id}`}
-    />
-  );
+function isListPagePath(pathname: string): boolean {
+  return pathname === '/collections' || pathname === '/crosswords';
 }
 
-// Component to handle quiz route with dynamic collection loading
-function QuizRoute({ collections, loading }: { collections: ClueCollection[], loading: boolean }) {
-  const { id } = useParams();
-  
-  if (loading) {
-    return <div>Loading collection...</div>;
-  }
-  
-  const collection = collections.find(c => c.id === id);
-  
-  if (!collection) {
-    return <div>Collection not found</div>;
-  }
-  
-  return <CollectionQuiz clueCollection={collection} />;
-}
-
-// Layout component (combines Header and Outlet for content)
 function Layout() {
-  const { user, login, logout } = useAuth();
-  const { currentCollection } = useCollection();
+  const { logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
-  
-  // Determine header type based on current route
-  const getHeaderType = () => {
-    if (location.pathname.startsWith('/quiz/')) {
-      return 'quiz';
-    } else if (location.pathname.startsWith('/collection/')) {
-      return 'collection';
-    }
-    return 'main';
-  };
-  
-  // Get collection name for collection/quiz headers
-  const getCollectionName = () => {
-    return currentCollection?.title || 'Collection';
-  };
-  
-  // Handle back navigation
-  const handleBack = () => {
-    if (location.pathname.startsWith('/quiz/')) {
-      // Go back to collection page
-      const collectionId = location.pathname.split('/')[2];
-      navigate(`/collection/${collectionId}`);
-    } else if (location.pathname.startsWith('/collection/')) {
-      // Go back to collections list
-      navigate('/collections');
-    }
-  };
-  
+  const showHeader = isListPagePath(location.pathname);
+
   return (
     <div>
-      <Header 
-        onLogin={login} 
-        onLogout={logout}
-        headerType={getHeaderType()}
-        collectionName={getCollectionName()}
-        onBack={handleBack}
-      />
-      <Outlet /> {/* Child routes render here */}
+      {showHeader && <Header onLogout={logout} />}
+      <Outlet />
     </div>
-  );
-}
-
-// Component that uses auth context
-function AppContent() {
-  const { user } = useAuth();
-  const [collections, setCollections] = useState([] as ClueCollection[]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null as any);
-  const location = useLocation();
-  let api = CruziApi;
-
-  // Fetch collections when needed
-  // Skip on /collections route since CollectionList component handles it
-  // Skip on /collection/:id routes since Collection component fetches its own data
-  useEffect(() => {
-    // Don't fetch on collections list page - CollectionList component handles it
-    // Don't fetch on collection/:id routes - Collection component handles it
-    if (location.pathname === '/collections' || location.pathname === '/' || location.pathname.startsWith('/collection/')) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        const response = await api.getCollectionList();
-        setCollections(response);
-      } catch (e) {
-        setError(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [location.pathname]);
-
-  let paramDate = useParams().date ? parseDateFromURL(useParams().date!) : new Date();
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
-
-  return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/collections" element={<CollectionList />} />
-        <Route path="/collection/:id" element={<CollectionRoute />} />
-        <Route path="/quiz/:id" element={<QuizRoute collections={collections} loading={loading} />} />
-        <Route path="*" element={<CollectionList />} />
-      </Route>
-    </Routes>
   );
 }
 
@@ -147,11 +31,22 @@ function App() {
     <AuthProvider>
       <CollectionProvider>
         <BrowserRouter>
-          <AppContent />
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Navigate to="/crosswords" replace />} />
+              <Route path="/crosswords" element={<CrosswordList />} />
+              <Route path="/collections" element={<CollectionList />} />
+              <Route path="/collection/:id" element={<Collection />} />
+              <Route path="/quiz/:id" element={<CollectionQuiz />} />
+              <Route path="/crossword/:publication/:date" element={<CrosswordSolver />} />
+              <Route path="/crossword/:id" element={<CrosswordSolver />} />
+              <Route path="*" element={<Navigate to="/crosswords" replace />} />
+            </Route>
+          </Routes>
         </BrowserRouter>
       </CollectionProvider>
     </AuthProvider>
   );
-};
+}
 
 export default App;

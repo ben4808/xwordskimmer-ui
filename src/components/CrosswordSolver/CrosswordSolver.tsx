@@ -28,9 +28,10 @@ import styles from './CrosswordSolver.module.scss';
 
 function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const navigate = useNavigate();
-  const { publication, date: dateParam } = useParams<{
-    publication: string;
-    date: string;
+  const { id, publication, date: dateParam } = useParams<{
+    id?: string;
+    publication?: string;
+    date?: string;
   }>();
   const { user } = useAuth();
 
@@ -75,6 +76,23 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   }, [crossword?.puzzle?.date, dateParam]);
 
   const fetchCrossword = useCallback(async () => {
+    if (id) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await api.getCrossword({ id });
+        setCrossword(data);
+        setCurrentClueIndex(0);
+        setCrosswordHintsUsed(0);
+      } catch (err) {
+        console.error('Error fetching crossword:', err);
+        setError('Failed to load crossword. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (!publication || !dateParam) {
       setError('Invalid crossword URL.');
       setIsLoading(false);
@@ -103,7 +121,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [api, publication, dateParam]);
+  }, [api, id, publication, dateParam]);
 
   useEffect(() => {
     fetchCrossword();

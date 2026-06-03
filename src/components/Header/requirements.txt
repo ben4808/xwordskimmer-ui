@@ -1,0 +1,14 @@
+Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
+
+The header should only show up on the Crossword List and Collection List pages.
+The header is part of the page and does not float on top of the screen.
+
+- On the left side of the header is a dropdown menu with the options "Crosswords" and "Collections".
+- The dropdown is a hamburger list on mobile. On desktop, it is a dropdown that shows the currently 
+    selected item.
+- On the right side of the header is the logged in user information. When the user is not logged in, 
+    there is a "log in with Google" button, using the appropriate branded button from Google. 
+    When the user is logged in, there is a Google style circle with the first letter of the 
+    user's username and the username itself. Clicking on the username opens a dropdown menu 
+    with a "Logout" option.
+- In the middle of the header is the Cruzi logo.

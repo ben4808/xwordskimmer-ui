@@ -11,6 +11,7 @@ import {
   parseCrosswordDateFromQuery,
 } from '../../lib/utils';
 import CrosswordCalendar from '../CrosswordCalendar/CrosswordCalendar';
+import { getCrosswordSolverPath } from '../CrosswordSolver/crosswordSolverHelpers';
 import { CrosswordListProps } from './CrosswordListProps';
 import styles from './CrosswordList.module.scss';
 import crosswordThumb from '../../../crossword_thumb.png';
@@ -51,8 +52,10 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
   }, [fetchCrosswords]);
 
   const handleCrosswordClick = (crossword: ClueCollection) => {
-    if (!crossword.id) return;
-    navigate(`/crossword/${crossword.id}`);
+    const path = getCrosswordSolverPath(crossword);
+    if (path) {
+      navigate(path);
+    }
   };
 
   const handleDateSelect = (date: Date) => {

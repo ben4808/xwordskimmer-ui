@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { CollectionProps } from "./CollectionProps";
 import styles from './Collection.module.scss';
 import CruziApi from "../../api/CruziApi";
 import { useAuth } from "../../contexts/AuthContext";
@@ -11,7 +10,8 @@ import CollectionTable from "../CollectionTable/CollectionTable";
 import { displayTextToEntry } from "../../lib/utils";
 import { ClueCollection } from "cruzi-models";
 
-function Collection(props: CollectionProps) {
+function Collection() {
+    const navigate = useNavigate();
     const { id: collectionId } = useParams<{ id: string }>();
     const { user } = useAuth();
     const { setCurrentCollection } = useCollection();
@@ -217,7 +217,7 @@ function Collection(props: CollectionProps) {
             {/* Start Quiz Button */}
             <div className={styles.quizSection}>
                 <button
-                    onClick={() => props.onStartQuiz(collection.id!)}
+                    onClick={() => navigate(`/quiz/${collection.id!}`)}
                     className={styles.startQuizButton}
                 >
                     Start Quiz

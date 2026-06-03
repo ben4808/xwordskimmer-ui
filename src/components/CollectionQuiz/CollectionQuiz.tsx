@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import styles from './CollectionQuiz.module.scss';
 import { CollectionQuizProps } from './CollectionQuizProps';
 import { getTextWidth } from '../../lib/utils';
@@ -10,16 +11,61 @@ import { useAnswerValidation } from './useAnswerValidation';
 import { useClueText } from './useClueText';
 import { NonCrosswordInput } from './NonCrosswordInput';
 import CruziApi from '../../api/CruziApi';
+import { ClueCollection } from 'cruzi-models';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
+  const { id: collectionId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { setCurrentCollection } = useCollection();
-  const { clueCollection } = props;
+  const [fetchedCollection, setFetchedCollection] = useState<ClueCollection | null>(null);
+  const [fetchLoading, setFetchLoading] = useState(!props.clueCollection);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const clueCollection = props.clueCollection ?? fetchedCollection;
+
+  useEffect(() => {
+    if (props.clueCollection || !collectionId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadCollection = async () => {
+      setFetchLoading(true);
+      setFetchError(null);
+      try {
+        const data = await CruziApi.getCollectionById(collectionId);
+        if (cancelled) return;
+        if (data) {
+          setFetchedCollection(data);
+        } else {
+          setFetchError('Collection not found');
+        }
+      } catch (err) {
+        console.error('Error fetching collection:', err);
+        if (!cancelled) {
+          setFetchError('Failed to load collection');
+        }
+      } finally {
+        if (!cancelled) {
+          setFetchLoading(false);
+        }
+      }
+    };
+
+    loadCollection();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [collectionId, props.clueCollection]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [allUserInput, setAllUserInput] = useState<Record<number, string>>({});
 
-  const { allClues, isLoading, isLoadingNextBatch, loadNextBatch } = useClueData(clueCollection);
+  const { allClues, isLoading, isLoadingNextBatch, loadNextBatch } = useClueData(
+    clueCollection ?? undefined
+  );
 
   const currentClue = allClues[currentIndex];
   const { clueText, translatedClue, expectedResponse } = useClueText(currentClue, user, currentIndex);
@@ -196,7 +242,23 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const fillInBlankPattern = /\{\{([^}]+)\}\}/i;
   const hasFillInBlank = fillInBlankPattern.test(clueText);
 
-  if (!clueCollection || isLoading) {
+  if (fetchLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingMessage}>Loading collection...</div>
+      </div>
+    );
+  }
+
+  if (fetchError || !clueCollection) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingMessage}>{fetchError ?? 'Collection not found'}</div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loadingMessage}>Loading clues...</div>

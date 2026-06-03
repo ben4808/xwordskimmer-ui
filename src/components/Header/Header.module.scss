@@ -24,31 +24,11 @@ $accent-color: #61dafb; // A common React blue for highlights
 .container {
   width: 100%;
   display: flex;
-  justify-content: space-between; // Space out left/right sections
+  justify-content: space-between;
   align-items: center;
-  max-width: 1200px; // Optional: Max width for content within header
-  margin: 0 auto; // Center the container if max-width is set
-  position: relative; // Needed for absolutely positioned logo
-  
-  // For collection/quiz headers, ensure center content is truly centered
-  &.collectionLayout {
-    justify-content: space-between;
-    
-    .leftSection {
-      flex: 0 0 auto; // Don't grow or shrink
-    }
-    
-    .centerContent {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1;
-    }
-    
-    .rightSection {
-      flex: 0 0 auto; // Don't grow or shrink
-    }
-  }
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
 }
 
 /* Left Section for menus */
@@ -274,18 +254,8 @@ $accent-color: #61dafb; // A common React blue for highlights
   }
 }
 
-.logo {
-  flex: 0;
-  text-align: center;
-}
-
-.logoImage {
-  height: 40px;
-  width: auto;
-}
-
 .rightSection {
-  flex: 1;
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -308,20 +278,27 @@ $accent-color: #61dafb; // A common React blue for highlights
 }
 
 .avatar {
-  background-color: #3a3a3a;
+  background-color: #1a73e8;
   color: #ffffff;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+  font-weight: 500;
+  font-size: 1rem;
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
 }
 
 .userName {
-  display: none; // Hidden on mobile, shown on desktop
+  display: none;
+
+  @media (min-width: ($mobile-breakpoint + 1px)) {
+    display: inline;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-size: 0.95rem;
+  }
 }
 
 .userDropdown {
@@ -358,52 +335,6 @@ $accent-color: #61dafb; // A common React blue for highlights
 
   &:hover {
     background-color: #3a3a3a;
-  }
-}
-
-/* Back Button Styling */
-.backButton {
-  background: none;
-  border: none;
-  color: $text-color-light;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  &:hover {
-    background-color: color.adjust($dark-bg-secondary, $lightness: 5%);
-    color: $accent-color;
-  }
-
-  &:focus {
-    outline: 2px solid $accent-color;
-    outline-offset: 2px;
-  }
-}
-
-/* Center Content for Collection/Quiz Headers */
-.centerContent {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.collectionTitle {
-  color: $text-color-light;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-  padding: 0 20px;
-  
-  @media (max-width: $mobile-breakpoint) {
-    font-size: 1.2rem;
-    padding: 0 10px;
   }
 }
 
