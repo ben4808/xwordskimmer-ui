@@ -1,0 +1,23 @@
+URL Pattern: /collection/:id
+
+Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
+
+Layout
+1. Summary of clues (Row 1)
+ - "<count> total clues"
+ - A Fontawesome icon of a list that opens a popup window where the CollectionTable component is loaded.
+
+2. Progress (Row 2). Only shown if there is a logged in user.
+ - "<count> Completed", "<count> In Progress", and "<count> Unseen", separated by some space. 
+   Any clue without progress data is assumed to be Unseen.
+ - Right below these counts is a progress bar, with green representing Completed clues, yellow In Progress, 
+   and gray Unseen. There are no labels for the bar, just a rectangular bar with three sections.
+   Absense of progress data is assumed to be Unseen.
+
+3. Add clue box (Row 3)
+- Text box with placeholder text "Add a word or phrase" and a Add button right next to it.
+  This adds a new word or phrase to the collection, confirmed with a toast. Pressing Enter with
+  the textbox focused does the same thing as pushing the Add button.
+
+4. Start Quiz button (Row 4)
+ - Takes the user to the Collection Quiz page for this collection.

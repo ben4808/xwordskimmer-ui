@@ -1,14 +1,11 @@
 import { useEffect } from 'react';
-import { Clue } from 'cruzi-models';
+import { ClueWithProgress } from 'cruzi-models';
 import { InputBoxState } from '../../models/InputBoxState';
 import { verifyInputBox } from '../../lib/utils';
-import { normalizeAnswer } from './quizHelpers';
 
 interface UseAnswerValidationParams {
-  currentClue: Clue | undefined;
+  currentClue: ClueWithProgress | undefined;
   userInput: string;
-  isCrosswordClue: boolean;
-  normalizedAnswer: string;
   isSolved: boolean;
   isRevealed: boolean;
   setInputBoxState: (state: InputBoxState) => void;
@@ -16,17 +13,11 @@ interface UseAnswerValidationParams {
   setUserInput: (input: string) => void;
   getExpectedResponse: () => string;
   onCorrect: () => void;
-  onIncorrect: () => void;
 }
 
-/**
- * Custom hook for managing answer validation and submission
- */
 export function useAnswerValidation({
   currentClue,
   userInput,
-  isCrosswordClue,
-  normalizedAnswer,
   isSolved,
   isRevealed,
   setInputBoxState,
@@ -34,39 +25,32 @@ export function useAnswerValidation({
   setUserInput,
   getExpectedResponse,
   onCorrect,
-  onIncorrect,
 }: UseAnswerValidationParams) {
-  // Validate non-crossword input on change
   useEffect(() => {
-    // Early return if already solved/revealed - this must be checked first
-    if (isCrosswordClue || isSolved || isRevealed || !currentClue) {
+    if (isSolved || isRevealed || !currentClue) {
       return;
     }
-    
+
     const expectedAnswer = getExpectedResponse();
     if (expectedAnswer) {
       const state = verifyInputBox(userInput, expectedAnswer);
       setInputBoxState(state);
-      
+
       if (state === InputBoxState.Completed) {
-        // Reveal the exact expected answer when completed successfully
         setUserInput(expectedAnswer);
         setIsSolved(true);
         onCorrect();
       }
     }
-  }, [userInput, isCrosswordClue, isSolved, isRevealed, currentClue, setInputBoxState, setIsSolved, setUserInput, getExpectedResponse, onCorrect]);
-
-  // Check for solved state in crossword mode
-  useEffect(() => {
-    if (!currentClue || !normalizedAnswer || !isCrosswordClue || isSolved || isRevealed) return;
-    
-    const userInputNormalized = normalizeAnswer(userInput);
-    if (userInputNormalized === normalizedAnswer && userInputNormalized.length === normalizedAnswer.length) {
-      // For crossword mode, keep user input as-is (it's already correct)
-      setIsSolved(true);
-      onCorrect();
-    }
-  }, [userInput, normalizedAnswer, isCrosswordClue, isSolved, isRevealed, currentClue, setIsSolved, onCorrect]);
+  }, [
+    userInput,
+    isSolved,
+    isRevealed,
+    currentClue,
+    setInputBoxState,
+    setIsSolved,
+    setUserInput,
+    getExpectedResponse,
+    onCorrect,
+  ]);
 }
-

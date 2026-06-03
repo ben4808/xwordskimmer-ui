@@ -1,0 +1,41 @@
+URL Pattern: none (loads in a popup)
+
+Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
+
+Data Loading:
+- getCollectionTableClues to get the main clues data
+- updateSingleClue to update the sense on the clue
+- removeClueFromCollection
+
+LAYOUT
+Standard paginated data table with sortable/filterable columns. Pages are 100 results per page.
+
+Columns:
+- Answer
+   - This column is sortable alphabetically forward and backward. Not filterable.
+- Sense
+   - "N/A" if clue has no sense
+   - If there is a Sense, hovering over it reveals a drop down menu. Clicking on the drop down
+     will show a list of all the senses for the entry referenced by the clue. Clicking on another sense
+     will call updateSingleClue in the background to update the clue to use that sense.
+   - Not sortable or filterable
+- Clue
+   - "N/A" if clue has no custom clue
+   - Otherwise, the custom clue text
+   - Not sortable or filterable
+- Progress
+   - If the result is "Unseen" or "Completed", show this text.
+   - Otherwise, parse out the number of correct solves and the solves needed. But still display 
+     the text as for example "2/4" or "3/10".
+   - This column is sortable. In sorting, Completed clues come first (sorted alphabetically),
+      followed by In Progress clues (sorted by the number of solves needed descending), followed
+	  by "Unseen" clues (sorted alphabetically).
+   - This column is filterable by the 3 major categories (Unseen, In Progress, Completed)
+- Status
+   - Not sortable
+   - Filterable by the 3 major categories (Ready, Processing, Invalid)
+- (Delete button, no heading shown)
+  - Delete button in the form of a trash can font-awesome icon. 
+    Clicking this button will delete the clue from the collection using removeClueFromCollection.
+    An "are you sure?" warning will popup before completing the operation.
+    A toast should be shown to confirm the deletion.

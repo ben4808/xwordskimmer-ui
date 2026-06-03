@@ -2,6 +2,7 @@ import {
   Clue,
   ClueCollection,
   ClueHydrated,
+  ClueWithProgress,
   CollectionClueTableRow,
   CrosswordCalendarDay,
   CrosswordResponse,
@@ -118,7 +119,7 @@ export class MockCruziApi implements ICruziApi {
     return [counties, monday, laTimes];
   }
 
-  async getCollectionBatch(collectionId: string): Promise<Clue[]> {
+  async getCollectionBatch(collectionId: string): Promise<ClueWithProgress[]> {
     const clues =
       collectionId === "IdahoCounties"
         ? readIdahoCounties()
@@ -243,16 +244,12 @@ function mockCrosswordPuzzle(): Puzzle {
   };
 }
 
-function clueToBatchClue(clue: ClueHydrated): Clue {
+function clueToBatchClue(clue: ClueHydrated): ClueWithProgress {
   return {
     id: clue.id,
     lang: clue.lang,
-    entry: {
-      entry: clue.entry.entry,
-      lang: clue.entry.lang,
-      displayText: clue.entry.displayText,
-    },
-    sense: clue.sense?.id ? { id: clue.sense.id } : undefined,
+    entry: clue.entry,
+    sense: clue.sense,
     customClue: clue.customClue,
     customDisplayText: clue.customDisplayText,
   };

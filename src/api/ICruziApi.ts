@@ -1,4 +1,4 @@
-import { Clue, ClueCollection, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, User } from 'cruzi-models';
+import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, User } from 'cruzi-models';
 
 export interface AuthResponse {
   token: string;
@@ -21,7 +21,7 @@ export interface ICruziApi {
 
   getCollectionList(): Promise<ClueCollection[]>;
   getCollectionById(collectionId: string): Promise<ClueCollection | null>;
-  getCollectionBatch(collectionId: string): Promise<Clue[]>;
+  getCollectionBatch(collectionId: string): Promise<ClueWithProgress[]>;
   getCollectionClues(
     collectionId: string,
     sortBy?: string,

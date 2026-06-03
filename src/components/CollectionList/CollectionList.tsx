@@ -1,32 +1,3 @@
-/**
-General
-- The site is built in React with Typescript.
-- The entire site is responsive and works well on both phones and computers. 
-- Each component includes an SCSS module and does not use Tailwind or any other additional CSS framework.
-- The site supports login with Google OAuth and manages authentication with a JWT token. 
-    The login API also provides user information to the client.
-The site is styled in Dark Mode, using a standard Dark Mode color set with accent color 
-    as a pleasing light blue.
-The header is part of the page and does not float on top of the screen.
-
-Collection List page (/collections)
-- This view shows a list of clue collections that the user has access to. For each clue collection, 
-    there is shown a box with a generic thumbnail image on the left and the following three lines 
-    on the right of it: 
-    1. The collection title
-    2. (“By: <Author>”, Public/Unlisted, clue count), separated by "•" characters.
-    3. A progress bar, with green representing Completed clues, yellow In Progress, and gray Unseen.
-      There are no labels for the bar, just a rectangular bar with three sections. The progress bar
-      does not show up if there is no logged in user. If there is a user but no progress data, all
-      Unseen clues are assumed.
-- The thumbnail will be a FontAwesome icon for a collection or list.
-- Clicking a collection takes the user to the Collection page for that collection.
-- There are 1 or 2 sections of collections shown:	
-  1. Your Collections, showing all collections that the user has authored, or collection for which
-     the user has progress data. Sorted by last accessed date. Only applies to logged in users.
-  2. Public Collections, showing all public collections, sorted alphabetically by title.
- */
-
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
@@ -107,7 +78,7 @@ function CollectionList(props: CollectionListProps) {
       if (!user) return null;
       
       const completed = collection.progressData?.completed || 0;
-      const inProgress = collection.progressData?.in_progress || 0;
+      const inProgress = collection.progressData?.inProgress || 0;
       const unseen = collection.progressData?.unseen ?? (collection.clueCount || 0);
       const total = completed + inProgress + unseen;
       

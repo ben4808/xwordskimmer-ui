@@ -1,30 +1,30 @@
-Page: /quiz/:collectionId 
+URL Pattern: /quiz/:collectionId 
 
 Tech Stack: React + TypeScript, SCSS Modules, Dark Mode UI, Google OAuth (JWT).
 
 Data Loading: 
 - Fetch clues via getCollectionBatch API. Initial batch: <= 20 clues. 
 - Next batch pre-loads in background when user reaches the LAST CLUE of the current batch.
-- API Response Schema: Will be returned as an array of Clue objects.
 
 Layout
-1. Session Score Boxes (Top, Side-by-Side)
+1. Session Score Boxes (Row 1)
   - Correct Count: Dark green border/background.
   - Incorrect Count: Dark red border/background.
 
-2. Progress Bar (If Logged In)
+2. Progress Bar (Row 2, If Logged In)
   - Scope: Current clue only.
   - Visuals: A single bar with no labels. Gray backgound, green progress based on the proportion of correct answers against correct answers needed. 
   - If there is a logged in user but no progress data available, assume 0 correct, 0 incorrect, and 2 correct answers needed.
       
-3. Non-Crossword Mode (isCrosswordCollection = false)
-- Clue Text Source (Priority):
+3. Clue Text (Row 3, One of the following):
    1. Custom clue text (custom_clue) if present.
    2. Random example sentence (use translation in language of clue)
-- Expected Answer Source (Priority)
+
+4. Expected Answer  (Row 4)
+- Answer source priority:
    1. If the clue has a custom display text, that is the expected response.
-   2. If clue text has fill-in-the-black section (text inside double brackets), the expected response is the text inside the brackets.
-      The clue text here refers to whichever clue text source was chosen.
+   2. If the selected clue text has fill-in-the-black section (text inside double brackets), then expected response 
+      is the text inside the brackets.
    3. Otherwise, the expected response is the Entry's display text.
 - Input Area
    - If FITB section: Input box replaces the placeholder inline.
@@ -37,14 +37,8 @@ Layout
    - Trigger: After every keystroke.
    - Feedback: Text turns solid dark green when validation returns "Partial", solid dark red on "Incorrect". On "Completed", the text turns solid
        dark green and the background turns a very dark green.
-       
-4. Crossword Mode (isCrosswordCollection = true)
-- Clue Text: Displays custom clue text. (these clues will always have a custom clue)
-- Input Boxes: One box per alphanumeric character (A-Z, 0-9). Special chars/spaces displayed as static text.
-- Navigation: Click a box to activate; Typing replaces letter and advances; Backspace clears and moves back; Arrow keys navigate.
-- Visual Feedback: Letter color changes (dark green/dark red) per box. All boxes turn solid dark green background when all correct.
 
-5. Action Buttons & Flow
+5. Action Buttons & Flow (Row 5)
 - Reveal button. Visible when the clue has not been Completed. Trigger: Button click OR Enter key.
   - Increments Incorrect score. Displays correct answer in input box, which will in turn show Next and Explain.
   - Upon successful completion without using the Reveal button, the Correct score in incremented.

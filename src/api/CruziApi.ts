@@ -181,7 +181,7 @@ class CruziApi implements ICruziApi {
     }
   }
 
-  async getCollectionBatch(collectionId: string): Promise<Clue[]> {
+  async getCollectionBatch(collectionId: string): Promise<ClueWithProgress[]> {
     try {
       const token = localStorage.getItem('token');
       const headers: HeadersInit = {
@@ -243,25 +243,36 @@ class CruziApi implements ICruziApi {
           }
 
           return exampleSentences.map((ex: any) => {
-            const translations = new Map<string, string>();
+            const translations: Record<string, string> = {};
             Object.keys(ex).forEach((key) => {
               if (
                 key === '_id' ||
+                key === 'id' ||
                 key === 'source_ai' ||
                 key === 'sourceAi' ||
+                key === 'senseId' ||
+                key === 'translations' ||
                 ex[key] === null ||
                 ex[key] === undefined
               ) {
                 return;
               }
-              translations.set(key, ex[key]);
+              translations[key] = String(ex[key]);
             });
 
+            if (ex.translations && typeof ex.translations === 'object' && !Array.isArray(ex.translations)) {
+              Object.entries(ex.translations).forEach(([lang, text]) => {
+                if (text != null) {
+                  translations[lang] = String(text);
+                }
+              });
+            }
+
             return {
-              id: ex._id,
+              id: ex._id ?? ex.id,
               senseId: senseId || '',
-              translations: translations.size > 0 ? translations : undefined,
-              source_ai: ex.source_ai ?? ex.sourceAi,
+              translations: Object.keys(translations).length > 0 ? translations : undefined,
+              sourceAi: ex.source_ai ?? ex.sourceAi,
             };
           });
         };

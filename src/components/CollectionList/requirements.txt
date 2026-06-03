@@ -1,0 +1,20 @@
+URL Pattern: /collections
+
+Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
+
+LAYOUT
+A list of clue collections that the user has access to. For each clue collection, there is shown a box with 
+a generic thumbnail image on the left and the following three lines to the right of it: 
+    1. The collection title
+    2. (“By: <Author>”, Public/Unlisted, "<count> clues"), separated by "•" characters.
+    3. A progress bar, with green representing Completed clues, yellow In Progress, and gray Unseen.
+      There are no labels for the bar, just a rectangular bar with three sections. The progress bar
+      does not show up if there is no logged in user. If there is a user but no progress data, all
+      Unseen clues are assumed.
+- The thumbnail will be a FontAwesome icon for a collection or list.
+- Clicking a collection takes the user to the Collection page for that collection.
+
+There are 1 or 2 sections of collections shown:	
+  1. Your Collections, showing all collections that the user has authored, or collection for which
+     the user has progress data. Sorted by last accessed date. Only applies to logged in users.
+  2. Public Collections, showing all public collections, sorted alphabetically by title.

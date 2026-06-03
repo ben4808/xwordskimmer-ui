@@ -1,49 +1,10 @@
-/**
-Collection Details Popup Table
-This table shows words and phrases in the collection, with the following fields. Note that these 
-fields are returned in a tailored fashion by the API getCollectionClues in the format of 
-CollectionClueRow. Reference cruzi_sps.sql for details on how these fields are returned.
-
-All sortable columns should be clickable in the header to sort by that column. There should also
-be a little fontawesome arrow next to the header of the sorted column to indicate the sort direction.
-All filterable columns should have a dropdown menu with the options to filter by that column.
-This dropdown should be triggered by a filter fontawesome icon next to the column header.
-
-- Answer
-   - This column is sortable alphabetically forward and backward.
-- Sense
-   - "N/A" if no data is returned.
-   - If there is a Sense, hovering over it should reveal a drop down menu. Clicking on the drop down
-     will show a list of all the senses for the entry referenced by the clue. Clicking on another sense
-     will send an API call in the background to update the clue to use that sense.
-- Clue
-   - "N/A" if no data is returned.
-- Progress
-   - If the result is "Unseen" or "Completed", show this text.
-   - Otherwise, parse out the number of correct solves and the solves needed. But still display 
-     the text as for example "2/4" or "3/10".
-   - This column is sortable. In sorting, Completed clues come first (sorted alphabetically),
-      followed by In Progress clues (sorted by the number of solves needed descending), followed
-	  by "Unseen" clues (sorted alphabetically).
-   - This column is filterable by the 3 major categories (Unseen, In Progress, Completed)
-- Status
-   - This column is filterable by the 3 major categories (Ready, Processing, Invalid)
-- (Delete button, no heading shown)
-  - In this column is shown for each clue a delete button in the form of a trash can font-awesome icon. 
-    Clicking this button will delete the clue from the collection using the removeClueFromCollection 
-    API call. An "are you sure?" warning will popup before completing the operation.
-    A toast should be shown to confirm the deletion.
-
-At the bottom of the table, there should be a pagination control with 100 results per page.
-*/
-
 import { useState, useRef, useEffect } from "react";
 import { CollectionTableProps } from "./CollectionTableProps";
 import styles from './CollectionTable.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faFilter, faTrash } from '@fortawesome/free-solid-svg-icons';
 import CruziApi from "../../api/CruziApi";
-import { CollectionClueRow } from "cruzi-models";
+import { CollectionClueTableRow } from "cruzi-models";
 
 type SortColumn = 'Answer' | 'Progress' | null;
 type SortDirection = 'asc' | 'desc';
@@ -53,7 +14,7 @@ type StatusFilter = 'All' | 'Ready' | 'Processing' | 'Invalid';
 function CollectionTable(props: CollectionTableProps) {
     const { collectionId } = props;
 
-    const [clues, setClues] = useState<CollectionClueRow[]>([]);
+    const [clues, setClues] = useState<CollectionClueTableRow[]>([]);
     const [cluesLoading, setCluesLoading] = useState<boolean>(false);
     const [sortColumn, setSortColumn] = useState<SortColumn>('Answer');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -201,8 +162,8 @@ function CollectionTable(props: CollectionTableProps) {
             setClues(prevClues =>
                 prevClues.map(clue => {
                     if (clue.id === clueId) {
-                        const selectedSense = clue.senses?.find(s => s.sense_id === senseId);
-                        return { ...clue, sense: selectedSense?.sense_summary || senseId };
+                        const selectedSense = clue.senses?.find(s => s.senseId === senseId);
+                        return { ...clue, sense: selectedSense?.senseSummary || senseId };
                     }
                     return clue;
                 })
@@ -375,11 +336,11 @@ function CollectionTable(props: CollectionTableProps) {
                                                     <div ref={senseDropdownRef} className={styles.senseDropdown}>
                                                         {clue.senses.map((sense) => (
                                                             <div
-                                                                key={sense.sense_id}
-                                                                className={`${styles.senseOption} ${sense.sense_id === clue.sense ? styles.senseOptionSelected : ''}`}
-                                                                onClick={() => handleUpdateSense(clue.id, sense.sense_id)}
+                                                                key={sense.senseId}
+                                                                className={`${styles.senseOption} ${sense.senseSummary === clue.sense ? styles.senseOptionSelected : ''}`}
+                                                                onClick={() => handleUpdateSense(clue.id, sense.senseId)}
                                                             >
-                                                                {sense.sense_summary}
+                                                                {sense.senseSummary}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -388,7 +349,7 @@ function CollectionTable(props: CollectionTableProps) {
                                         )}
                                     </div>
                                 </td>
-                                <td>{clue.clue}</td>
+                                <td>{clue.clue || 'N/A'}</td>
                                 <td>{clue.progress}</td>
                                 <td>
                                     <span className={`${styles.status} ${statusClass}`}>

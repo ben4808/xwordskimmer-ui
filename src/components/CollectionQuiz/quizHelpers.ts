@@ -1,4 +1,4 @@
-import { Clue } from 'cruzi-models';
+import { ClueHydrated } from 'cruzi-models';
 
 /**
  * Normalizes an answer string for comparison by converting to uppercase and removing non-alphanumeric characters
@@ -18,7 +18,7 @@ export function normalizeAnswer(answer: string | undefined): string {
  * @param clueText - Optional: The actual clue text being used (from customClue or selected example sentence).
  *                   If provided, brackets will be extracted from this text to ensure consistency.
  */
-export function getExpectedResponse(clue: Clue | undefined, clueText?: string): string {
+export function getExpectedResponse(clue: ClueHydrated | undefined, clueText?: string): string {
   if (!clue) return '';
   
   // Priority 1: customDisplayText

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clue, ClueCollection } from 'cruzi-models';
+import { ClueCollection, ClueWithProgress } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 
 /**
  * Custom hook for managing clue data loading
  */
 export function useClueData(clueCollection: ClueCollection | undefined) {
-  const [allClues, setAllClues] = useState<Clue[]>([]);
+  const [allClues, setAllClues] = useState<ClueWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextBatch, setIsLoadingNextBatch] = useState(false);
   const hasLoadedInitialRef = useRef<string | null>(null);

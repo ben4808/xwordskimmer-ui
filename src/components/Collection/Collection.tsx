@@ -1,32 +1,3 @@
-/**
-General
-- The site is built in React with Typescript.
-- The entire site is responsive and works well on both phones and computers. 
-- Each component includes an SCSS module and does not use Tailwind or any other additional CSS framework.
-- The site supports login with Google OAuth and manages authentication with a JWT token. 
-    The login API also provides user information to the client.
-The site is styled in Dark Mode, using a standard Dark Mode color set with accent color 
-    as a pleasing light blue.
-The header is part of the page and does not float on top of the screen.
-
-Collection page (/collection/<id>)
-- At the top, there is a progress indication section.
-    - First, is shown "<count> total clues"
-    - Beside this line is a list Fontawesome icon that opens a popup window. In this popup window 
-        is a table of words and phrases in the collection (see CollectionTable component for details).
-    - The next line says "<count> Completed", "<count> In Progress", and "<count> Unseen", 
-        separated by some space. Any clue without progress data is assumed to be Unseen.
-        - Not shown if there is no logged in user.
-    - Right below these counts is a progress bar, with green representing Completed clues, yellow In Progress, 
-      and gray Unseen. There are no labels for the bar, just a rectangular bar with three sections.
-      Absense of progress data is assumed to be Unseen.
-        - Not shown if there is no logged in user.
-- Next there is a text box with placeholder text "Add a word or phrase" and a Add button right next to it.
-    This adds a new word or phrase to the collection, confirmed with a toast. Pressing Enter with
-    the textbox focused does the same thing as pushing the Add button.
-- A "Start Quiz" button that takes the user to the Collection Quiz page for this collection.
-*/
-
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -119,8 +90,10 @@ function Collection(props: CollectionProps) {
 
     // Calculate progress stats from collection
     const completed = user && progressData ? progressData.completed : 0;
-    const inProgress = user && progressData ? progressData.in_progress : 0;
-    const unseen = user && progressData ? progressData.unseen : (user ? totalClues : 0);
+    const inProgress = user && progressData ? progressData.inProgress : 0;
+    const unseen = user && progressData
+        ? progressData.unseen
+        : (user ? totalClues : 0);
 
 
     // Handle word input change
@@ -135,20 +108,16 @@ function Collection(props: CollectionProps) {
 
         setIsAddingWord(true);
         try {
-            let sourceText = "user_" + (user ? user.id : "guest");
-            
-            // Create a new clue object for the word
-            const newInfo = {
+            const newClue = {
                 entry: {
                     entry: displayTextToEntry(newWord),
                     lang: collection.lang,
                     displayText: newWord,
                 },
-                source: sourceText,
+                lang: collection.lang,
             };
 
-            // Use CruziApi to add the clue to the collection
-            await api.addCluesToCollection(collection.id!, [newInfo]);
+            await api.addCluesToCollection(collection.id!, [newClue]);
 
             setToastMessage(`"${newWord}" added to collection`);
             setShowToast(true);
