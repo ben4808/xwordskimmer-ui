@@ -78,6 +78,37 @@ export function parseCrosswordDateFromQuery(dateParam: string | null): Date {
   return new Date();
 }
 
+/**
+ * Parse a calendar date (no time-of-day) without UTC timezone shifting.
+ * Handles date-only ISO strings (e.g. "2025-06-04") and API timestamps at UTC midnight.
+ */
+export function parseCalendarDate(value: Date | string): Date {
+  if (typeof value === 'string') {
+    const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (iso) {
+      return new Date(
+        parseInt(iso[1], 10),
+        parseInt(iso[2], 10) - 1,
+        parseInt(iso[3], 10)
+      );
+    }
+    const slash = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(value);
+    if (slash) {
+      return new Date(
+        parseInt(slash[3], 10),
+        parseInt(slash[1], 10) - 1,
+        parseInt(slash[2], 10)
+      );
+    }
+    value = new Date(value);
+  }
+  return new Date(
+    value.getUTCFullYear(),
+    value.getUTCMonth(),
+    value.getUTCDate()
+  );
+}
+
 /** Format date as mm/dd/yyyy for /crosswords?date= and getCrosswordList API. */
 export function formatCrosswordDateForQuery(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');

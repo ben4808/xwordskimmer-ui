@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faCalendar,
   faChevronLeft,
   faChevronRight,
   faXmark,
@@ -26,6 +27,20 @@ function toDateKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function isFutureMonth(year: number, month: number, today: Date): boolean {
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth();
+  return year > todayYear || (year === todayYear && month > todayMonth);
+}
+
+function isFutureDay(date: Date, today: Date): boolean {
+  return startOfDay(date).getTime() > today.getTime();
 }
 
 function buildCalendarCells(year: number, month: number): (Date | null)[] {
@@ -55,9 +70,14 @@ function CrosswordCalendar({
   const [calendarDays, setCalendarDays] = useState<CrosswordCalendarDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const monthInputRef = useRef<HTMLInputElement>(null);
+
+  const today = useMemo(() => startOfDay(new Date()), []);
 
   const viewYear = viewDate.getFullYear();
   const viewMonth = viewDate.getMonth();
+  const maxMonthInputValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  const canGoToNextMonth = !isFutureMonth(viewYear, viewMonth + 1, today);
   const calendarCells = useMemo(
     () => buildCalendarCells(viewYear, viewMonth),
     [viewYear, viewMonth]
@@ -101,22 +121,39 @@ function CrosswordCalendar({
     fetchCalendar();
   }, [fetchCalendar]);
 
+  const openMonthPicker = () => {
+    const input = monthInputRef.current;
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  };
+
   const handleMonthInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (!value) return;
     const [yearPart, monthPart] = value.split('-');
     const year = parseInt(yearPart, 10);
     const month = parseInt(monthPart, 10) - 1;
-    if (!isNaN(year) && !isNaN(month)) {
+    if (!isNaN(year) && !isNaN(month) && !isFutureMonth(year, month, today)) {
       setViewDate(new Date(year, month, 1));
     }
   };
 
   const shiftMonth = (delta: number) => {
-    setViewDate((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
+    setViewDate((current) => {
+      const next = new Date(current.getFullYear(), current.getMonth() + delta, 1);
+      if (isFutureMonth(next.getFullYear(), next.getMonth(), today)) {
+        return current;
+      }
+      return next;
+    });
   };
 
   const handleDayClick = (date: Date) => {
+    if (isFutureDay(date, today)) return;
     onDateSelect(date);
     onClose();
   };
@@ -165,22 +202,36 @@ function CrosswordCalendar({
             >
               <FontAwesomeIcon icon={faChevronLeft} />
             </button>
-            <h2 className={styles.monthTitle}>{formatMonthYear(viewDate)}</h2>
+            <div className={styles.monthDisplay}>
+              <h2 className={styles.monthTitle}>{formatMonthYear(viewDate)}</h2>
+              <button
+                type="button"
+                className={styles.monthPickerButton}
+                onClick={openMonthPicker}
+                aria-label="Select month"
+              >
+                <FontAwesomeIcon icon={faCalendar} />
+              </button>
+              <input
+                ref={monthInputRef}
+                type="month"
+                className={styles.monthPickerInput}
+                value={monthInputValue}
+                max={maxMonthInputValue}
+                onChange={handleMonthInputChange}
+                tabIndex={-1}
+                aria-hidden
+              />
+            </div>
             <button
               type="button"
               className={styles.monthNavButton}
               onClick={() => shiftMonth(1)}
+              disabled={!canGoToNextMonth}
               aria-label="Next month"
             >
               <FontAwesomeIcon icon={faChevronRight} />
             </button>
-            <input
-              type="month"
-              className={styles.monthPicker}
-              value={monthInputValue}
-              onChange={handleMonthInputChange}
-              aria-label="Select month"
-            />
           </div>
 
           {user && (
@@ -228,8 +279,10 @@ function CrosswordCalendar({
 
                 const dayData = dayDataByDate.get(toDateKey(date));
                 const isSelected = isSameCalendarDay(date, selectedDate);
+                const isDisabled = isFutureDay(date, today);
                 const cellClassNames = [
                   styles.dayCell,
+                  isDisabled ? styles.dayCellDisabled : '',
                   isSelected ? styles.dayCellSelected : '',
                   dayData?.progressState === 'in_progress'
                     ? styles.dayCellInProgress
@@ -247,6 +300,7 @@ function CrosswordCalendar({
                     type="button"
                     className={cellClassNames}
                     onClick={() => handleDayClick(date)}
+                    disabled={isDisabled}
                   >
                     <span className={styles.dayNumber}>{date.getDate()}</span>
                     {user && dayData && (

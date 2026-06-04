@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays } from '@fortawesome/free-solid-svg-icons';
-import { ClueCollection } from 'cruzi-models';
+import {
+  faCalendarDays,
+  faChevronLeft,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
+import { ClueCollection, Publications, PublicationId } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -16,9 +20,38 @@ import { CrosswordListProps } from './CrosswordListProps';
 import styles from './CrosswordList.module.scss';
 import crosswordThumb from '../../../crossword_thumb.png';
 
+function getPublicationName(crossword: ClueCollection): string {
+  const publicationId = crossword.puzzle?.publicationId;
+  if (publicationId && publicationId in Publications) {
+    return Publications[publicationId as PublicationId].name;
+  }
+  return crossword.source ?? 'Unknown';
+}
+
+function isSameCalendarDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function shiftCalendarDay(date: Date, delta: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta);
+}
+
+function getCrosswordAuthor(crossword: ClueCollection): string {
+  return (
+    crossword.author ||
+    crossword.puzzle?.authors?.[0] ||
+    crossword.creator?.firstName ||
+    'Unknown'
+  );
+}
+
 function CrosswordList({ api = CruziApi }: CrosswordListProps) {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
   const selectedDate = useMemo(
@@ -59,7 +92,22 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
   };
 
   const handleDateSelect = (date: Date) => {
-    setSearchParams({ date: formatCrosswordDateForQuery(date) });
+    navigate(`/crosswords?date=${formatCrosswordDateForQuery(date)}`);
+  };
+
+  const today = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }, []);
+
+  const isSelectedDateToday = isSameCalendarDay(selectedDate, today);
+
+  const shiftSelectedDate = (delta: number) => {
+    const nextDate = shiftCalendarDay(selectedDate, delta);
+    if (delta > 0 && nextDate.getTime() > today.getTime()) {
+      return;
+    }
+    handleDateSelect(nextDate);
   };
 
   const calculateProgressPercentage = (value: number, total: number): number => {
@@ -86,9 +134,9 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
   };
 
   const renderCrosswordCard = (crossword: ClueCollection) => {
-    const clueCount = crossword.clueCount6Plus ?? crossword.clueCount ?? 0;
-    const author =
-      crossword.author || crossword.creator?.firstName || 'Unknown';
+    const clueCount = crossword.clueCount ?? 0;
+    const clueCount6Plus = crossword.clueCount6Plus ?? 0;
+    const author = getCrosswordAuthor(crossword);
 
     return (
       <div
@@ -107,9 +155,10 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
           <img src={crosswordThumb} alt="" />
         </div>
         <div className={styles.details}>
+          <p className={styles.publication}>{getPublicationName(crossword)}</p>
           <h3 className={styles.title}>{crossword.title}</h3>
           <p className={styles.meta}>
-            By: {author} • {clueCount} 6 letters or longer
+            By: {author} • {clueCount} clues ({clueCount6Plus} &gt;= 6 letters)
           </p>
           {renderProgressBar(crossword)}
         </div>
@@ -120,7 +169,26 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
   return (
     <div className={styles.crosswordListPage}>
       <div className={styles.headerRow}>
-        <h1 className={styles.selectedDate}>{formatDate(selectedDate)}</h1>
+        <div className={styles.dateNav}>
+          <button
+            type="button"
+            className={styles.dateNavButton}
+            onClick={() => shiftSelectedDate(-1)}
+            aria-label="Previous day"
+          >
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </button>
+          <h1 className={styles.selectedDate}>{formatDate(selectedDate)}</h1>
+          <button
+            type="button"
+            className={styles.dateNavButton}
+            onClick={() => shiftSelectedDate(1)}
+            disabled={isSelectedDateToday}
+            aria-label="Next day"
+          >
+            <FontAwesomeIcon icon={faChevronRight} />
+          </button>
+        </div>
         <button
           type="button"
           className={styles.calendarButton}

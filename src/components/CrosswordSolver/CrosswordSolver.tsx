@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft,
@@ -9,7 +9,7 @@ import {
 import { ClueCollection } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
-import { formatCrosswordDateForQuery } from '../../lib/utils';
+import { formatCrosswordDateForQuery, parseCalendarDate } from '../../lib/utils';
 import { AnswerInput } from './AnswerInput';
 import { CrosswordSolverProps } from './CrosswordSolverProps';
 import {
@@ -28,11 +28,11 @@ import styles from './CrosswordSolver.module.scss';
 
 function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const navigate = useNavigate();
-  const { id, publication, date: dateParam } = useParams<{
-    id?: string;
-    publication?: string;
-    date?: string;
-  }>();
+  const { publicationOrId } = useParams<{ publicationOrId?: string }>();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
+  const id = dateParam ? undefined : publicationOrId;
+  const publication = dateParam ? publicationOrId : undefined;
   const { user } = useAuth();
 
   const [crossword, setCrossword] = useState<ClueCollection | null>(null);
@@ -67,7 +67,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
   const puzzleDate = useMemo(() => {
     if (crossword?.puzzle?.date) {
-      return new Date(crossword.puzzle.date);
+      return parseCalendarDate(crossword.puzzle.date);
     }
     if (dateParam) {
       return parseCrosswordSolverDate(dateParam) ?? new Date();
@@ -100,7 +100,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     }
 
     if (!parseCrosswordSolverDate(dateParam)) {
-      setError('Date must be formatted as MM-DD-YYYY.');
+      setError('Date must be formatted as MM/DD/YYYY.');
       setIsLoading(false);
       return;
     }

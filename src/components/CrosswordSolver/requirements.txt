@@ -1,4 +1,4 @@
-URL Pattern: /crossword/:publication/:date (Format: MM-DD-YYYY)
+URL Pattern: /crossword/:publication?date=MM/DD/YYYY
 
 Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
 

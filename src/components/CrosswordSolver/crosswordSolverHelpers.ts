@@ -4,6 +4,7 @@ import {
   CollectionClue,
   CollectionClueWithProgress,
 } from 'cruzi-models';
+import { parseCalendarDate } from '../../lib/utils';
 import { normalizeAnswer } from '../CollectionQuiz/quizHelpers';
 
 export type CollectionClueItem =
@@ -151,20 +152,22 @@ export function createInitialRevealedMask(answerLength: number): boolean[] {
   return mask;
 }
 
-/** Format date as MM-DD-YYYY for /crossword/:publication/:date routes. */
+/** Format date as MM/DD/YYYY for /crossword/:publication?date= routes. */
 export function formatCrosswordSolverDateForRoute(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
-  return `${month}-${day}-${year}`;
+  return `${month}/${day}/${year}`;
 }
 
 /** Build the solver URL for a crossword list item. */
 export function getCrosswordSolverPath(crossword: ClueCollection): string | null {
   if (crossword.puzzle?.publicationId && crossword.puzzle?.date) {
     const publication = String(crossword.puzzle.publicationId).toLowerCase();
-    const date = formatCrosswordSolverDateForRoute(new Date(crossword.puzzle.date));
-    return `/crossword/${publication}/${date}`;
+    const date = formatCrosswordSolverDateForRoute(
+      parseCalendarDate(crossword.puzzle.date)
+    );
+    return `/crossword/${publication}?date=${date}`;
   }
   if (crossword.id) {
     return `/crossword/${crossword.id}`;
@@ -172,9 +175,9 @@ export function getCrosswordSolverPath(crossword: ClueCollection): string | null
   return null;
 }
 
-/** Parse MM-DD-YYYY from the solver route. */
+/** Parse MM/DD/YYYY from the solver ?date= query param. */
 export function parseCrosswordSolverDate(dateParam: string): Date | null {
-  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(dateParam);
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dateParam);
   if (!match) return null;
 
   const month = parseInt(match[1], 10) - 1;

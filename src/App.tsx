@@ -38,8 +38,7 @@ function App() {
               <Route path="/collections" element={<CollectionList />} />
               <Route path="/collection/:id" element={<Collection />} />
               <Route path="/quiz/:id" element={<CollectionQuiz />} />
-              <Route path="/crossword/:publication/:date" element={<CrosswordSolver />} />
-              <Route path="/crossword/:id" element={<CrosswordSolver />} />
+              <Route path="/crossword/:publicationOrId" element={<CrosswordSolver />} />
               <Route path="*" element={<Navigate to="/crosswords" replace />} />
             </Route>
           </Routes>

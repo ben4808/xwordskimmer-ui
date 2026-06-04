@@ -97,19 +97,55 @@ $transition-speed: 0.3s;
   min-width: 0;
 }
 
+.monthDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .monthTitle {
   margin: 0;
   font-size: 1.35rem;
   font-weight: 600;
   color: $text-color;
-  min-width: 140px;
-  text-align: center;
 
   @include for-phone-only {
     font-size: 1.15rem;
-    min-width: 0;
-    flex: 1;
   }
+}
+
+.monthPickerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  background-color: $card-bg;
+  color: $light-text-color;
+  cursor: pointer;
+  transition: background-color $transition-speed ease, color $transition-speed ease;
+
+  &:hover {
+    background-color: $button-hover-bg;
+    color: $text-color;
+  }
+}
+
+.monthPickerInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .monthNavButton {
@@ -126,25 +162,14 @@ $transition-speed: 0.3s;
   cursor: pointer;
   transition: background-color $transition-speed ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: $button-hover-bg;
   }
-}
 
-.monthPicker {
-  flex-basis: 100%;
-  max-width: 180px;
-  padding: 8px 10px;
-  border: 1px solid $border-color;
-  border-radius: 8px;
-  background-color: $card-bg;
-  color: $text-color;
-  font-size: 0.9rem;
-  cursor: pointer;
-
-  &::-webkit-calendar-picker-indicator {
-    filter: invert(0.85);
-    cursor: pointer;
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    color: $light-text-color;
   }
 }
 
@@ -206,9 +231,15 @@ $transition-speed: 0.3s;
   cursor: pointer;
   transition: border-color $transition-speed ease, transform 0.15s ease;
 
-  &:hover:not(.dayCellEmpty) {
+  &:hover:not(.dayCellEmpty):not(:disabled):not(.dayCellDisabled) {
     border-color: color.adjust($accent-color, $alpha: -0.4);
     transform: translateY(-1px);
+  }
+
+  &:disabled,
+  &.dayCellDisabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 }
 
