@@ -84,12 +84,17 @@ $transition-speed: 0.3s;
 }
 
 .hintsCounter {
-  color: $hints-red;
-  border: 1px solid $hints-border;
+  color: $text-color;
+  border: 1px solid $border-color;
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+.hintsCount {
+  color: $hints-red;
+  font-weight: 600;
 }
 
 .carousel {
@@ -191,16 +196,42 @@ $transition-speed: 0.3s;
   text-align: center;
 }
 
+.cellChar {
+  transition: color $transition-speed;
+}
+
 .previewChar {
   color: $preview-grey;
 }
 
-.typedChar {
+.inputCaret {
   position: absolute;
   left: 0;
-  right: 0;
-  top: 0;
-  transition: color $transition-speed;
+  bottom: 0;
+  width: 2px;
+  height: 1.1em;
+  background-color: $text-color;
+  animation: caretBlink 1s step-end infinite;
+}
+
+.separatorCell {
+  display: inline-block;
+  min-width: 0.55em;
+  text-align: center;
+}
+
+.separatorChar {
+  color: $text-color;
+}
+
+@keyframes caretBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .revealedChar {
@@ -228,7 +259,7 @@ $transition-speed: 0.3s;
   border: none;
   background: transparent;
   color: transparent;
-  caret-color: $text-color;
+  caret-color: transparent;
 }
 
 .footer {

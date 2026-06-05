@@ -16,6 +16,8 @@ const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as cons
 
 const publicationOptions = Object.values(Publications).sort((a, b) =>
   a.name.localeCompare(b.name)
+).filter((publication) =>
+  ["NYT", "WSJ", "Newsday"].includes(publication.id)
 );
 
 function formatMonthYear(date: Date): string {

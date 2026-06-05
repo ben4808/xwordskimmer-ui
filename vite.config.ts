@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   envPrefix: ['VITE_', 'API_'],
   plugins: [react()],
+  optimizeDeps: {
+    include: ['cruzi-models'],
+  },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',

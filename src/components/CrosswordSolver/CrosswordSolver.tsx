@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -10,17 +17,22 @@ import { ClueCollection } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCrosswordDateForQuery, parseCalendarDate } from '../../lib/utils';
-import { AnswerInput } from './AnswerInput';
+import { AnswerInput, AnswerInputHandle } from './AnswerInput';
 import { CrosswordSolverProps } from './CrosswordSolverProps';
 import {
-  createInitialRevealedMask,
+  buildDisplaySlots,
+  buildFreshClueState,
+  buildSolvedClueState,
+  ClueSolverState,
   dbScoreToUi,
   formatUiScore,
   getAnswer,
   getClueText,
+  getDisplayText,
   getEligibleClues,
   getScoreBadgeBackground,
   isClueComplete,
+  isCluePreviouslyCompleted,
   parseCrosswordSolverDate,
   selectHintIndex,
 } from './crosswordSolverHelpers';
@@ -48,7 +60,10 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const [toastMessage, setToastMessage] = useState('');
 
   const submittedRef = useRef(false);
+  const answerInputRef = useRef<AnswerInputHandle>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
+  const clueDraftsRef = useRef<Record<string, ClueSolverState>>({});
+  const sessionCompletedClueIdsRef = useRef<Set<string>>(new Set());
 
   const eligibleClues = useMemo(
     () => getEligibleClues(crossword?.clues),
@@ -60,6 +75,14 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const answer = useMemo(
     () => (currentClue ? getAnswer(currentClue) : ''),
     [currentClue]
+  );
+  const displayText = useMemo(
+    () => (currentClue ? getDisplayText(currentClue) : ''),
+    [currentClue]
+  );
+  const displaySlots = useMemo(
+    () => buildDisplaySlots(displayText, answer),
+    [displayText, answer]
   );
   const clueText = currentClue ? getClueText(currentClue) : '';
   const totalClues = eligibleClues.length;
@@ -83,7 +106,9 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
         const data = await api.getCrossword({ id });
         setCrossword(data);
         setCurrentClueIndex(0);
-        setCrosswordHintsUsed(0);
+        setCrosswordHintsUsed(data.progressData?.hintsUsed ?? 0);
+        clueDraftsRef.current = {};
+        sessionCompletedClueIdsRef.current = new Set();
       } catch (err) {
         console.error('Error fetching crossword:', err);
         setError('Failed to load crossword. Please try again.');
@@ -114,7 +139,9 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       });
       setCrossword(data);
       setCurrentClueIndex(0);
-      setCrosswordHintsUsed(0);
+      setCrosswordHintsUsed(data.progressData?.hintsUsed ?? 0);
+      clueDraftsRef.current = {};
+      sessionCompletedClueIdsRef.current = new Set();
     } catch (err) {
       console.error('Error fetching crossword:', err);
       setError('Failed to load crossword. Please try again.');
@@ -127,8 +154,72 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     fetchCrossword();
   }, [fetchCrossword]);
 
+  const applyClueState = useCallback(
+    (state: ClueSolverState, clue: NonNullable<typeof currentClue>) => {
+      setUserInput(state.userInput);
+      setRevealedMask(state.revealedMask);
+      setClueHintsUsed(state.clueHintsUsed);
+      setIsSolved(state.isSolved);
+      submittedRef.current = isCluePreviouslyCompleted(clue);
+    },
+    []
+  );
+
+  const saveCurrentClueDraft = useCallback(() => {
+    const clueId = currentClue?.id;
+    if (!clueId || !answer.length || isSolved) return;
+    if (
+      isCluePreviouslyCompleted(currentClue) ||
+      sessionCompletedClueIdsRef.current.has(clueId)
+    ) {
+      return;
+    }
+
+    clueDraftsRef.current[clueId] = {
+      userInput,
+      revealedMask,
+      clueHintsUsed,
+      isSolved: false,
+    };
+  }, [currentClue, answer.length, isSolved, userInput, revealedMask, clueHintsUsed]);
+
+  const refocusAnswerInput = useCallback(() => {
+    requestAnimationFrame(() => answerInputRef.current?.focus());
+  }, []);
+
+  const loadClueState = useCallback(
+    (clue: NonNullable<typeof currentClue>, answerText: string): ClueSolverState => {
+      const previouslyCompleted =
+        isCluePreviouslyCompleted(clue) ||
+        sessionCompletedClueIdsRef.current.has(clue.id);
+
+      if (previouslyCompleted) {
+        return buildSolvedClueState(
+          answerText,
+          clue.progressData?.hintsUsed ?? 0
+        );
+      }
+
+      const draft = clueDraftsRef.current[clue.id];
+      if (draft) {
+        const solved = isClueComplete(
+          answerText,
+          draft.userInput,
+          draft.revealedMask
+        );
+        if (solved) {
+          sessionCompletedClueIdsRef.current.add(clue.id);
+        }
+        return { ...draft, isSolved: solved };
+      }
+
+      return buildFreshClueState(answerText.length);
+    },
+    []
+  );
+
   useEffect(() => {
-    if (!answer.length) {
+    if (!currentClue || !answer.length) {
       setRevealedMask([]);
       setUserInput('');
       setClueHintsUsed(0);
@@ -137,26 +228,44 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       return;
     }
 
-    setRevealedMask(createInitialRevealedMask(answer.length));
-    setUserInput('');
-    setClueHintsUsed(0);
-    setIsSolved(false);
-    submittedRef.current = false;
-  }, [currentClueIndex, answer]);
+    applyClueState(loadClueState(currentClue, answer), currentClue);
+  }, [currentClueIndex, currentClue, answer, applyClueState, loadClueState]);
+
+  const preventButtonFocus = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+  };
+
+  const withInputRefocus = useCallback(
+    (handler: () => void) => () => {
+      handler();
+      refocusAnswerInput();
+    },
+    [refocusAnswerInput]
+  );
 
   useEffect(() => {
-    if (!answer.length || isSolved) return;
+    if (!answer.length || isSolved || !currentClue?.id) return;
     if (isClueComplete(answer, userInput, revealedMask)) {
+      sessionCompletedClueIdsRef.current.add(currentClue.id);
       setIsSolved(true);
     }
-  }, [answer, userInput, revealedMask, isSolved]);
+  }, [answer, userInput, revealedMask, isSolved, currentClue?.id]);
 
   useEffect(() => {
-    if (!isSolved || !user || !currentClue?.id || submittedRef.current) {
+    if (
+      !isSolved ||
+      !user ||
+      !currentClue?.id ||
+      submittedRef.current ||
+      !sessionCompletedClueIdsRef.current.has(currentClue.id)
+    ) {
       return;
     }
 
     submittedRef.current = true;
+    sessionCompletedClueIdsRef.current.add(currentClue.id);
+    delete clueDraftsRef.current[currentClue.id];
+
     api
       .submitCrosswordResponse({
         clueId: currentClue.id,
@@ -164,6 +273,8 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       })
       .catch((err) => {
         console.error('Error submitting crossword response:', err);
+        sessionCompletedClueIdsRef.current.delete(currentClue.id);
+        submittedRef.current = false;
       });
   }, [isSolved, user, currentClue?.id, clueHintsUsed, api]);
 
@@ -173,12 +284,14 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
   const goToPreviousClue = () => {
     if (currentClueIndex > 0) {
+      saveCurrentClueDraft();
       setCurrentClueIndex((i) => i - 1);
     }
   };
 
   const goToNextClue = () => {
     if (currentClueIndex < totalClues - 1) {
+      saveCurrentClueDraft();
       setCurrentClueIndex((i) => i + 1);
     }
   };
@@ -204,10 +317,10 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
   const handleExplain = async () => {
     if (!clueText || !answer) return;
-    const prompt = `Explain why ${clueText} was used as a crossword clue for ${answer}.`;
+    const prompt = `Explain why "${clueText}" was used as a crossword clue for "${answer}".`;
     try {
       await navigator.clipboard.writeText(prompt);
-      setToastMessage('Copied to clipboard');
+      setToastMessage('AI query copied to clipboard');
       setTimeout(() => setToastMessage(''), 3000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
@@ -217,6 +330,30 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const handleFinish = () => {
     handleBack();
   };
+
+  const handleSolvedPrimaryAction = () => {
+    if (isLastClue) {
+      handleFinish();
+    } else {
+      goToNextClue();
+    }
+  };
+
+  useEffect(() => {
+    if (!isSolved) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
+      if (e.target instanceof HTMLButtonElement) return;
+
+      e.preventDefault();
+      handleSolvedPrimaryAction();
+      refocusAnswerInput();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isSolved, isLastClue, currentClueIndex, totalClues, refocusAnswerInput]);
 
   const familiarityDb = currentClue?.entry?.familiarityScore;
   const qualityDb = currentClue?.entry?.qualityScore;
@@ -271,12 +408,14 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
       <div className={styles.trackerRow}>
         <div className={styles.hintsCounter}>
-          Hints used: {crosswordHintsUsed}
+          Hints used:{' '}
+          <span className={styles.hintsCount}>{crosswordHintsUsed}</span>
         </div>
         <div className={styles.carousel}>
           <button
             type="button"
             className={styles.carouselButton}
+            onMouseDown={preventButtonFocus}
             onClick={goToPreviousClue}
             disabled={currentClueIndex === 0}
             aria-label="Previous clue"
@@ -289,6 +428,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
           <button
             type="button"
             className={styles.carouselButton}
+            onMouseDown={preventButtonFocus}
             onClick={goToNextClue}
             disabled={isLastClue}
             aria-label="Next clue"
@@ -321,7 +461,10 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       </div>
 
       <AnswerInput
+        ref={answerInputRef}
+        clueId={currentClue.id}
         answer={answer}
+        displaySlots={displaySlots}
         userInput={userInput}
         revealedMask={revealedMask}
         isSolved={isSolved}
@@ -330,7 +473,12 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
       <footer className={styles.footer}>
         {!isSolved ? (
-          <button type="button" className={styles.hintButton} onClick={handleHint}>
+          <button
+            type="button"
+            className={styles.hintButton}
+            onMouseDown={preventButtonFocus}
+            onClick={withInputRefocus(handleHint)}
+          >
             Hint
           </button>
         ) : (
@@ -338,7 +486,8 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
             <button
               type="button"
               className={styles.explainButton}
-              onClick={handleExplain}
+              onMouseDown={preventButtonFocus}
+              onClick={withInputRefocus(handleExplain)}
             >
               Explain
             </button>
@@ -346,7 +495,8 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
               <button
                 type="button"
                 className={styles.nextButton}
-                onClick={handleFinish}
+                onMouseDown={preventButtonFocus}
+                onClick={withInputRefocus(handleSolvedPrimaryAction)}
               >
                 Finish
               </button>
@@ -354,7 +504,8 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
               <button
                 type="button"
                 className={styles.nextButton}
-                onClick={goToNextClue}
+                onMouseDown={preventButtonFocus}
+                onClick={withInputRefocus(handleSolvedPrimaryAction)}
               >
                 Next
               </button>

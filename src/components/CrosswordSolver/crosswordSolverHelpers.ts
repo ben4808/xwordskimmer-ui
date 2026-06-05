@@ -1,6 +1,7 @@
 import {
   ClueCollection,
   ClueHydrated,
+  ClueWithProgress,
   CollectionClue,
   CollectionClueWithProgress,
 } from 'cruzi-models';
@@ -14,14 +15,14 @@ export type CollectionClueItem =
 
 export interface OrderedClue {
   order: number;
-  clue: ClueHydrated;
+  clue: ClueWithProgress;
 }
 
-export function extractClue(item: CollectionClueItem): ClueHydrated {
+export function extractClue(item: CollectionClueItem): ClueWithProgress {
   if ('clue' in item && item.clue) {
-    return item.clue as ClueHydrated;
+    return item.clue as ClueWithProgress;
   }
-  return item as ClueHydrated;
+  return item as ClueWithProgress;
 }
 
 export function getClueOrder(item: CollectionClueItem, fallback: number): number {
@@ -46,12 +47,79 @@ export function getEligibleClues(
     .sort((a, b) => a.order - b.order);
 }
 
-export function getClueText(clue: ClueHydrated): string {
+export function getClueText(clue: ClueWithProgress): string {
   return clue.customClue ?? '';
 }
 
-export function getAnswer(clue: ClueHydrated): string {
+export function getAnswer(clue: ClueWithProgress): string {
   return normalizeAnswer(clue.entry?.entry);
+}
+
+/** Uppercase letters only; punctuation and spacing are preserved. */
+export function formatDisplayText(text: string): string {
+  return text.replace(/[a-z]/g, (c) => c.toUpperCase());
+}
+
+export function getDisplayText(clue: ClueWithProgress): string {
+  const answer = getAnswer(clue);
+  const raw =
+    clue.customDisplayText?.trim() || clue.entry?.displayText?.trim() || '';
+  if (!raw) return answer;
+
+  const formatted = formatDisplayText(raw);
+  const lettersFromDisplay = formatted.replace(/[^A-Z0-9]/g, '');
+  if (lettersFromDisplay === answer) {
+    return formatted;
+  }
+  return answer;
+}
+
+export interface DisplaySlot {
+  char: string;
+  isLetter: boolean;
+  letterIndex?: number;
+}
+
+export function buildDisplaySlots(
+  displayText: string,
+  answer: string
+): DisplaySlot[] {
+  const slots: DisplaySlot[] = [];
+  let letterIdx = 0;
+
+  for (const ch of displayText) {
+    if (/[A-Z0-9]/.test(ch)) {
+      if (letterIdx >= answer.length) break;
+      slots.push({ char: ch, isLetter: true, letterIndex: letterIdx });
+      letterIdx++;
+    } else {
+      slots.push({ char: ch, isLetter: false });
+    }
+  }
+
+  if (letterIdx < answer.length) {
+    for (; letterIdx < answer.length; letterIdx++) {
+      slots.push({
+        char: answer[letterIdx],
+        isLetter: true,
+        letterIndex: letterIdx,
+      });
+    }
+  }
+
+  const lettersFromSlots = slots
+    .filter((s) => s.isLetter)
+    .map((s) => answer[s.letterIndex!])
+    .join('');
+  if (lettersFromSlots !== answer) {
+    return answer.split('').map((ch, index) => ({
+      char: ch,
+      isLetter: true,
+      letterIndex: index,
+    }));
+  }
+
+  return slots;
 }
 
 /** DB score (0–50) to UI score (0–5). */
@@ -142,6 +210,39 @@ export function selectHintIndex(
   const pool = withoutUserInput.length > 0 ? withoutUserInput : withWrongInput;
   if (pool.length === 0) return null;
   return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/** True when the user has previously submitted this crossword clue. */
+export function isCluePreviouslyCompleted(clue: ClueWithProgress): boolean {
+  return clue.progressData != null;
+}
+
+export interface ClueSolverState {
+  userInput: string;
+  revealedMask: boolean[];
+  clueHintsUsed: number;
+  isSolved: boolean;
+}
+
+export function buildSolvedClueState(
+  answer: string,
+  hintsUsed: number
+): ClueSolverState {
+  return {
+    userInput: answer,
+    revealedMask: new Array(answer.length).fill(true),
+    clueHintsUsed: hintsUsed,
+    isSolved: true,
+  };
+}
+
+export function buildFreshClueState(answerLength: number): ClueSolverState {
+  return {
+    userInput: '',
+    revealedMask: createInitialRevealedMask(answerLength),
+    clueHintsUsed: 0,
+    isSolved: false,
+  };
 }
 
 export function createInitialRevealedMask(answerLength: number): boolean[] {

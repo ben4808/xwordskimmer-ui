@@ -1,23 +1,57 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import styles from './CrosswordSolver.module.scss';
-import { isUserInputValidSoFar } from './crosswordSolverHelpers';
+import { DisplaySlot } from './crosswordSolverHelpers';
 
 interface AnswerInputProps {
   answer: string;
+  displaySlots: DisplaySlot[];
   userInput: string;
   revealedMask: boolean[];
   isSolved: boolean;
+  clueId?: string;
   onUserInputChange: (value: string) => void;
 }
 
-export const AnswerInput: React.FC<AnswerInputProps> = ({
-  answer,
-  userInput,
-  revealedMask,
-  isSolved,
-  onUserInputChange,
-}) => {
+export interface AnswerInputHandle {
+  focus: () => void;
+}
+
+export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
+  function AnswerInput(
+    {
+      answer,
+      displaySlots,
+      userInput,
+      revealedMask,
+      isSolved,
+      clueId,
+      onUserInputChange,
+    },
+    ref
+  ) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const focusInput = useCallback(() => {
+    const input = inputRef.current;
+    if (!input || input.disabled) return;
+    input.focus();
+    const end = input.value.length;
+    input.setSelectionRange(end, end);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ focus: focusInput }), [focusInput]);
+
+  useLayoutEffect(() => {
+    focusInput();
+  }, [clueId, isSolved, focusInput]);
 
   const enforceCursorAtEnd = useCallback(() => {
     const input = inputRef.current;
@@ -70,21 +104,32 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   };
 
-  const typedValid =
-    userInput.length > 0 && isUserInputValidSoFar(userInput, answer);
-  const typedInvalid = userInput.length > 0 && !typedValid;
+  const caretSlotIndex = useMemo(() => {
+    if (isSolved) return -1;
+    const activeLetterIndex = userInput.length;
+    return displaySlots.findIndex(
+      (slot) => slot.isLetter && slot.letterIndex === activeLetterIndex
+    );
+  }, [displaySlots, isSolved, userInput.length]);
 
-  const getPreviewChar = (index: number): string => {
-    if (isSolved) return answer[index] ?? '•';
-    if (revealedMask[index]) return answer[index] ?? '•';
+  const getLetterCellChar = (letterIndex: number): string => {
+    if (isSolved) return answer[letterIndex] ?? '•';
+    if (userInput[letterIndex]) return userInput[letterIndex];
+    if (revealedMask[letterIndex]) return answer[letterIndex] ?? '•';
     return '•';
   };
 
-  /** User-typed overlay only; revealed hints stay in the preview layer. */
-  const getDisplayChar = (index: number): string | null => {
-    if (isSolved) return answer[index] ?? null;
-    if (userInput[index]) return userInput[index];
-    return null;
+  const getLetterCellClassName = (letterIndex: number): string => {
+    if (isSolved) return styles.typedCorrect;
+
+    const typed = userInput[letterIndex];
+    if (typed) {
+      return typed === answer[letterIndex]
+        ? styles.typedCorrect
+        : styles.typedIncorrect;
+    }
+    if (revealedMask[letterIndex]) return styles.revealedChar;
+    return styles.previewChar;
   };
 
   return (
@@ -93,28 +138,28 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
       onClick={() => inputRef.current?.focus()}
     >
       <div className={styles.answerDisplay} aria-hidden="true">
-        {answer.split('').map((_, index) => {
-          const displayChar = getDisplayChar(index);
-          const previewChar = getPreviewChar(index);
-          const showUserChar = Boolean(userInput[index]) && !isSolved;
+        {displaySlots.map((slot, index) => {
+          if (!slot.isLetter) {
+            return (
+              <span key={index} className={styles.separatorCell}>
+                <span className={styles.separatorChar}>{slot.char}</span>
+              </span>
+            );
+          }
+
+          const letterIndex = slot.letterIndex!;
+          const cellChar = getLetterCellChar(letterIndex);
+          const showCaret = index === caretSlotIndex;
 
           return (
             <span key={index} className={styles.charCell}>
-              <span className={styles.previewChar}>{previewChar}</span>
-              {displayChar && (
-                <span
-                  className={`${styles.typedChar} ${
-                    isSolved
-                      ? styles.typedCorrect
-                      : showUserChar && typedValid
-                        ? styles.typedCorrect
-                        : showUserChar && typedInvalid
-                          ? styles.typedIncorrect
-                          : styles.revealedChar
-                  }`}
-                >
-                  {displayChar}
-                </span>
+              <span
+                className={`${styles.cellChar} ${getLetterCellClassName(letterIndex)}`}
+              >
+                {cellChar}
+              </span>
+              {showCaret && (
+                <span className={styles.inputCaret} aria-hidden="true" />
               )}
             </span>
           );
@@ -139,4 +184,5 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
       />
     </div>
   );
-};
+  }
+);
