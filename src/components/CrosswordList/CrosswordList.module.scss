@@ -276,3 +276,13 @@ $transition-speed: 0.3s;
   background-color: $dark-green-correct;
   height: 100%;
 }
+
+.progressInProgress {
+  background-color: #ffc107;
+  height: 100%;
+}
+
+.progressUnseen {
+  background-color: $gray-remaining;
+  height: 100%;
+}

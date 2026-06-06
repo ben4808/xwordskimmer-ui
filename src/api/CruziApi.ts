@@ -126,6 +126,31 @@ class CruziApi implements ICruziApi {
     }
   }
 
+  async completeCrossword(collectionId: string): Promise<void> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/completeCrossword`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ collectionId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error completing crossword:', error);
+      throw error;
+    }
+  }
+
   async getCollectionList(): Promise<ClueCollection[]> {
     try {
       const token = localStorage.getItem('token');

@@ -217,6 +217,20 @@ export function isCluePreviouslyCompleted(clue: ClueWithProgress): boolean {
   return clue.progressData != null;
 }
 
+/** True when every eligible clue is completed in-session or from prior progress. */
+export function areAllEligibleCluesComplete(
+  eligibleClues: OrderedClue[],
+  sessionCompletedClueIds: ReadonlySet<string>
+): boolean {
+  if (eligibleClues.length === 0) return false;
+
+  return eligibleClues.every(
+    ({ clue }) =>
+      Boolean(clue.id) &&
+      (isCluePreviouslyCompleted(clue) || sessionCompletedClueIds.has(clue.id!))
+  );
+}
+
 export interface ClueSolverState {
   userInput: string;
   revealedMask: boolean[];
@@ -263,10 +277,10 @@ export function formatCrosswordSolverDateForRoute(date: Date): string {
 
 /** Build the solver URL for a crossword list item. */
 export function getCrosswordSolverPath(crossword: ClueCollection): string | null {
-  if (crossword.puzzle?.publicationId && crossword.puzzle?.date) {
+  if (crossword.puzzle?.publicationId && crossword.metadata1) {
     const publication = String(crossword.puzzle.publicationId).toLowerCase();
     const date = formatCrosswordSolverDateForRoute(
-      parseCalendarDate(crossword.puzzle.date)
+      parseCalendarDate(crossword.metadata1)
     );
     return `/crossword/${publication}?date=${date}`;
   }

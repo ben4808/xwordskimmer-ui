@@ -18,6 +18,7 @@ export interface ICruziApi {
     params: { id: string } | { publicationId: string; date: string }
   ): Promise<ClueCollection>;
   submitCrosswordResponse(response: CrosswordResponse): Promise<void>;
+  completeCrossword(collectionId: string): Promise<void>;
 
   getCollectionList(): Promise<ClueCollection[]>;
   getCollectionById(collectionId: string): Promise<ClueCollection | null>;

@@ -20,6 +20,7 @@ import { formatCrosswordDateForQuery, parseCalendarDate } from '../../lib/utils'
 import { AnswerInput, AnswerInputHandle } from './AnswerInput';
 import { CrosswordSolverProps } from './CrosswordSolverProps';
 import {
+  areAllEligibleCluesComplete,
   buildDisplaySlots,
   buildFreshClueState,
   buildSolvedClueState,
@@ -60,10 +61,12 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const [toastMessage, setToastMessage] = useState('');
 
   const submittedRef = useRef(false);
+  const collectionCompletedRef = useRef(false);
   const answerInputRef = useRef<AnswerInputHandle>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const clueDraftsRef = useRef<Record<string, ClueSolverState>>({});
   const sessionCompletedClueIdsRef = useRef<Set<string>>(new Set());
+  const submittedClueIdsRef = useRef<Set<string>>(new Set());
 
   const eligibleClues = useMemo(
     () => getEligibleClues(crossword?.clues),
@@ -89,6 +92,9 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const isLastClue = currentClueIndex >= totalClues - 1;
 
   const puzzleDate = useMemo(() => {
+    if (crossword?.metadata1) {
+      return parseCalendarDate(crossword.metadata1);
+    }
     if (crossword?.puzzle?.date) {
       return parseCalendarDate(crossword.puzzle.date);
     }
@@ -96,7 +102,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       return parseCrosswordSolverDate(dateParam) ?? new Date();
     }
     return new Date();
-  }, [crossword?.puzzle?.date, dateParam]);
+  }, [crossword?.metadata1, crossword?.puzzle?.date, dateParam]);
 
   const fetchCrossword = useCallback(async () => {
     if (id) {
@@ -109,6 +115,8 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
         setCrosswordHintsUsed(data.progressData?.hintsUsed ?? 0);
         clueDraftsRef.current = {};
         sessionCompletedClueIdsRef.current = new Set();
+        submittedClueIdsRef.current = new Set();
+        collectionCompletedRef.current = false;
       } catch (err) {
         console.error('Error fetching crossword:', err);
         setError('Failed to load crossword. Please try again.');
@@ -142,6 +150,8 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       setCrosswordHintsUsed(data.progressData?.hintsUsed ?? 0);
       clueDraftsRef.current = {};
       sessionCompletedClueIdsRef.current = new Set();
+      submittedClueIdsRef.current = new Set();
+      collectionCompletedRef.current = false;
     } catch (err) {
       console.error('Error fetching crossword:', err);
       setError('Failed to load crossword. Please try again.');
@@ -160,7 +170,9 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       setRevealedMask(state.revealedMask);
       setClueHintsUsed(state.clueHintsUsed);
       setIsSolved(state.isSolved);
-      submittedRef.current = isCluePreviouslyCompleted(clue);
+      submittedRef.current =
+        isCluePreviouslyCompleted(clue) ||
+        submittedClueIdsRef.current.has(clue.id);
     },
     []
   );
@@ -263,6 +275,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     }
 
     submittedRef.current = true;
+    submittedClueIdsRef.current.add(currentClue.id);
     sessionCompletedClueIdsRef.current.add(currentClue.id);
     delete clueDraftsRef.current[currentClue.id];
 
@@ -274,9 +287,34 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       .catch((err) => {
         console.error('Error submitting crossword response:', err);
         sessionCompletedClueIdsRef.current.delete(currentClue.id);
+        submittedClueIdsRef.current.delete(currentClue.id);
         submittedRef.current = false;
       });
   }, [isSolved, user, currentClue?.id, clueHintsUsed, api]);
+
+  useEffect(() => {
+    const sessionCompleted = sessionCompletedClueIdsRef.current;
+    const allComplete = areAllEligibleCluesComplete(eligibleClues, sessionCompleted);
+    const completedInSession = eligibleClues.some(
+      ({ clue }) => clue.id && sessionCompleted.has(clue.id)
+    );
+
+    if (
+      !user ||
+      !crossword?.id ||
+      collectionCompletedRef.current ||
+      !allComplete ||
+      !completedInSession
+    ) {
+      return;
+    }
+
+    collectionCompletedRef.current = true;
+    api.completeCrossword(crossword.id).catch((err) => {
+      console.error('Error completing crossword:', err);
+      collectionCompletedRef.current = false;
+    });
+  }, [isSolved, user, crossword?.id, eligibleClues, api]);
 
   const handleBack = () => {
     navigate(`/crosswords?date=${formatCrosswordDateForQuery(puzzleDate)}`);

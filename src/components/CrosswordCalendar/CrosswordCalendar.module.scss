@@ -218,12 +218,14 @@ $transition-speed: 0.3s;
 }
 
 .dayCell {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
-  padding: 6px 4px;
+  aspect-ratio: 1;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
   border: 1px solid $border-color;
   border-radius: 8px;
   background-color: $card-bg;
@@ -266,15 +268,19 @@ $transition-speed: 0.3s;
 }
 
 .dayNumber {
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1.2;
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 1rem;
+  font-weight: 400;
+  color: $light-text-color;
+  line-height: 1;
 }
 
 .hintsUsed {
-  margin-top: 2px;
-  font-size: 0.75rem;
-  color: $light-text-color;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $text-color;
   line-height: 1;
 }
 

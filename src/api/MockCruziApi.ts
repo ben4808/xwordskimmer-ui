@@ -68,6 +68,10 @@ export class MockCruziApi implements ICruziApi {
     console.log("Mock crossword response:", response);
   }
 
+  async completeCrossword(collectionId: string): Promise<void> {
+    console.log("Mock complete crossword:", collectionId);
+  }
+
   async getCollectionById(collectionId: string): Promise<ClueCollection | null> {
     const collections = await this.getCollectionList();
     return collections.find((c) => c.id === collectionId) || null;

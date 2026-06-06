@@ -118,16 +118,27 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
   const renderProgressBar = (crossword: ClueCollection) => {
     if (!user) return null;
 
-    const total = crossword.clueCount6Plus ?? crossword.clueCount ?? 0;
+    const total = crossword.clueCount6Plus ?? 0;
     if (total === 0) return null;
 
-    const completed = crossword.progressData?.completed ?? 0;
+    const progress = crossword.progressData;
+    const completed = progress?.completed ?? 0;
+    const inProgress = progress?.inProgress ?? 0;
+    const unseen = Math.max(0, total - completed);
 
     return (
       <div className={styles.progressBar}>
         <div
           className={styles.progressCompleted}
           style={{ width: `${calculateProgressPercentage(completed, total)}%` }}
+        />
+        <div
+          className={styles.progressInProgress}
+          style={{ width: `${calculateProgressPercentage(inProgress, total)}%` }}
+        />
+        <div
+          className={styles.progressUnseen}
+          style={{ width: `${calculateProgressPercentage(unseen, total)}%` }}
         />
       </div>
     );
