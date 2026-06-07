@@ -18,6 +18,7 @@ interface AnswerInputProps {
   isSolved: boolean;
   clueId?: string;
   onUserInputChange: (value: string) => void;
+  onHint?: () => void;
 }
 
 export interface AnswerInputHandle {
@@ -34,6 +35,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
       isSolved,
       clueId,
       onUserInputChange,
+      onHint,
     },
     ref
   ) {
@@ -96,6 +98,11 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isSolved) {
       e.preventDefault();
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onHint?.();
       return;
     }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Home') {

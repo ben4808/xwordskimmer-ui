@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -230,7 +231,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     []
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!currentClue || !answer.length) {
       setRevealedMask([]);
       setUserInput('');
@@ -320,17 +321,37 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     navigate(`/crosswords?date=${formatCrosswordDateForQuery(puzzleDate)}`);
   };
 
+  const transitionToClueIndex = useCallback(
+    (nextIndex: number) => {
+      if (nextIndex < 0 || nextIndex >= totalClues) return;
+
+      saveCurrentClueDraft();
+
+      const nextClue = eligibleClues[nextIndex]?.clue;
+      if (!nextClue) return;
+
+      const nextAnswer = getAnswer(nextClue);
+      applyClueState(loadClueState(nextClue, nextAnswer), nextClue);
+      setCurrentClueIndex(nextIndex);
+    },
+    [
+      totalClues,
+      saveCurrentClueDraft,
+      eligibleClues,
+      applyClueState,
+      loadClueState,
+    ]
+  );
+
   const goToPreviousClue = () => {
     if (currentClueIndex > 0) {
-      saveCurrentClueDraft();
-      setCurrentClueIndex((i) => i - 1);
+      transitionToClueIndex(currentClueIndex - 1);
     }
   };
 
   const goToNextClue = () => {
     if (currentClueIndex < totalClues - 1) {
-      saveCurrentClueDraft();
-      setCurrentClueIndex((i) => i + 1);
+      transitionToClueIndex(currentClueIndex + 1);
     }
   };
 
@@ -507,6 +528,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
         revealedMask={revealedMask}
         isSolved={isSolved}
         onUserInputChange={setUserInput}
+        onHint={withInputRefocus(handleHint)}
       />
 
       <footer className={styles.footer}>

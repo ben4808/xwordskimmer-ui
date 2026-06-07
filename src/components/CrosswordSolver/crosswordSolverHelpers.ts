@@ -133,27 +133,25 @@ export function formatUiScore(dbScore: number | undefined): string {
   return dbScoreToUi(dbScore).toFixed(1);
 }
 
-/** Background for score badges: 0 = black; 1–5 red → amber → green. */
+/** Background for score badges on dark UI: 0 = near-black; 1–5 muted red → amber → green. */
 export function getScoreBadgeBackground(uiScore: number): string {
-  if (uiScore <= 0) return '#000000';
+  if (uiScore <= 0) return '#1a1a1a';
 
   const clamped = Math.max(0, Math.min(5, uiScore));
+  const saturation = 22;
+  const lightness = Math.round(22 + (clamped / 5) * 4);
 
   if (clamped <= 1) {
-    return '#cc0000';
+    return `hsl(0, ${saturation}%, ${lightness}%)`;
   }
   if (clamped <= 3) {
     const t = (clamped - 1) / 2;
-    const r = Math.round(204 + (255 - 204) * t);
-    const g = Math.round(0 + 191 * t);
-    const b = Math.round(0);
-    return `rgb(${r}, ${g}, ${b})`;
+    const hue = Math.round(45 * t);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
   const t = (clamped - 3) / 2;
-  const r = Math.round(255 * (1 - t));
-  const g = Math.round(191 + (139 - 191) * t);
-  const b = Math.round(0);
-  return `rgb(${r}, ${g}, ${b})`;
+  const hue = Math.round(45 + 75 * t);
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 export function isPositionCorrect(
