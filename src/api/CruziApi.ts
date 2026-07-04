@@ -1,7 +1,9 @@
 import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, Entry } from "cruzi-models";
 import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
-const apiOrigin = (import.meta.env.API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
-const baseUrl = `${apiOrigin}/api`;
+
+const configuredOrigin = import.meta.env.API_URL?.replace(/\/$/, '');
+const apiOrigin = configuredOrigin || (import.meta.env.DEV ? 'http://localhost:3000' : '');
+const baseUrl = apiOrigin ? `${apiOrigin}/api` : '/api';
 
 class CruziApi implements ICruziApi {
   async getCrosswordList(date: string): Promise<ClueCollection[]> {
