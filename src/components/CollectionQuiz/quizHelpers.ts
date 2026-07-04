@@ -1,4 +1,35 @@
-import { ClueHydrated } from 'cruzi-models';
+import { ClueHydrated, ClueProgress } from 'cruzi-models';
+
+const DEFAULT_CORRECT_SOLVES_NEEDED = 2;
+
+export function normalizeClueProgress(progressData?: ClueProgress) {
+  return {
+    correctSolves: progressData?.correctSolves ?? 0,
+    correctSolvesNeeded: progressData?.correctSolvesNeeded || DEFAULT_CORRECT_SOLVES_NEEDED,
+  };
+}
+
+export function applyCorrectSolveProgress(progress: {
+  correctSolves: number;
+  correctSolvesNeeded: number;
+}) {
+  const correctSolvesNeeded = progress.correctSolvesNeeded || DEFAULT_CORRECT_SOLVES_NEEDED;
+  return {
+    correctSolves: progress.correctSolves + 1,
+    correctSolvesNeeded,
+  };
+}
+
+export function applyIncorrectSolveProgress(progress: {
+  correctSolves: number;
+  correctSolvesNeeded: number;
+}) {
+  const correctSolvesNeeded = progress.correctSolvesNeeded || DEFAULT_CORRECT_SOLVES_NEEDED;
+  return {
+    correctSolves: progress.correctSolves,
+    correctSolvesNeeded: correctSolvesNeeded + 2,
+  };
+}
 
 export function getClueLanguage(clue: ClueHydrated): string {
   return clue.lang || clue.entry?.lang || 'en';

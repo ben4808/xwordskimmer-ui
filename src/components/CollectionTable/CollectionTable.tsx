@@ -12,7 +12,7 @@ type ProgressFilter = 'All' | 'Unseen' | 'In Progress' | 'Completed';
 type StatusFilter = 'All' | 'Ready' | 'Processing' | 'Invalid';
 
 function CollectionTable(props: CollectionTableProps) {
-    const { collectionId } = props;
+    const { collectionId, isCreator } = props;
 
     const [clues, setClues] = useState<CollectionClueTableRow[]>([]);
     const [cluesLoading, setCluesLoading] = useState<boolean>(false);
@@ -294,13 +294,13 @@ function CollectionTable(props: CollectionTableProps) {
                                 </div>
                             )}
                         </th>
-                        <th></th>
+                        {isCreator && <th></th>}
                     </tr>
                 </thead>
                 <tbody>
                     {cluesLoading ? (
                         <tr>
-                            <td colSpan={6} className={styles.noData}>Loading clues...</td>
+                            <td colSpan={isCreator ? 6 : 5} className={styles.noData}>Loading clues...</td>
                         </tr>
                     ) : clues.length > 0 ? clues.map((clue, index) => {
                         // Determine status class
@@ -318,7 +318,7 @@ function CollectionTable(props: CollectionTableProps) {
                                 <td className={styles.senseCell}>
                                     <div className={styles.senseContainer}>
                                         <span>{clue.sense || 'N/A'}</span>
-                                        {clue.senses && clue.senses.length > 0 && (
+                                        {isCreator && clue.senses && clue.senses.length > 0 && (
                                             <>
                                                 <span
                                                     className={styles.senseDropdownTrigger}
@@ -356,6 +356,7 @@ function CollectionTable(props: CollectionTableProps) {
                                         {statusText}
                                     </span>
                                 </td>
+                                {isCreator && (
                                 <td>
                                     <button
                                         className={styles.deleteButton}
@@ -365,11 +366,12 @@ function CollectionTable(props: CollectionTableProps) {
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
+                                )}
                             </tr>
                         );
                     }) : (
                         <tr>
-                            <td colSpan={6} className={styles.noData}>No clues available</td>
+                            <td colSpan={isCreator ? 6 : 5} className={styles.noData}>No clues available</td>
                         </tr>
                     )}
                 </tbody>

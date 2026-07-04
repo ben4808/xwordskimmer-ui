@@ -333,7 +333,7 @@ class CruziApi implements ICruziApi {
 
         if (raw.progressData) {
           clue.progressData = {
-            correctSolvesNeeded: raw.progressData.correctSolvesNeeded,
+            correctSolvesNeeded: raw.progressData.correctSolvesNeeded || 2,
             correctSolves: raw.progressData.correctSolves || 0,
             incorrectSolves: raw.progressData.incorrectSolves || 0,
             lastSolveDate: raw.progressData.lastSolve

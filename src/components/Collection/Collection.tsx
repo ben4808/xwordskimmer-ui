@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faList, faTimes } from '@fortawesome/free-solid-svg-icons';
 import styles from './Collection.module.scss';
 import CruziApi from "../../api/CruziApi";
 import { useAuth } from "../../contexts/AuthContext";
@@ -84,6 +84,8 @@ function Collection() {
         return <div>Error: {error || "Collection not found"}</div>;
     }
 
+    const isCreator = user != null && collection.creator?.id === user.id;
+
     // Get progress data from collection state
     const totalClues = collection.clueCount || 0;
     const progressData = collection.progressData;
@@ -152,8 +154,24 @@ function Collection() {
         return (value / total) * 100;
     };
 
+    const handleBack = () => {
+        navigate('/collections');
+    };
+
     return (
         <div className={styles.collectionPage}>
+            <header className={styles.headerRow}>
+                <button
+                    type="button"
+                    className={styles.backButton}
+                    onClick={handleBack}
+                    aria-label="Back to collections"
+                >
+                    <FontAwesomeIcon icon={faArrowLeft} />
+                </button>
+                <h1 className={styles.title}>{collection.title}</h1>
+            </header>
+
             {/* Progress Indication Section */}
             <div className={styles.progressSection}>
                 <div className={styles.progressHeader}>
@@ -193,26 +211,28 @@ function Collection() {
                 )}
             </div>
 
-            {/* Add Word Section */}
-            <div className={styles.addWordSection}>
-                <div className={styles.addWordContainer}>
-                    <input
-                        type="text"
-                        value={newWord}
-                        onChange={handleWordChange}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Add a word or phrase"
-                        className={styles.wordInput}
-                    />
-                    <button
-                        onClick={handleAddWord}
-                        disabled={!newWord.trim() || isAddingWord}
-                        className={styles.addButton}
-                    >
-                        {isAddingWord ? "Adding..." : "Add"}
-                    </button>
+            {/* Add Word Section — creator only */}
+            {isCreator && (
+                <div className={styles.addWordSection}>
+                    <div className={styles.addWordContainer}>
+                        <input
+                            type="text"
+                            value={newWord}
+                            onChange={handleWordChange}
+                            onKeyPress={handleKeyPress}
+                            placeholder="Add a word or phrase"
+                            className={styles.wordInput}
+                        />
+                        <button
+                            onClick={handleAddWord}
+                            disabled={!newWord.trim() || isAddingWord}
+                            className={styles.addButton}
+                        >
+                            {isAddingWord ? "Adding..." : "Add"}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Start Quiz Button */}
             <div className={styles.quizSection}>
@@ -241,6 +261,7 @@ function Collection() {
                         <div className={styles.popupBody}>
                             <CollectionTable
                                 collectionId={collection.id!}
+                                isCreator={isCreator}
                             />
                         </div>
                     </div>

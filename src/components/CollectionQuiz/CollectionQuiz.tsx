@@ -14,6 +14,11 @@ import { useClueText } from './useClueText';
 import { NonCrosswordInput } from './NonCrosswordInput';
 import CruziApi from '../../api/CruziApi';
 import { ClueCollection } from 'cruzi-models';
+import {
+  applyCorrectSolveProgress,
+  applyIncorrectSolveProgress,
+  normalizeClueProgress,
+} from './quizHelpers';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
   const navigate = useNavigate();
@@ -97,23 +102,20 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     setIsSolved(false);
     setIsRevealed(false);
     setInputBoxState(InputBoxState.Partial);
-
-    const progressData = currentClue?.progressData;
-    setCurrentClueProgress({
-      correctSolves: progressData?.correctSolves ?? 0,
-      correctSolvesNeeded: progressData?.correctSolvesNeeded ?? 2,
-    });
-
-    if (expectedResponse) {
-      const textWidth = getTextWidth(expectedResponse, 1.5, 'Verdana, sans-serif');
-      setInputWidth(textWidth + 20);
-    }
+    setCurrentClueProgress(normalizeClueProgress(currentClue?.progressData));
 
     const timer = setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
     return () => clearTimeout(timer);
-  }, [currentIndex, expectedResponse, currentClue]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentIndex, currentClue?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (expectedResponse) {
+      const textWidth = getTextWidth(expectedResponse, 1.5, 'Verdana, sans-serif');
+      setInputWidth(textWidth + 20);
+    }
+  }, [expectedResponse]);
 
   useAnswerValidation({
     currentClue,
@@ -126,10 +128,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     getExpectedResponse: () => expectedResponse,
     onCorrect: () => {
       incrementCorrect();
-      setCurrentClueProgress((prev) => ({
-        ...prev,
-        correctSolves: prev.correctSolves + 1,
-      }));
+      setCurrentClueProgress((prev) => applyCorrectSolveProgress(prev));
       if (user && currentClue?.id && clueCollection?.id) {
         CruziApi.submitUserResponse(
           currentClue.id.toString(),
@@ -198,10 +197,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     setInputBoxState(InputBoxState.Completed);
 
     incrementIncorrect();
-    setCurrentClueProgress((prev) => ({
-      ...prev,
-      correctSolvesNeeded: prev.correctSolvesNeeded + 2,
-    }));
+    setCurrentClueProgress((prev) => applyIncorrectSolveProgress(prev));
     if (user && currentClue?.id && clueCollection?.id) {
       CruziApi.submitUserResponse(
         currentClue.id.toString(),
