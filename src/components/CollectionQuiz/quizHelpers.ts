@@ -1,5 +1,48 @@
 import { ClueHydrated } from 'cruzi-models';
 
+export function getClueLanguage(clue: ClueHydrated): string {
+  return clue.lang || clue.entry?.lang || 'en';
+}
+
+/**
+ * Picks an example-sentence translation in a language different from the clue language.
+ * Prefers the user's native language, then Spanish, then English, then any other available language.
+ */
+export function getTranslatedExampleSentence(
+  translations: Record<string, string> | undefined,
+  clueLang: string,
+  userNativeLang?: string
+): string {
+  if (!translations) return '';
+
+  const candidates: string[] = [];
+
+  if (userNativeLang && userNativeLang !== clueLang) {
+    candidates.push(userNativeLang);
+  }
+
+  for (const lang of ['es', 'en']) {
+    if (lang !== clueLang && !candidates.includes(lang)) {
+      candidates.push(lang);
+    }
+  }
+
+  for (const lang of Object.keys(translations)) {
+    if (lang !== clueLang && !candidates.includes(lang)) {
+      candidates.push(lang);
+    }
+  }
+
+  for (const lang of candidates) {
+    const text = translations[lang];
+    if (text) {
+      return text;
+    }
+  }
+
+  return '';
+}
+
 /**
  * Normalizes an answer string for comparison by converting to uppercase and removing non-alphanumeric characters
  */

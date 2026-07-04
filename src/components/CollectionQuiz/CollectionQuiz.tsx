@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import styles from './CollectionQuiz.module.scss';
 import { CollectionQuizProps } from './CollectionQuizProps';
 import { getTextWidth } from '../../lib/utils';
@@ -14,6 +16,7 @@ import CruziApi from '../../api/CruziApi';
 import { ClueCollection } from 'cruzi-models';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
+  const navigate = useNavigate();
   const { id: collectionId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { setCurrentCollection } = useCollection();
@@ -242,6 +245,14 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const fillInBlankPattern = /\{\{([^}]+)\}\}/i;
   const hasFillInBlank = fillInBlankPattern.test(clueText);
 
+  const handleBack = () => {
+    if (collectionId) {
+      navigate(`/collection/${collectionId}`);
+    } else {
+      navigate('/collections');
+    }
+  };
+
   if (fetchLoading) {
     return (
       <div className={styles.loadingContainer}>
@@ -283,6 +294,18 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
 
   return (
     <div className={styles.container}>
+      <header className={styles.headerRow}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={handleBack}
+          aria-label="Back to collection"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+        <h1 className={styles.title}>{clueCollection.title}</h1>
+      </header>
+
       <div className={styles.scoreAndProgressContainer}>
         <div className={styles.scoreBoxes}>
           <div className={`${styles.scoreBox} ${styles.scoreBoxCorrect}`}>

@@ -3,8 +3,11 @@ URL Pattern: /collections
 Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
 
 LAYOUT
-A list of clue collections that the user has access to. For each clue collection, there is shown a box with 
-a generic thumbnail image on the left and the following three lines to the right of it: 
+A list of clue collections that the user has access to. 
+The collections in this component are specifically those with puzzle_id null (don't include crossword collections).
+
+For each clue collection, there is shown a box with a generic thumbnail image on the left and the following three lines 
+to the right of it: 
     1. The collection title
     2. (“By: <Author>”, Public/Unlisted, "<count> clues"), separated by "•" characters.
     3. A progress bar, with green representing Completed clues, yellow In Progress, and gray Unseen.

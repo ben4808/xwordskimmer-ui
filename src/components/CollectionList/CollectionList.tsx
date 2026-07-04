@@ -8,6 +8,19 @@ import { ClueCollection } from "cruzi-models";
 import CruziApi from "../../api/CruziApi";
 import { useAuth } from "../../contexts/AuthContext";
 
+function getLastAccessedTime(collection: ClueCollection): number {
+    const date = collection.lastAccessedDate ?? collection.modifiedDate;
+    return new Date(date).getTime();
+}
+
+function getAuthorName(collection: ClueCollection): string {
+    if (collection.author) return collection.author;
+    const creator = collection.creator;
+    if (!creator) return 'Unknown';
+    const name = [creator.firstName, creator.lastName].filter(Boolean).join(' ');
+    return name || 'Unknown';
+}
+
 function CollectionList(props: CollectionListProps) {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -23,12 +36,13 @@ function CollectionList(props: CollectionListProps) {
       setError(null);
       try {
         const response = await api.getCollectionList();
-        setCollections(response);
+        const clueCollections = response.filter(collection => !collection.puzzle?.id);
+        setCollections(clueCollections);
         
         // Separate collections: "Your Collections" includes collections authored by user or with progress data
         const userCols: ClueCollection[] = [];
         if (user) {
-          userCols.push(...response.filter(collection => 
+          userCols.push(...clueCollections.filter(collection => 
             // User authored collections (any privacy level)
             (collection.creator?.id === user.id) ||
             // Collections with progress data (any privacy level) - API should only return current user's progress
@@ -40,16 +54,16 @@ function CollectionList(props: CollectionListProps) {
         const userCollectionIds = new Set(userCols.map(col => col.id));
         
         // Public collections exclude those already in "Your Collections"
-        const publicCols = response.filter(collection => 
+        const publicCols = clueCollections.filter(collection => 
           !collection.isPrivate && !userCollectionIds.has(collection.id)
         );
         
         // Sort public collections alphabetically by title
         setPublicCollections(publicCols.sort((a, b) => a.title.localeCompare(b.title)));
         
-        // Sort user collections by last accessed date (using modifiedDate as proxy)
+        // Sort user collections by last accessed date
         setUserCollections(userCols.sort((a, b) => 
-          new Date(b.modifiedDate).getTime() - new Date(a.modifiedDate).getTime()
+          getLastAccessedTime(b) - getLastAccessedTime(a)
         ));
       } catch (err) {
         console.error('Error fetching collections:', err);
@@ -126,7 +140,7 @@ function CollectionList(props: CollectionListProps) {
           <div className={styles.details}>
             <h3 className={styles.title}>{collection.title}</h3>
             <p className={styles.meta}>
-              By: {collection.author || collection.creator?.firstName || 'Unknown'} • {privacyText} • {collection.clueCount} clues
+              By: {getAuthorName(collection)} • {privacyText} • {collection.clueCount} clues
             </p>
             {renderProgressBar(collection)}
           </div>

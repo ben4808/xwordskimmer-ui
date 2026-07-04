@@ -6,7 +6,7 @@ import {
   faChevronLeft,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
-import { ClueCollection, Publications, PublicationId } from 'cruzi-models';
+import { ClueCollection, Publications } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -21,11 +21,14 @@ import styles from './CrosswordList.module.scss';
 import crosswordThumb from '../../../crossword_thumb.png';
 
 function getPublicationName(crossword: ClueCollection): string {
-  const publicationId = crossword.puzzle?.publicationId;
-  if (publicationId && publicationId in Publications) {
-    return Publications[publicationId as PublicationId].name;
+  const source = crossword.source;
+  if (!source) {
+    return 'Unknown';
   }
-  return crossword.source ?? 'Unknown';
+  const publication = Object.values(Publications).find(
+    (entry) => entry.id === source
+  );
+  return publication?.name ?? 'Unknown';
 }
 
 function isSameCalendarDay(a: Date, b: Date): boolean {

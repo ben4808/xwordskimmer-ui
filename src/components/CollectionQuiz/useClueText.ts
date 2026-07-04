@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ClueWithProgress, User } from 'cruzi-models';
-import { getExpectedResponse } from './quizHelpers';
+import { getClueLanguage, getExpectedResponse, getTranslatedExampleSentence } from './quizHelpers';
 
 function useSelectedExampleSentence(clue: ClueWithProgress | undefined, currentIndex: number) {
   return useMemo(() => {
@@ -10,7 +10,7 @@ function useSelectedExampleSentence(clue: ClueWithProgress | undefined, currentI
       return null;
     }
 
-    const clueLang = clue.entry.lang || 'en';
+    const clueLang = getClueLanguage(clue);
     const matchingSentences = clue.sense.exampleSentences.filter(
       (es) => es.translations && clueLang in es.translations
     );
@@ -33,8 +33,7 @@ export function useClueText(clue: ClueWithProgress | undefined, user: User | und
     }
 
     if (selectedExampleSentence) {
-      const clueLang = clue.entry.lang || 'en';
-      return selectedExampleSentence.translations?.[clueLang] || '';
+      return selectedExampleSentence.translations?.[getClueLanguage(clue)] || '';
     }
 
     return '';
@@ -43,13 +42,15 @@ export function useClueText(clue: ClueWithProgress | undefined, user: User | und
   const translatedClue = useMemo(() => {
     if (!clue || clue.customClue || !selectedExampleSentence) return '';
 
-    const targetLang = user?.nativeLang || 'en';
-    return (
-      selectedExampleSentence.translations?.[targetLang] ||
-      selectedExampleSentence.translations?.['en'] ||
-      ''
+    const clueLang = getClueLanguage(clue);
+    const translation = getTranslatedExampleSentence(
+      selectedExampleSentence.translations,
+      clueLang,
+      user?.nativeLang
     );
-  }, [clue, selectedExampleSentence, user]);
+
+    return translation === clueText ? '' : translation;
+  }, [clue, selectedExampleSentence, user, clueText]);
 
   const expectedResponse = useMemo(() => {
     return getExpectedResponse(clue, clueText);

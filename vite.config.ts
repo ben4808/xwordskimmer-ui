@@ -5,6 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   envPrefix: ['VITE_', 'API_'],
   plugins: [react()],
+  build: {
+    commonjsOptions: {
+      include: [/cruzi-models/, /node_modules/],
+    },
+  },
   optimizeDeps: {
     include: ['cruzi-models'],
   },

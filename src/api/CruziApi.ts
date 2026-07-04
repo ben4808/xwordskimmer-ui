@@ -318,7 +318,7 @@ class CruziApi implements ICruziApi {
             id: raw.sense.id,
             entry: raw.sense.entry ?? '',
             partOfSpeech: raw.sense.partOfSpeech,
-            commonness: raw.sense.commonness,
+            frequency: raw.sense.frequency,
             summary: toOptionalString(raw.sense.summary),
             definition: toOptionalString(raw.sense.definition),
             exampleSentences: transformExampleSentences(raw.sense.exampleSentences || [], raw.sense.id),

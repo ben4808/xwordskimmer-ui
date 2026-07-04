@@ -12,6 +12,42 @@ $dark-red-incorrect: #8b0000; // Dark red
 $gray-remaining: #666; // Gray for remaining progress
 $transition-speed: 0.3s;
 
+// --- Header ---
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid $border-color;
+  color: $text-color;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color $transition-speed;
+
+  &:hover {
+    background-color: $button-hover-bg;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
 // --- Global Styles ---
 .container {
   font-family: Verdana, sans-serif;

@@ -6,19 +6,13 @@ import {
   faChevronRight,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
-import { CrosswordCalendarDay, Publications } from 'cruzi-models';
+import { CrosswordCalendarDay, getSortedPublications, Publications } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { CrosswordCalendarProps } from './CrosswordCalendarProps';
 import styles from './CrosswordCalendar.module.scss';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
-
-const publicationOptions = Object.values(Publications).sort((a, b) =>
-  a.name.localeCompare(b.name)
-).filter((publication) =>
-  ["NYT", "WSJ", "Newsday"].includes(publication.id)
-);
 
 function formatMonthYear(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -84,6 +78,7 @@ function CrosswordCalendar({
     () => buildCalendarCells(viewYear, viewMonth),
     [viewYear, viewMonth]
   );
+  const publicationOptions = getSortedPublications();
 
   const dayDataByDate = useMemo(() => {
     const map = new Map<string, CrosswordCalendarDay>();
