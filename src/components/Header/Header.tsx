@@ -21,6 +21,9 @@ const Header = ({ onLogout }: HeaderProps) => {
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('Collections');
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia('(max-width: 768px)').matches
+  );
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
@@ -33,6 +36,14 @@ const Header = ({ onLogout }: HeaderProps) => {
       setSelectedMenuItem('Collections');
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches);
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -122,13 +133,15 @@ const Header = ({ onLogout }: HeaderProps) => {
       ) : (
         <div className={styles.googleLoginContainer}>
           <GoogleLogin
+            key={isMobile ? 'mobile' : 'desktop'}
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
             theme="outline"
-            shape="rectangular"
+            type={isMobile ? 'icon' : 'standard'}
+            shape={isMobile ? 'circle' : 'rectangular'}
             size="medium"
             text="signin_with"
-            width="200"
+            width={isMobile ? undefined : '200'}
             useOneTap={false}
             auto_select={false}
             cancel_on_tap_outside={true}

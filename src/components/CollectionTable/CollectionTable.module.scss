@@ -1,15 +1,5 @@
 @use "sass:color";
-
-// Define a dark mode color palette
-$primary-bg: #1a1a1a;
-$secondary-bg: #2a2a2a;
-$card-bg: #333;
-$text-color: #e0e0e0;
-$light-text-color: #b0b0b0;
-$accent-color: #8bb4ff; // A soft blue for accents
-$border-color: #444;
-$error-color: #ff6b6b; // A distinct red for errors
-$success-color: #4caf50; // Green for success states
+@use "../../styles/theme" as *;
 
 // Mixin for responsive design
 @mixin for-phone-only {
@@ -69,8 +59,8 @@ $success-color: #4caf50; // Green for success states
   }
 
   &.statusProcessing {
-    background-color: color.adjust(#ffc107, $alpha: -0.8);
-    color: #ffc107;
+    background-color: color.adjust($in-progress-yellow, $alpha: -0.8);
+    color: $in-progress-yellow;
   }
 
   &.statusInvalid {

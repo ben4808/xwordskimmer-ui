@@ -1,17 +1,5 @@
 @use "sass:color";
-
-$primary-bg: #121212;
-$secondary-bg: #1e1e1e;
-$card-bg: #2a2a2a;
-$text-color: #e0e0e0;
-$light-text-color: #b0b0b0;
-$border-color: #444;
-$accent-color: #8bb4ff;
-$button-hover-bg: #333;
-$dark-green-correct: #008b00;
-$gray-remaining: #666;
-$error-color: #ff6b6b;
-$transition-speed: 0.3s;
+@use "../../styles/theme" as *;
 
 @mixin for-phone-only {
   @media (max-width: 599px) {
@@ -278,7 +266,7 @@ $transition-speed: 0.3s;
 }
 
 .progressInProgress {
-  background-color: #ffc107;
+  background-color: $in-progress-yellow;
   height: 100%;
 }
 

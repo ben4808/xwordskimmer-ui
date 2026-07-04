@@ -1,18 +1,5 @@
 @use "sass:color";
-
-$primary-bg: #121212;
-$text-color: #e0e0e0;
-$light-text-color: #b0b0b0;
-$border-color: #444;
-$hints-red: #8b0000;
-$hints-border: #6b0000;
-$correct-green: #00c853;
-$incorrect-red: #ff5252;
-$preview-grey: #666;
-$badge-border: #aaa;
-$button-bg: #2a2a2a;
-$button-hover: #333;
-$transition-speed: 0.3s;
+@use "../../styles/theme" as *;
 
 .page {
   min-height: 100vh;
@@ -37,7 +24,7 @@ $transition-speed: 0.3s;
 }
 
 .error {
-  color: #ff6b6b;
+  color: $error-color;
 }
 
 .headerRow {

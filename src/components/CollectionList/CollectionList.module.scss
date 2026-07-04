@@ -1,14 +1,5 @@
 @use "sass:color";
-
-// Define a dark mode color palette
-$primary-bg: #1a1a1a;
-$secondary-bg: #2a2a2a;
-$card-bg: #333;
-$text-color: #e0e0e0;
-$light-text-color: #b0b0b0;
-$accent-color: #8bb4ff; // A soft blue for accents
-$border-color: #444;
-$error-color: #ff6b6b; // A distinct red for errors
+@use "../../styles/theme" as *;
 
 body {
   background-color: $primary-bg;
@@ -207,17 +198,17 @@ body {
   width: 100%;
 
   .progressCompleted {
-    background-color: #4caf50; // Green for completed
+    background-color: $success-color;
     height: 100%;
   }
 
   .progressInProgress {
-    background-color: #ffc107; // Yellow for in progress
+    background-color: $in-progress-yellow;
     height: 100%;
   }
 
   .progressUnseen {
-    background-color: #6c757d; // Gray for unseen
+    background-color: $unseen-color;
     height: 100%;
   }
 }

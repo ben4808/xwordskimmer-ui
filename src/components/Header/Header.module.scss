@@ -1,12 +1,8 @@
 @use "sass:color";
+@use "../../styles/theme" as *;
 
-/* Define some variables for consistency */
-$header-height: 60px; // Minimal height for the header
-$mobile-breakpoint: 768px; // Common breakpoint for mobile devices
-$dark-bg-primary: #1a1a1a;
-$dark-bg-secondary: #2c2c2c;
-$text-color-light: #f0f0f0;
-$accent-color: #61dafb; // A common React blue for highlights
+$header-height: 60px;
+$mobile-breakpoint: 768px;
 
 .header {
   background-color: $dark-bg-primary; // Dark mode background
@@ -163,7 +159,7 @@ $accent-color: #61dafb; // A common React blue for highlights
 
       &.active {
         font-weight: bold;
-        color: $accent-color; // Highlight active item
+        color: $sun-accent;
       }
     }
   }
@@ -198,8 +194,8 @@ $accent-color: #61dafb; // A common React blue for highlights
 
     &.active {
       background-color: color.adjust($dark-bg-secondary, $lightness: 5%);
-      border-color: $accent-color;
-      color: $accent-color;
+      border-color: $sun-accent;
+      color: $sun-accent;
     }
 
     .dropdownArrow {
@@ -247,7 +243,7 @@ $accent-color: #61dafb; // A common React blue for highlights
 
       &.active {
         background-color: color.adjust($dark-bg-secondary, $lightness: 10%);
-        color: $accent-color;
+        color: $sun-accent;
         font-weight: bold;
       }
     }
@@ -278,7 +274,7 @@ $accent-color: #61dafb; // A common React blue for highlights
 }
 
 .avatar {
-  background-color: #1a73e8;
+  background-color: $accent-color;
   color: #ffffff;
   width: 32px;
   height: 32px;
@@ -305,7 +301,7 @@ $accent-color: #61dafb; // A common React blue for highlights
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #2a2a2a;
+  background-color: $secondary-bg;
   min-width: 120px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   border-radius: 4px;
@@ -334,56 +330,27 @@ $accent-color: #61dafb; // A common React blue for highlights
   cursor: pointer;
 
   &:hover {
-    background-color: #3a3a3a;
+    background-color: $button-hover-bg;
   }
 }
 
-/* Google Login Button Styling - Dark Mode */
 .googleLoginContainer {
   display: flex;
   align-items: center;
-  
-  // Override Google's default styling to match our dark theme
-  :global(div[role="button"]) {
-    background-color: $dark-bg-secondary !important;
-    color: $text-color-light !important;
-    border: 1px solid color.adjust($dark-bg-secondary, $lightness: 10%) !important;
-    border-radius: 4px !important;
-    padding: 8px 16px !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
-    min-height: 40px !important;
-    
-    &:hover {
-      background-color: color.adjust($dark-bg-secondary, $lightness: 5%) !important;
-      border-color: $accent-color !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
-    }
-    
-    &:focus {
-      outline: 2px solid $accent-color !important;
-      outline-offset: 2px !important;
-    }
-    
-    &:active {
-      background-color: color.adjust($dark-bg-secondary, $lightness: -5%) !important;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-    }
+  flex-shrink: 0;
+  z-index: 2;
+
+  // Google's button renders as an iframe — avoid overriding its internals
+  :global(iframe) {
+    display: block;
   }
-  
-  // Additional styling for the Google logo and text
-  :global(svg) {
-    // Let the Google logo maintain its original colors
-  }
-  
-  :global(span) {
-    color: $text-color-light !important;
+
+  // Chrome paints a white halo around GSI iframes when the page uses color-scheme: dark
+  @media (min-width: ($mobile-breakpoint + 1px)) {
+    color-scheme: light;
+
+    :global(iframe) {
+      color-scheme: normal;
+    }
   }
 }

@@ -1,0 +1,50 @@
+// Beach twilight — deep ocean blues with warm sandy gold accents
+
+// Backgrounds
+$primary-bg: #0c1824;
+$secondary-bg: #152535;
+$card-bg: #1c3044;
+$button-hover-bg: #243d54;
+
+// Text
+$text-color: #e8e6e0;
+$light-text-color: #9eb4c8;
+$text-color-light: #e8e6e0;
+
+// Accents
+$accent-color: #5bb8e8;
+$sun-accent: #f0c850;
+$in-progress-yellow: #f0c850;
+
+// Borders & surfaces
+$border-color: #2a4a62;
+
+// Semantic
+$error-color: #e87070;
+$success-color: #4db87a;
+$dark-green-correct: #2d9b5a;
+$gray-remaining: #5a7088;
+$unseen-color: #4a6278;
+
+// Header aliases
+$dark-bg-primary: $primary-bg;
+$dark-bg-secondary: $secondary-bg;
+
+// Quiz / solver
+$correct-background: #0a2820;
+$incorrect-background: #2a1515;
+$dark-red-incorrect: #a04040;
+$hints-red: #8b4040;
+$hints-border: #6b3030;
+$correct-green: #4db87a;
+$incorrect-red: #e87070;
+$preview-grey: $gray-remaining;
+$badge-border: #7a95a8;
+$button-bg: $card-bg;
+$button-hover: $button-hover-bg;
+
+// Progress tints
+$in-progress-bg: rgba(240, 200, 80, 0.25);
+$completed-bg: rgba(45, 155, 90, 0.25);
+
+$transition-speed: 0.3s;

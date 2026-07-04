@@ -135,7 +135,7 @@ export function formatUiScore(dbScore: number | undefined): string {
 
 /** Background for score badges on dark UI: 0 = near-black; 1–5 muted red → amber → green. */
 export function getScoreBadgeBackground(uiScore: number): string {
-  if (uiScore <= 0) return '#1a1a1a';
+  if (uiScore <= 0) return '#0c1824';
 
   const clamped = Math.max(0, Math.min(5, uiScore));
   const saturation = 22;
