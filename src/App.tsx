@@ -33,13 +33,13 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
-              <Route path="/" element={<Navigate to="/crosswords" replace />} />
+              <Route path="/" element={<Navigate to="/collections" replace />} />
               <Route path="/crosswords" element={<CrosswordList />} />
               <Route path="/collections" element={<CollectionList />} />
               <Route path="/collection/:id" element={<Collection />} />
               <Route path="/quiz/:id" element={<CollectionQuiz />} />
               <Route path="/crossword/:publicationOrId" element={<CrosswordSolver />} />
-              <Route path="*" element={<Navigate to="/crosswords" replace />} />
+              <Route path="*" element={<Navigate to="/collections" replace />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -20,7 +20,7 @@ const Header = ({ onLogout }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState('Crosswords');
+  const [selectedMenuItem, setSelectedMenuItem] = useState('Collections');
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
