@@ -1,4 +1,13 @@
-import { ClueHydrated, ClueProgress } from 'cruzi-models';
+import { ClueHydrated, ClueProgress, LanguageNames } from 'cruzi-models';
+
+const LanguageNamesEs: Record<string, string> = {
+  en: 'inglés',
+  es: 'español',
+  fr: 'francés',
+  de: 'alemán',
+  it: 'italiano',
+  pt: 'portugués',
+};
 
 const DEFAULT_CORRECT_SOLVES_NEEDED = 2;
 
@@ -72,6 +81,66 @@ export function getTranslatedExampleSentence(
   }
 
   return '';
+}
+
+/** Language code of the example-sentence translation shown alongside the clue. */
+export function getTranslatedExampleSentenceLanguage(
+  translations: Record<string, string> | undefined,
+  clueLang: string,
+  userNativeLang?: string
+): string | null {
+  if (!translations) return null;
+
+  const candidates: string[] = [];
+
+  if (userNativeLang && userNativeLang !== clueLang) {
+    candidates.push(userNativeLang);
+  }
+
+  for (const lang of ['es', 'en']) {
+    if (lang !== clueLang && !candidates.includes(lang)) {
+      candidates.push(lang);
+    }
+  }
+
+  for (const lang of Object.keys(translations)) {
+    if (lang !== clueLang && !candidates.includes(lang)) {
+      candidates.push(lang);
+    }
+  }
+
+  for (const lang of candidates) {
+    if (translations[lang]) {
+      return lang;
+    }
+  }
+
+  return null;
+}
+
+/** Removes {{fill-in-blank}} markers, leaving the inner text. */
+export function stripFillInBlankBrackets(text: string): string {
+  return text.replace(/\{\{([^}]+)\}\}/g, '$1');
+}
+
+export function buildExampleSentenceExplainPrompt(
+  sentence: string,
+  sentenceLang: string,
+  promptLang: string
+): string {
+  if (promptLang === 'es') {
+    const sentenceLangName = LanguageNamesEs[sentenceLang] || sentenceLang;
+    const targetLangName = LanguageNamesEs[promptLang] || promptLang;
+    return `Para la siguiente oración en ${sentenceLangName}, desglósala frase por frase, dando una explicación de cada frase y una traducción al ${targetLangName}.\n\n${sentence}`;
+  }
+
+  const sentenceLangName = LanguageNames[sentenceLang] || sentenceLang;
+  const targetLangName = LanguageNames[promptLang] || promptLang;
+  return `For the following sentence in ${sentenceLangName}, break it down phrase by phrase, giving an explanation of each phrase and a translation into ${targetLangName}.\n\n${sentence}`;
+}
+
+export function buildClueExplainPrompt(clueText: string, answer: string): string {
+  return `Explain why ${answer} might be given as an answer to the clue ${clueText}.`;
 }
 
 /**

@@ -215,11 +215,11 @@ export function replaceCharAtIndex(originalString: string, charToAdd: string, in
   return firstPart + charToAdd + secondPart;
 }
 
-export function getTextWidth(text: string, remFontSize: number, fontFamily: string): number {
+export function getTextWidth(text: string, remFontSize: number, fontFamily: string, fontWeight: number | string = 400): number {
   const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
   const pixelFontSize = remFontSize * rootFontSize;
   
-  const font = `${pixelFontSize}px ${fontFamily}`;
+  const font = `${fontWeight} ${pixelFontSize}px ${fontFamily}`;
   
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');

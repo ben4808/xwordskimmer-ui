@@ -93,7 +93,7 @@
   text-align: center;
   margin: 0.5rem 0;
   max-width: 800px;
-  margin-top: -30px;
+  margin-top: -20px;
   
   @media (max-width: 768px) {
     font-size: 0.9rem;
@@ -112,6 +112,24 @@
     gap: 1rem;
     flex-wrap: wrap;
   }
+}
+
+.progressLabel {
+  font-size: 0.9rem;
+  color: $text-color;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+}
+
+.scoreGroup,
+.clueProgressGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 // --- Score Display ---
@@ -158,12 +176,28 @@
 // --- Progress Bar ---
 .progressBar {
   flex: 1;
-  max-width: 150px;
+  min-width: 160px;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: stretch;
   
   @media (max-width: 768px) {
+    min-width: 120px;
     width: 100%;
     max-width: 100%;
-    min-width: 0;
+  }
+}
+
+.progressText {
+  font-size: 0.85rem;
+  text-align: center;
+  color: $text-color;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
   }
 }
 
@@ -193,11 +227,6 @@
   font-weight: 400;
   text-align: center;
   line-height: 1.5;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
@@ -238,8 +267,36 @@
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
-    min-width: 120px;
     padding: 0.4rem;
+  }
+}
+
+.fillInBlankInput {
+  display: inline-block;
+  vertical-align: baseline;
+  margin: 0 0.1em;
+  padding: 0.5rem 0.15em;
+
+  &.isEmpty {
+    padding-left: 0.1em;
+    padding-right: 0.3em;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.15em;
+
+    &.isEmpty {
+      padding-left: 0.08em;
+      padding-right: 0.35em;
+    }
+  }
+}
+
+.nonCrosswordInput {
+  padding: 0.5rem 0.35rem;
+
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.25rem;
   }
 }
 

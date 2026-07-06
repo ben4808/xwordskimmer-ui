@@ -337,20 +337,27 @@ $mobile-breakpoint: 768px;
 .googleLoginContainer {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
   flex-shrink: 0;
   z-index: 2;
 
   // Google's button renders as an iframe — avoid overriding its internals
+  // Chrome paints a white halo around GSI iframes when the page uses color-scheme: dark
+  color-scheme: light;
+
   :global(iframe) {
     display: block;
+    color-scheme: normal;
   }
+}
 
-  // Chrome paints a white halo around GSI iframes when the page uses color-scheme: dark
-  @media (min-width: ($mobile-breakpoint + 1px)) {
-    color-scheme: light;
+.loginLabel {
+  display: none;
 
-    :global(iframe) {
-      color-scheme: normal;
-    }
+  @media (max-width: $mobile-breakpoint) {
+    display: inline;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-size: 0.95rem;
+    color: $text-color-light;
   }
 }

@@ -132,6 +132,7 @@ const Header = ({ onLogout }: HeaderProps) => {
         </div>
       ) : (
         <div className={styles.googleLoginContainer}>
+          <span className={styles.loginLabel}>Login</span>
           <GoogleLogin
             key={isMobile ? 'mobile' : 'desktop'}
             onSuccess={handleGoogleSuccess}

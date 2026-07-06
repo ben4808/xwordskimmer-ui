@@ -17,7 +17,11 @@ import { ClueCollection } from 'cruzi-models';
 import {
   applyCorrectSolveProgress,
   applyIncorrectSolveProgress,
+  buildExampleSentenceExplainPrompt,
+  buildClueExplainPrompt,
+  getClueLanguage,
   normalizeClueProgress,
+  stripFillInBlankBrackets,
 } from './quizHelpers';
 
 const CollectionQuiz = (props: CollectionQuizProps) => {
@@ -76,7 +80,11 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   );
 
   const currentClue = allClues[currentIndex];
-  const { clueText, translatedClue, expectedResponse } = useClueText(currentClue, user, currentIndex);
+  const { clueText, translatedClue, translatedClueLang, expectedResponse } = useClueText(
+    currentClue,
+    user,
+    currentIndex
+  );
 
   const [userInput, setUserInput] = useState<string>('');
   const [inputBoxState, setInputBoxState] = useState<InputBoxState>(InputBoxState.Partial);
@@ -111,10 +119,26 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   }, [currentIndex, currentClue?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (expectedResponse) {
-      const textWidth = getTextWidth(expectedResponse, 1.5, 'Verdana, sans-serif');
-      setInputWidth(textWidth + 20);
+    if (!expectedResponse) {
+      return;
     }
+
+    const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
+
+    const updateInputWidth = () => {
+      const fontSizeRem = mobileMediaQuery.matches ? 1.2 : 1.5;
+      const textWidth = getTextWidth(expectedResponse, fontSizeRem, 'Verdana, sans-serif', 700);
+      setInputWidth(textWidth + 12);
+    };
+
+    updateInputWidth();
+    mobileMediaQuery.addEventListener('change', updateInputWidth);
+    window.addEventListener('resize', updateInputWidth);
+
+    return () => {
+      mobileMediaQuery.removeEventListener('change', updateInputWidth);
+      window.removeEventListener('resize', updateInputWidth);
+    };
   }, [expectedResponse]);
 
   useAnswerValidation({
@@ -140,23 +164,6 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       }
     },
   });
-
-  const [explainPrompt, setExplainPrompt] = useState<string>('');
-  useEffect(() => {
-    const loadExplainPrompt = async () => {
-      try {
-        const response = await fetch('/explain_prompt.txt');
-        if (response.ok) {
-          const text = await response.text();
-          setExplainPrompt(text);
-        }
-      } catch (error) {
-        console.error('Error loading explain prompt:', error);
-        setExplainPrompt('');
-      }
-    };
-    loadExplainPrompt();
-  }, []);
 
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState<boolean>(false);
@@ -222,15 +229,26 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   };
 
   const handleExplain = async () => {
-    if (!explainPrompt || !currentClue) return;
+    if (!currentClue) return;
 
     try {
-      const filledPrompt = explainPrompt
-        .replace('{CLUE_TEXT}', clueText)
-        .replace('{ANSWER_TEXT}', expectedResponse);
+      let filledPrompt: string;
+      const clueTextForPrompt = stripFillInBlankBrackets(clueText);
+
+      if (currentClue.sense?.id && clueText) {
+        const clueLang = getClueLanguage(currentClue);
+        const promptLang =
+          translatedClueLang ?? (clueLang === 'es' ? 'en' : 'es');
+        filledPrompt = buildExampleSentenceExplainPrompt(clueTextForPrompt, clueLang, promptLang);
+      } else {
+        filledPrompt = buildClueExplainPrompt(
+          clueTextForPrompt,
+          expectedResponse ?? ''
+        );
+      }
 
       await navigator.clipboard.writeText(filledPrompt);
-      setToastMessage('Copied to clipboard');
+      setToastMessage('AI query copied to clipboard');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } catch (err) {
@@ -303,22 +321,31 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       </header>
 
       <div className={styles.scoreAndProgressContainer}>
-        <div className={styles.scoreBoxes}>
-          <div className={`${styles.scoreBox} ${styles.scoreBoxCorrect}`}>
-            <div className={styles.scoreValue}>{correctAnswers}</div>
-          </div>
-          <div className={`${styles.scoreBox} ${styles.scoreBoxIncorrect}`}>
-            <div className={styles.scoreValue}>{incorrectAnswers}</div>
+        <div className={styles.scoreGroup}>
+          <span className={styles.progressLabel}>Session:</span>
+          <div className={styles.scoreBoxes}>
+            <div className={`${styles.scoreBox} ${styles.scoreBoxCorrect}`}>
+              <div className={styles.scoreValue}>{correctAnswers}</div>
+            </div>
+            <div className={`${styles.scoreBox} ${styles.scoreBoxIncorrect}`}>
+              <div className={styles.scoreValue}>{incorrectAnswers}</div>
+            </div>
           </div>
         </div>
 
         {user && (
-          <div className={styles.progressBar}>
-            <div className={styles.progressBarTrack}>
-              <div
-                className={styles.progressBarFill}
-                style={{ width: `${progressPercent}%` }}
-              />
+          <div className={styles.clueProgressGroup}>
+            <span className={styles.progressLabel}>Clue:</span>
+            <div className={styles.progressBar}>
+              <div className={styles.progressText}>
+                {correctSolves}/{correctSolvesNeeded}
+              </div>
+              <div className={styles.progressBarTrack}>
+                <div
+                  className={styles.progressBarFill}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
             </div>
           </div>
         )}

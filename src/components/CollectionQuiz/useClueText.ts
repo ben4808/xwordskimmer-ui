@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import { ClueWithProgress, User } from 'cruzi-models';
-import { getClueLanguage, getExpectedResponse, getTranslatedExampleSentence } from './quizHelpers';
+import {
+  getClueLanguage,
+  getExpectedResponse,
+  getTranslatedExampleSentence,
+  getTranslatedExampleSentenceLanguage,
+} from './quizHelpers';
 
 function useSelectedExampleSentence(clue: ClueWithProgress | undefined, currentIndex: number) {
   return useMemo(() => {
@@ -52,6 +57,16 @@ export function useClueText(clue: ClueWithProgress | undefined, user: User | und
     return translation === clueText ? '' : translation;
   }, [clue, selectedExampleSentence, user, clueText]);
 
+  const translatedClueLang = useMemo(() => {
+    if (!clue || clue.customClue || !selectedExampleSentence) return null;
+
+    return getTranslatedExampleSentenceLanguage(
+      selectedExampleSentence.translations,
+      getClueLanguage(clue),
+      user?.nativeLang
+    );
+  }, [clue, selectedExampleSentence, user]);
+
   const expectedResponse = useMemo(() => {
     return getExpectedResponse(clue, clueText);
   }, [clue, clueText]);
@@ -59,6 +74,7 @@ export function useClueText(clue: ClueWithProgress | undefined, user: User | und
   return {
     clueText,
     translatedClue,
+    translatedClueLang,
     expectedResponse,
   };
 }
