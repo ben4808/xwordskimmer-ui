@@ -425,8 +425,9 @@
 // Toast Notification
 .toast {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: $success-color;
   color: white;
   padding: 12px 20px;
@@ -434,23 +435,22 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 3000;
   font-weight: bold;
-  animation: slideInUp 0.3s ease;
+  animation: slideInDown 0.3s ease;
 
   @include for-phone-only {
-    bottom: 10px;
-    right: 10px;
-    left: 10px;
+    top: 10px;
+    max-width: calc(100% - 20px);
     text-align: center;
   }
 }
 
-@keyframes slideInUp {
+@keyframes slideInDown {
   from {
-    transform: translateY(100%);
+    transform: translateX(-50%) translateY(-100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
     opacity: 1;
   }
 }

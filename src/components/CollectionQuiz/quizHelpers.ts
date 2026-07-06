@@ -209,3 +209,79 @@ export function checkAnswerCorrectness(
   return normalizedInput === normalizedExpected;
 }
 
+function getComparableChars(text: string): string {
+  const matches = text.match(/(\p{L}|\p{N}|')/gu);
+  return matches ? matches.join('').toLowerCase() : '';
+}
+
+/** Index of the first comparable character that is missing or incorrect. */
+export function getFirstHintComparableIndex(
+  userInput: string,
+  expectedResponse: string
+): number | null {
+  const normalizedInput = getComparableChars(userInput);
+  const normalizedExpected = getComparableChars(expectedResponse);
+
+  for (let i = 0; i < normalizedExpected.length; i++) {
+    if (i >= normalizedInput.length || normalizedInput[i] !== normalizedExpected[i]) {
+      return i;
+    }
+  }
+  return null;
+}
+
+/** Builds user input with comparable characters 0..comparableIndex revealed from the expected answer. */
+export function buildHintedUserInput(
+  expectedResponse: string,
+  comparableIndex: number
+): string {
+  const matches = expectedResponse.match(/(\p{L}|\p{N}|')/gu);
+  if (!matches || comparableIndex < 0) return '';
+  return matches.slice(0, comparableIndex + 1).join('');
+}
+
+/** True when the answer differs by exactly one letter (substitution, insertion, or deletion). */
+export function isOffByOneLetter(userInput: string, expectedAnswer: string): boolean {
+  const a = getComparableChars(userInput);
+  const b = getComparableChars(expectedAnswer);
+
+  if (a === b || Math.abs(a.length - b.length) > 1) {
+    return false;
+  }
+
+  if (a.length === b.length) {
+    let mismatches = 0;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) {
+        mismatches++;
+        if (mismatches > 1) {
+          return false;
+        }
+      }
+    }
+    return mismatches === 1;
+  }
+
+  const shorter = a.length < b.length ? a : b;
+  const longer = a.length < b.length ? b : a;
+
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+
+  while (i < shorter.length && j < longer.length) {
+    if (shorter[i] === longer[j]) {
+      i++;
+      j++;
+    } else {
+      edits++;
+      if (edits > 1) {
+        return false;
+      }
+      j++;
+    }
+  }
+
+  return edits + (longer.length - j) <= 1;
+}
+

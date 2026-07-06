@@ -19,7 +19,10 @@ import {
   applyIncorrectSolveProgress,
   buildExampleSentenceExplainPrompt,
   buildClueExplainPrompt,
+  buildHintedUserInput,
   getClueLanguage,
+  getFirstHintComparableIndex,
+  isOffByOneLetter,
   normalizeClueProgress,
   stripFillInBlankBrackets,
 } from './quizHelpers';
@@ -90,9 +93,12 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
   const [inputBoxState, setInputBoxState] = useState<InputBoxState>(InputBoxState.Partial);
   const [isSolved, setIsSolved] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
+  const [offByOneWarned, setOffByOneWarned] = useState(false);
   const [inputWidth, setInputWidth] = useState<number>(200);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [keyboardPaddingBottom, setKeyboardPaddingBottom] = useState(0);
 
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
@@ -109,6 +115,8 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     setUserInput(savedInput);
     setIsSolved(false);
     setIsRevealed(false);
+    setHintUsed(false);
+    setOffByOneWarned(false);
     setInputBoxState(InputBoxState.Partial);
     setCurrentClueProgress(normalizeClueProgress(currentClue?.progressData));
 
@@ -176,11 +184,40 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
     };
   }, [clueCollection, setCurrentCollection]);
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) {
+      return;
+    }
+
+    const updateKeyboardPadding = () => {
+      const obscuredHeight =
+        window.innerHeight - viewport.height - viewport.offsetTop;
+      setKeyboardPaddingBottom(Math.max(0, obscuredHeight));
+    };
+
+    viewport.addEventListener('resize', updateKeyboardPadding);
+    viewport.addEventListener('scroll', updateKeyboardPadding);
+    updateKeyboardPadding();
+
+    return () => {
+      viewport.removeEventListener('resize', updateKeyboardPadding);
+      viewport.removeEventListener('scroll', updateKeyboardPadding);
+    };
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isSolved || isRevealed) return;
     const value = e.target.value;
     setUserInput(value);
+    setOffByOneWarned(false);
     setAllUserInput((prev) => ({ ...prev, [currentIndex]: value }));
+  };
+
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -188,10 +225,36 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       e.preventDefault();
       if (isSolved || isRevealed) {
         nextClue();
+      } else if (
+        expectedResponse &&
+        isOffByOneLetter(userInput, expectedResponse) &&
+        !offByOneWarned
+      ) {
+        setOffByOneWarned(true);
+        showToastMessage('Off by 1 letter!');
       } else {
         revealAnswer();
       }
     }
+  };
+
+  const handleHint = () => {
+    if (hintUsed || isRevealed || isSolved || !expectedResponse) return;
+
+    const index = getFirstHintComparableIndex(userInput, expectedResponse);
+    if (index === null) return;
+
+    const hintedInput = buildHintedUserInput(expectedResponse, index);
+    setUserInput(hintedInput);
+    setAllUserInput((prev) => ({ ...prev, [currentIndex]: hintedInput }));
+    setHintUsed(true);
+    requestAnimationFrame(() => {
+      const input = inputRef.current;
+      if (!input) return;
+      input.focus();
+      const caret = hintedInput.length;
+      input.setSelectionRange(caret, caret);
+    });
   };
 
   const revealAnswer = () => {
@@ -248,9 +311,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       }
 
       await navigator.clipboard.writeText(filledPrompt);
-      setToastMessage('AI query copied to clipboard');
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      showToastMessage('AI query copied to clipboard');
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
@@ -306,8 +367,13 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
       ? Math.min(100, (correctSolves / correctSolvesNeeded) * 100)
       : 0;
 
+  const containerStyle =
+    keyboardPaddingBottom > 0
+      ? { paddingBottom: `calc(${keyboardPaddingBottom}px + 1.5rem)` }
+      : undefined;
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={containerStyle}>
       <header className={styles.headerRow}>
         <button
           type="button"
@@ -388,9 +454,19 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
 
       <div className={styles.buttonContainer}>
         {!isRevealed && !isSolved ? (
-          <button onClick={revealAnswer} className={styles.revealButton}>
-            Reveal
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleHint}
+              className={styles.hintButton}
+              disabled={hintUsed}
+            >
+              Hint
+            </button>
+            <button type="button" onClick={revealAnswer} className={styles.revealButton}>
+              Reveal
+            </button>
+          </>
         ) : (
           <div className={styles.nextButtonContainer}>
             <button onClick={nextClue} className={styles.nextButton}>
