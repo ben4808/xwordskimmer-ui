@@ -13,16 +13,10 @@ interface NonCrosswordInputProps {
   inputWidth: number;
 }
 
-const AnswerInputForm: React.FC<{
+const AnswerInputWrapper: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <form
-    autoComplete="off"
-    onSubmit={(e) => e.preventDefault()}
-    className={styles.answerForm}
-  >
-    {children}
-  </form>
+  <div className={styles.answerInputWrapper}>{children}</div>
 );
 
 export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
@@ -44,7 +38,7 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
     ariaLabel: string,
     autoCapitalize: 'sentences' | 'none'
   ) => (
-    <AnswerInputForm>
+    <AnswerInputWrapper>
       <input
         ref={inputRef}
         type="text"
@@ -54,12 +48,12 @@ export const NonCrosswordInput: React.FC<NonCrosswordInputProps> = ({
         className={className}
         style={{ width: `${inputWidth}px` }}
         aria-label={ariaLabel}
-        autoComplete="off"
+        autoComplete="nope"
         autoCorrect="off"
         autoCapitalize={autoCapitalize}
         spellCheck={false}
       />
-    </AnswerInputForm>
+    </AnswerInputWrapper>
   );
 
   if (showFillInBlank && clueText) {

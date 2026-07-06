@@ -369,7 +369,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
 
   const containerStyle =
     keyboardPaddingBottom > 0
-      ? { paddingBottom: `calc(${keyboardPaddingBottom}px + 1.5rem)` }
+      ? { paddingBottom: `calc(${keyboardPaddingBottom}px + 3rem)` }
       : undefined;
 
   return (
