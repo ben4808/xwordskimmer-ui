@@ -291,17 +291,76 @@
   z-index: 100;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .page {
-    padding: 12px;
-    gap: 16px;
+    padding: 1rem;
+    padding-top: 2.5rem;
+    gap: 1rem;
+  }
+
+  .trackerRow {
+    gap: 0.75rem;
+  }
+
+  .hintsCounter {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+  }
+
+  .carousel {
+    gap: 8px;
+  }
+
+  .carouselButton {
+    width: 32px;
+    height: 32px;
+  }
+
+  .carouselLabel {
+    font-size: 0.85rem;
   }
 
   .clueText {
     font-size: 1.2rem;
   }
 
-  .answerDisplay {
+  .statsRow {
+    gap: 12px;
+  }
+
+  .letterCount {
+    font-size: 0.9rem;
+  }
+
+  .scoreBadge {
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    min-width: 44px;
+  }
+
+  .answerInputContainer {
+    padding: 8px 0;
+  }
+
+  .answerDisplay,
+  .hiddenInput {
     font-size: 1.35rem;
+  }
+
+  .hintButton,
+  .explainButton,
+  .nextButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .solvedActions {
+    gap: 0.75rem;
+  }
+
+  .toast {
+    top: 10px;
+    max-width: calc(100% - 20px);
+    text-align: center;
   }
 }

@@ -172,7 +172,7 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
           <p className={styles.publication}>{getPublicationName(crossword)}</p>
           <h3 className={styles.title}>{crossword.title}</h3>
           <p className={styles.meta}>
-            By: {author} • {clueCount} clues ({clueCount6Plus} &gt;= 6 letters)
+            By {author} • {clueCount} clues ({clueCount6Plus} of at least 6 letters)
           </p>
           {renderProgressBar(crossword)}
         </div>

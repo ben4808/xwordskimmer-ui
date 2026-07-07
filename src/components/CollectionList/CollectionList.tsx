@@ -140,7 +140,7 @@ function CollectionList(props: CollectionListProps) {
           <div className={styles.details}>
             <h3 className={styles.title}>{collection.title}</h3>
             <p className={styles.meta}>
-              By: {getAuthorName(collection)} • {privacyText} • {collection.clueCount} clues
+              By {getAuthorName(collection)} • {privacyText} • {collection.clueCount} clues
             </p>
             {renderProgressBar(collection)}
           </div>

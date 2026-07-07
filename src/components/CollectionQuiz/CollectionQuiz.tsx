@@ -369,7 +369,7 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
 
   const containerStyle =
     keyboardPaddingBottom > 0
-      ? { paddingBottom: `calc(${keyboardPaddingBottom}px + 3rem)` }
+      ? { paddingBottom: `calc(${keyboardPaddingBottom}px + 1.5rem)` }
       : undefined;
 
   return (
@@ -469,11 +469,11 @@ const CollectionQuiz = (props: CollectionQuizProps) => {
           </>
         ) : (
           <div className={styles.nextButtonContainer}>
-            <button onClick={nextClue} className={styles.nextButton}>
-              Next
-            </button>
             <button onClick={handleExplain} className={styles.explainButton}>
               Explain
+            </button>
+            <button onClick={nextClue} className={styles.nextButton}>
+              Next
             </button>
           </div>
         )}

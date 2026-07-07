@@ -60,11 +60,11 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const [revealedMask, setRevealedMask] = useState<boolean[]>([]);
   const [isSolved, setIsSolved] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [keyboardPaddingBottom, setKeyboardPaddingBottom] = useState(0);
 
   const submittedRef = useRef(false);
   const collectionCompletedRef = useRef(false);
   const answerInputRef = useRef<AnswerInputHandle>(null);
-  const inputContainerRef = useRef<HTMLDivElement>(null);
   const clueDraftsRef = useRef<Record<string, ClueSolverState>>({});
   const sessionCompletedClueIdsRef = useRef<Set<string>>(new Set());
   const submittedClueIdsRef = useRef<Set<string>>(new Set());
@@ -164,6 +164,28 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   useEffect(() => {
     fetchCrossword();
   }, [fetchCrossword]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) {
+      return;
+    }
+
+    const updateKeyboardPadding = () => {
+      const obscuredHeight =
+        window.innerHeight - viewport.height - viewport.offsetTop;
+      setKeyboardPaddingBottom(Math.max(0, obscuredHeight));
+    };
+
+    viewport.addEventListener('resize', updateKeyboardPadding);
+    viewport.addEventListener('scroll', updateKeyboardPadding);
+    updateKeyboardPadding();
+
+    return () => {
+      viewport.removeEventListener('resize', updateKeyboardPadding);
+      viewport.removeEventListener('scroll', updateKeyboardPadding);
+    };
+  }, []);
 
   const applyClueState = useCallback(
     (state: ClueSolverState, clue: NonNullable<typeof currentClue>) => {
@@ -451,8 +473,13 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     );
   }
 
+  const pageStyle =
+    keyboardPaddingBottom > 0
+      ? { paddingBottom: `calc(${keyboardPaddingBottom}px + 1.5rem)` }
+      : undefined;
+
   return (
-    <div className={styles.page} ref={inputContainerRef}>
+    <div className={styles.page} style={pageStyle}>
       <header className={styles.headerRow}>
         <button
           type="button"
