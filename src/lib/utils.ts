@@ -117,11 +117,25 @@ export function formatCrosswordDateForQuery(date: Date): string {
   return `${month}/${day}/${year}`;
 }
 
+/**
+ * Convert display text to a normalized entry key.
+ * Display text may include accents (jalapeño); the entry key does not (JALAPENO).
+ * Numerals are preserved.
+ */
 export function displayTextToEntry(text: string): string {
-  // Convert display text to entry format
-  // This regular expression now preserves a wide range of alphanumeric characters,
-  // accented and tilded letters from various languages, and apostrophes.
-  return text.replace(/[^a-zA-Z0-9áéíóúüñãõẽĩũỹÁÉÍÓÚÜÑÃÕẼĨŨỸ']/g, '').toUpperCase();
+  /** Latin letters that don't fully decompose via NFD → ASCII base. */
+  const accentFrom =
+    'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝŸàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿāăąćĉċčďđēĕėęěĝğġģĥħĩīĭįıĵķĺļľŀłńņňŋōŏőœŕřśŝşšţťŧũūŭůűųŵŷỹẽĨŨỸ';
+  const accentTo =
+    'AAAAAAACEEEEIIIIDNOOOOOOUUUUYYaaaaaaaceeeeiiiidnoooooouuuuyyaaaccccddeeeeegggghhiiiiijklllllnnnnoooorrsssstttuuuuuuwyyeIUY';
+  const accentMap = new Map([...accentFrom].map((ch, i) => [ch, accentTo[i]]));
+
+  const nfdStripped = text.normalize('NFD').replace(/\p{M}/gu, '');
+  let stripped = '';
+  for (const ch of nfdStripped) {
+    stripped += accentMap.get(ch) ?? ch;
+  }
+  return stripped.toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
 function getAlphanumericIndexes(text: string): number[] {

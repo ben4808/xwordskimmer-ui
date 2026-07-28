@@ -257,7 +257,7 @@ class CruziApi implements ICruziApi {
         const buildEntry = (rawEntry: any): Entry => ({
           entry: rawEntry.entry ?? '',
           lang: rawEntry.lang ?? 'en',
-          rootEntry: rawEntry.rootEntry,
+          baseForm: rawEntry.baseForm,
           displayText: rawEntry.displayText,
           entryType: rawEntry.entryType,
           familiarityScore: rawEntry.familiarityScore,
