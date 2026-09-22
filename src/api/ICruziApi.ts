@@ -1,4 +1,4 @@
-import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, User } from 'cruzi-models';
+import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, User, UserSettings } from 'cruzi-models';
 
 export interface AuthResponse {
   token: string;
@@ -11,6 +11,40 @@ export interface AuthVerifyResponse {
   error?: string;
 }
 
+export interface ClassifyEntry {
+  fillWord: string;
+  entry: string | null;
+  lang: string | null;
+  displayText: string | null;
+  entryType: string | null;
+  unityBucket: string | null;
+  familiarityBucket: string | null;
+  qualityBucket: string | null;
+  isVulgar: boolean | null;
+  isCrosswordese?: boolean;
+  isBreakfast?: boolean;
+  baseForm?: string | null;
+  nytValue?: string | null;
+}
+
+export interface ClassifyRowPayload {
+  rowId: string;
+  isNew?: boolean;
+  fillWord: string;
+  entry: string | null;
+  lang: string | null;
+  baseForm: string;
+  displayText: string;
+  entryType: string;
+  unityBucket: string;
+  familiarityBucket: string;
+  qualityBucket: string;
+  isVulgar: boolean;
+  isCrosswordese: boolean;
+  isBreakfast: boolean;
+  nytValue: string;
+}
+
 export interface ICruziApi {
   getCrosswordList(date: string): Promise<ClueCollection[]>;
   getCrosswordCalendar(publicationId: string, month: number, year: number): Promise<CrosswordCalendarDay[]>;
@@ -19,6 +53,8 @@ export interface ICruziApi {
   ): Promise<ClueCollection>;
   submitCrosswordResponse(response: CrosswordResponse): Promise<void>;
   completeCrossword(collectionId: string): Promise<void>;
+  getUserSettings(): Promise<UserSettings>;
+  updateUserSettings(settings: UserSettings): Promise<UserSettings>;
 
   getCollectionList(): Promise<ClueCollection[]>;
   getCollectionById(collectionId: string): Promise<ClueCollection | null>;
@@ -36,6 +72,9 @@ export interface ICruziApi {
   addCluesToCollection(collectionId: string, clues: Clue[]): Promise<void>;
   removeClueFromCollection(collectionId: string, clueId: string): Promise<void>;
   updateClueSense(clueId: string, senseId: string | null): Promise<void>;
+  getClassifyEntries(fillWords: string[]): Promise<ClassifyEntry[]>;
+  saveClassifyEntries(originals: ClassifyRowPayload[], rows: ClassifyRowPayload[]): Promise<void>;
+  deleteClassifyEntry(entry: string, lang: string): Promise<void>;
   authenticateWithGoogle(token: string): Promise<AuthResponse>;
   verifyAuth(): Promise<AuthVerifyResponse>;
 };

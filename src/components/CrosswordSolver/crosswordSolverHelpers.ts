@@ -16,6 +16,7 @@ export type CollectionClueItem =
 export interface OrderedClue {
   order: number;
   clue: ClueWithProgress;
+  metadata1?: string;
 }
 
 export function extractClue(item: CollectionClueItem): ClueWithProgress {
@@ -32,8 +33,8 @@ export function getClueOrder(item: CollectionClueItem, fallback: number): number
   return fallback;
 }
 
-/** Clues with answers 6+ letters, in puzzle order. */
-export function getEligibleClues(
+/** Clues in puzzle order. */
+export function getOrderedClues(
   clues: CollectionClueItem[] | undefined
 ): OrderedClue[] {
   if (!clues?.length) return [];
@@ -42,9 +43,65 @@ export function getEligibleClues(
     .map((item, index) => ({
       order: getClueOrder(item, index),
       clue: extractClue(item),
+      metadata1: 'metadata1' in item ? item.metadata1 : undefined,
     }))
-    .filter(({ clue }) => normalizeAnswer(clue.entry?.entry).length >= 6)
     .sort((a, b) => a.order - b.order);
+}
+
+/** Clues with answers 6+ letters, in puzzle order. */
+export function getEligibleClues(
+  clues: CollectionClueItem[] | undefined
+): OrderedClue[] {
+  return getOrderedClues(clues).filter(
+    ({ clue }) => normalizeAnswer(clue.entry?.entry).length >= 6
+  );
+}
+
+export type ClueDirection = 'A' | 'D';
+
+export interface PuzzleClueItem extends OrderedClue {
+  clueNumber: number;
+  direction: ClueDirection;
+}
+
+export function parseClueIndex(
+  metadata1?: string
+): { number: number; direction: ClueDirection } | null {
+  if (!metadata1) return null;
+  const match = /^(\d+)\s*([ADad])$/.exec(metadata1.trim());
+  if (!match) return null;
+  return {
+    number: parseInt(match[1], 10),
+    direction: match[2].toUpperCase() as ClueDirection,
+  };
+}
+
+export function getPuzzleClueColumns(
+  clues: CollectionClueItem[] | undefined
+): { across: PuzzleClueItem[]; down: PuzzleClueItem[] } {
+  const across: PuzzleClueItem[] = [];
+  const down: PuzzleClueItem[] = [];
+
+  for (const item of getOrderedClues(clues)) {
+    const parsed = parseClueIndex(item.metadata1);
+    const puzzleClue: PuzzleClueItem = {
+      ...item,
+      clueNumber: parsed?.number ?? item.order + 1,
+      direction: parsed?.direction ?? 'A',
+    };
+    if (puzzleClue.direction === 'D') {
+      down.push(puzzleClue);
+    } else {
+      across.push(puzzleClue);
+    }
+  }
+
+  const byNumber = (a: PuzzleClueItem, b: PuzzleClueItem) =>
+    a.clueNumber - b.clueNumber || a.order - b.order;
+  across.sort(byNumber);
+  down.sort(byNumber);
+
+  return { across, down };
 }
 
 export function getClueText(clue: ClueWithProgress): string {
@@ -53,6 +110,21 @@ export function getClueText(clue: ClueWithProgress): string {
 
 export function getAnswer(clue: ClueWithProgress): string {
   return normalizeAnswer(clue.entry?.entry);
+}
+
+/** Unique fill answers in puzzle order, used by the classify modal. */
+export function getClassifyFillWords(
+  clues: CollectionClueItem[] | undefined
+): string[] {
+  const seen = new Set<string>();
+  const words: string[] = [];
+  for (const { clue } of getOrderedClues(clues)) {
+    const word = getAnswer(clue);
+    if (!word || seen.has(word)) continue;
+    seen.add(word);
+    words.push(word);
+  }
+  return words;
 }
 
 /** Uppercase letters only; punctuation and spacing are preserved. */
@@ -179,6 +251,23 @@ export function isClueComplete(
   return true;
 }
 
+export function fillUserInputToFirstUnsolved(
+  answer: string,
+  userInput: string,
+  revealedMask: boolean[]
+): string {
+  let filled = '';
+  for (let i = 0; i < answer.length; i++) {
+    if (isPositionCorrect(i, answer, userInput, revealedMask)) {
+      filled += answer[i];
+    } else {
+      break;
+    }
+  }
+  return filled;
+}
+
+/** True when every typed letter matches the answer at that position. */
 export function isUserInputValidSoFar(userInput: string, answer: string): boolean {
   for (let i = 0; i < userInput.length; i++) {
     if (userInput[i] !== answer[i]) return false;

@@ -11,8 +11,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  max-width: 720px;
+  gap: 28px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -27,9 +27,9 @@
   color: $error-color;
 }
 
-.headerRow {
+.topSection {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   width: 100%;
 }
@@ -38,11 +38,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   background: transparent;
   border: 1px solid $border-color;
   color: $text-color;
-  width: 44px;
+  min-width: 44px;
   height: 44px;
+  padding: 0 12px;
   border-radius: 8px;
   cursor: pointer;
   flex-shrink: 0;
@@ -53,19 +55,15 @@
   }
 }
 
-.title {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 600;
+.puzzleInfo {
   flex: 1;
   min-width: 0;
 }
 
-.trackerRow {
+.minigameToolbar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
   width: 100%;
 }
@@ -84,23 +82,15 @@
   font-weight: 600;
 }
 
-.carousel {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.carouselButton {
-  background: $button-bg;
+.revealAllButton,
+.classifyButton {
   border: 1px solid $border-color;
+  background: $button-bg;
   color: $text-color;
-  width: 36px;
-  height: 36px;
+  padding: 6px 14px;
   border-radius: 6px;
+  font-size: 0.95rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: background-color $transition-speed;
 
   &:hover:not(:disabled) {
@@ -113,48 +103,153 @@
   }
 }
 
-.carouselLabel {
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-
-.clueText {
-  font-size: 1.5rem;
-  line-height: 1.45;
-  text-align: center;
-  margin: 0;
+.clueColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
   width: 100%;
-  font-weight: 500;
+  text-align: left;
 }
 
-.statsRow {
+.cluesSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.clueColumn {
+  min-width: 0;
+}
+
+.columnTitle {
+  margin: 0 0 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $border-color;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.clueItem {
+  margin-bottom: 14px;
+}
+
+.clueHead {
+  display: grid;
+  grid-template-columns: 2.1em 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.clueNumber {
+  font-weight: 700;
+  text-align: right;
+}
+
+.cluePrompt {
+  line-height: 1.4;
+}
+
+.answerRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
   flex-wrap: wrap;
-  width: 100%;
+  gap: 8px 10px;
+  margin: 4px 0 0 calc(2.1em + 8px);
 }
 
-.letterCount {
-  font-size: 1rem;
-  color: $light-text-color;
-}
-
-.scoreBadges {
+.answerLine {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  cursor: pointer;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: -1px -4px;
+  color: inherit;
+  text-align: left;
 }
 
-.scoreBadge {
-  border: 1px solid $badge-border;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
+.answerRow:has(.inlineActions) .answerLine {
+  flex: 0 1 auto;
+  max-width: calc(100% - 8rem);
+}
+
+.answerLineLink {
+  cursor: pointer;
+
+  .answerText {
+    color: $accent-color;
+  }
+
+  &:hover {
+    border-color: color.adjust($accent-color, $alpha: -0.55);
+
+    .answerText {
+      color: $sun-accent;
+    }
+  }
+
+  .answerInputContainer,
+  .answerDisplay,
+  .hiddenInput,
+  .solvedAnswerInput {
+    cursor: pointer;
+  }
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dotOutlined {
+  box-shadow: 0 0 0 1px $light-text-color;
+}
+
+.answerText {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  word-break: break-word;
+}
+
+.inlineActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.inlineActionButton {
+  flex-shrink: 0;
+  border: 1px solid $border-color;
+  background: $button-bg;
   color: $text-color;
-  min-width: 52px;
-  text-align: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $button-hover;
+  }
 }
 
 .answerInputContainer {
@@ -162,6 +257,33 @@
   width: 100%;
   cursor: text;
   padding: 12px 0;
+}
+
+.solvedAnswerInput {
+  cursor: pointer;
+}
+
+.compactAnswerInput {
+  width: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0;
+
+  .answerDisplay,
+  .hiddenInput {
+    justify-content: flex-start;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    gap: 1px;
+  }
+
+  .charCell {
+    min-width: 0.85em;
+  }
+
+  .separatorCell {
+    min-width: 0.4em;
+  }
 }
 
 .answerDisplay {
@@ -240,6 +362,7 @@
   height: 100%;
   opacity: 0;
   cursor: text;
+  pointer-events: none;
   font-family: 'Roboto Mono', monospace;
   font-size: 1.75rem;
   letter-spacing: 0.12em;
@@ -249,118 +372,96 @@
   caret-color: transparent;
 }
 
-.footer {
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
   display: flex;
+  align-items: center;
   justify-content: center;
-  width: 100%;
-  padding-top: 8px;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.72);
 }
 
-.hintButton,
-.explainButton,
-.nextButton {
-  border: 1px solid $border-color;
-  background: $button-bg;
+.modalPanel {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background-color: $secondary-bg;
   color: $text-color;
-  padding: 10px 28px;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  padding: 32px 24px 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.modalClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid $border-color;
   border-radius: 8px;
-  font-size: 1rem;
+  background-color: $card-bg;
+  color: $light-text-color;
   cursor: pointer;
-  transition: background-color $transition-speed;
 
   &:hover {
-    background-color: $button-hover;
+    background-color: $button-hover-bg;
+    color: $text-color;
   }
 }
 
-.solvedActions {
-  display: flex;
-  gap: 12px;
-}
-
-.toast {
-  position: fixed;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: $button-bg;
-  border: 1px solid $border-color;
-  color: $text-color;
-  padding: 12px 24px;
-  border-radius: 8px;
-  z-index: 100;
+.modalEntryText {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {
   .page {
     padding: 1rem;
-    padding-top: 2.5rem;
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
-  .trackerRow {
-    gap: 0.75rem;
+  .clueColumns {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 
-  .hintsCounter {
+  .clueHead {
+    grid-template-columns: 1.6em 1fr;
+    gap: 6px;
+  }
+
+  .answerRow {
+    margin-left: calc(1.6em + 6px);
+  }
+
+  .hintsCounter,
+  .revealAllButton,
+  .classifyButton {
     padding: 4px 10px;
     font-size: 0.85rem;
   }
 
-  .carousel {
-    gap: 8px;
-  }
-
-  .carouselButton {
-    width: 32px;
-    height: 32px;
-  }
-
-  .carouselLabel {
-    font-size: 0.85rem;
-  }
-
-  .clueText {
-    font-size: 1.2rem;
-  }
-
-  .statsRow {
-    gap: 12px;
-  }
-
-  .letterCount {
-    font-size: 0.9rem;
-  }
-
-  .scoreBadge {
-    padding: 3px 8px;
-    font-size: 0.8rem;
-    min-width: 44px;
-  }
-
-  .answerInputContainer {
-    padding: 8px 0;
-  }
-
-  .answerDisplay,
-  .hiddenInput {
-    font-size: 1.35rem;
-  }
-
-  .hintButton,
-  .explainButton,
-  .nextButton {
-    padding: 0.75rem 1.5rem;
+  .cluePrompt {
     font-size: 0.95rem;
   }
 
-  .solvedActions {
-    gap: 0.75rem;
-  }
-
-  .toast {
-    top: 10px;
-    max-width: calc(100% - 20px);
-    text-align: center;
+  .answerText,
+  .compactAnswerInput .answerDisplay,
+  .compactAnswerInput .hiddenInput {
+    font-size: 0.85rem;
   }
 }

@@ -1,5 +1,5 @@
-import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, Entry } from "cruzi-models";
-import { ICruziApi, AuthResponse, AuthVerifyResponse } from "./ICruziApi";
+import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, Entry, UserSettings } from "cruzi-models";
+import { ICruziApi, AuthResponse, AuthVerifyResponse, ClassifyEntry, ClassifyRowPayload } from "./ICruziApi";
 
 const configuredOrigin = import.meta.env.API_URL?.replace(/\/$/, '');
 const apiOrigin = configuredOrigin || (import.meta.env.DEV ? 'http://localhost:3000' : '');
@@ -149,6 +149,59 @@ class CruziApi implements ICruziApi {
       }
     } catch (error) {
       console.error('Error completing crossword:', error);
+      throw error;
+    }
+  }
+
+  async getUserSettings(): Promise<UserSettings> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/getUserSettings`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user settings:', error);
+      throw error;
+    }
+  }
+
+  async updateUserSettings(settings: UserSettings): Promise<UserSettings> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/updateUserSettings`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(settings),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating user settings:', error);
       throw error;
     }
   }
@@ -521,6 +574,86 @@ class CruziApi implements ICruziApi {
       }
     } catch (error) {
       console.error('Error updating clue sense:', error);
+      throw error;
+    }
+  }
+
+  async getClassifyEntries(fillWords: string[]): Promise<ClassifyEntry[]> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/classify/entries`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ fillWords }),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || `HTTP error! status: ${response.status}`);
+      }
+
+      return (body.entries ?? []) as ClassifyEntry[];
+    } catch (error) {
+      console.error('Error loading classify entries:', error);
+      throw error;
+    }
+  }
+
+  async saveClassifyEntries(originals: ClassifyRowPayload[], rows: ClassifyRowPayload[]): Promise<void> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/classify/save`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ originals, rows }),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || `HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error saving classify entries:', error);
+      throw error;
+    }
+  }
+
+  async deleteClassifyEntry(entry: string, lang: string): Promise<void> {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${baseUrl}/classify/delete`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ entry, lang }),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || `HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error deleting classify entry:', error);
       throw error;
     }
   }

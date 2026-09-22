@@ -10,5 +10,6 @@ The header is part of the page and does not float on top of the screen.
     there is a "log in with Google" button, using the appropriate branded button from Google. 
     When the user is logged in, there is a Google style circle with the first letter of the 
     user's username and the username itself. Clicking on the username opens a dropdown menu 
-    with a "Logout" option.
+    with Settings (gear icon) and Logout (sign-out icon) options. Settings opens a modal
+    with a Crossword Solver Minigame boolean slider (default off).
 - In the middle of the header is the Cruzi logo.

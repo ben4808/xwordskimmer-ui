@@ -6,7 +6,7 @@ import {
   faChevronLeft,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
-import { ClueCollection, Publications } from 'cruzi-models';
+import { ClueCollection } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -16,20 +16,9 @@ import {
 } from '../../lib/utils';
 import CrosswordCalendar from '../CrosswordCalendar/CrosswordCalendar';
 import { getCrosswordSolverPath } from '../CrosswordSolver/crosswordSolverHelpers';
+import CrosswordInfoCard from './CrosswordInfoCard';
 import { CrosswordListProps } from './CrosswordListProps';
 import styles from './CrosswordList.module.scss';
-import crosswordThumb from '../../../crossword_thumb.png';
-
-function getPublicationName(crossword: ClueCollection): string {
-  const source = crossword.source;
-  if (!source) {
-    return 'Unknown';
-  }
-  const publication = Object.values(Publications).find(
-    (entry) => entry.id === source
-  );
-  return publication?.name ?? 'Unknown';
-}
 
 function isSameCalendarDay(a: Date, b: Date): boolean {
   return (
@@ -41,15 +30,6 @@ function isSameCalendarDay(a: Date, b: Date): boolean {
 
 function shiftCalendarDay(date: Date, delta: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta);
-}
-
-function getCrosswordAuthor(crossword: ClueCollection): string {
-  return (
-    crossword.author ||
-    crossword.puzzle?.authors?.[0] ||
-    crossword.creator?.firstName ||
-    'Unknown'
-  );
 }
 
 function CrosswordList({ api = CruziApi }: CrosswordListProps) {
@@ -113,73 +93,6 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
     handleDateSelect(nextDate);
   };
 
-  const calculateProgressPercentage = (value: number, total: number): number => {
-    if (total === 0) return 0;
-    return (value / total) * 100;
-  };
-
-  const renderProgressBar = (crossword: ClueCollection) => {
-    if (!user) return null;
-
-    const total = crossword.clueCount6Plus ?? 0;
-    if (total === 0) return null;
-
-    const progress = crossword.progressData;
-    const completed = progress?.completed ?? 0;
-    const inProgress = progress?.inProgress ?? 0;
-    const unseen = Math.max(0, total - completed);
-
-    return (
-      <div className={styles.progressBar}>
-        <div
-          className={styles.progressCompleted}
-          style={{ width: `${calculateProgressPercentage(completed, total)}%` }}
-        />
-        <div
-          className={styles.progressInProgress}
-          style={{ width: `${calculateProgressPercentage(inProgress, total)}%` }}
-        />
-        <div
-          className={styles.progressUnseen}
-          style={{ width: `${calculateProgressPercentage(unseen, total)}%` }}
-        />
-      </div>
-    );
-  };
-
-  const renderCrosswordCard = (crossword: ClueCollection) => {
-    const clueCount = crossword.clueCount ?? 0;
-    const clueCount6Plus = crossword.clueCount6Plus ?? 0;
-    const author = getCrosswordAuthor(crossword);
-
-    return (
-      <div
-        key={crossword.id}
-        className={styles.crosswordCard}
-        onClick={() => handleCrosswordClick(crossword)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            handleCrosswordClick(crossword);
-          }
-        }}
-      >
-        <div className={styles.thumbnail}>
-          <img src={crosswordThumb} alt="" />
-        </div>
-        <div className={styles.details}>
-          <p className={styles.publication}>{getPublicationName(crossword)}</p>
-          <h3 className={styles.title}>{crossword.title}</h3>
-          <p className={styles.meta}>
-            By {author} • {clueCount} clues ({clueCount6Plus} of at least 6 letters)
-          </p>
-          {renderProgressBar(crossword)}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className={styles.crosswordListPage}>
       <div className={styles.headerRow}>
@@ -224,7 +137,14 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
         )}
         {!isLoading && !error && crosswords.length > 0 && (
           <div className={styles.crosswordList}>
-            {crosswords.map((crossword) => renderCrosswordCard(crossword))}
+            {crosswords.map((crossword) => (
+              <CrosswordInfoCard
+                key={crossword.id}
+                crossword={crossword}
+                showProgress={Boolean(user)}
+                onClick={() => handleCrosswordClick(crossword)}
+              />
+            ))}
           </div>
         )}
       </div>

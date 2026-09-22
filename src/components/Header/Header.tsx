@@ -6,6 +6,9 @@ import { HeaderProps } from './HeaderProps';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../contexts/AuthContext';
 import { User } from 'cruzi-models';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import SettingsModal from './SettingsModal';
 
 const MENU_ITEMS = ['Crosswords', 'Collections'] as const;
 
@@ -16,10 +19,11 @@ function getDisplayUsername(user: User): string {
 const Header = ({ onLogout }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, handleGoogleSuccess, handleGoogleError } = useAuth();
+  const { user, handleGoogleSuccess, handleGoogleError, userSettings, updateUserSettings } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('Collections');
   const [isMobile, setIsMobile] = useState(
     () => window.matchMedia('(max-width: 768px)').matches
@@ -78,6 +82,20 @@ const Header = ({ onLogout }: HeaderProps) => {
     onLogout();
   };
 
+  const handleOpenSettings = () => {
+    setIsUserMenuOpen(false);
+    setIsSettingsOpen(true);
+  };
+
+  const handleToggleMinigame = (enabled: boolean) => {
+    updateUserSettings({
+      ...userSettings,
+      crosswordSolverMinigame: enabled,
+    }).catch(() => {
+      // AuthContext reverts optimistic state and logs the error.
+    });
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
@@ -121,8 +139,18 @@ const Header = ({ onLogout }: HeaderProps) => {
                 <li className={styles.userDropdownItem}>
                   <button
                     className={styles.userDropdownLink}
+                    onClick={handleOpenSettings}
+                  >
+                    <FontAwesomeIcon icon={faGear} className={styles.userDropdownIcon} />
+                    Settings
+                  </button>
+                </li>
+                <li className={styles.userDropdownItem}>
+                  <button
+                    className={styles.userDropdownLink}
                     onClick={handleLogout}
                   >
+                    <FontAwesomeIcon icon={faRightFromBracket} className={styles.userDropdownIcon} />
                     Logout
                   </button>
                 </li>
@@ -232,6 +260,13 @@ const Header = ({ onLogout }: HeaderProps) => {
         </div>
         {renderUserSection()}
       </div>
+      {isSettingsOpen && (
+        <SettingsModal
+          crosswordSolverMinigame={userSettings.crosswordSolverMinigame}
+          onToggleMinigame={handleToggleMinigame}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
     </header>
   );
 };

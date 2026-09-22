@@ -302,7 +302,7 @@ $mobile-breakpoint: 768px;
   top: 100%;
   right: 0;
   background-color: $secondary-bg;
-  min-width: 120px;
+  min-width: 160px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   z-index: 1000;
@@ -323,7 +323,9 @@ $mobile-breakpoint: 768px;
   border: none;
   color: #ffffff;
   text-decoration: none;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   padding: 0.5rem 1rem;
   width: 100%;
   text-align: left;
@@ -332,6 +334,11 @@ $mobile-breakpoint: 768px;
   &:hover {
     background-color: $button-hover-bg;
   }
+}
+
+.userDropdownIcon {
+  width: 1em;
+  text-align: center;
 }
 
 .googleLoginContainer {

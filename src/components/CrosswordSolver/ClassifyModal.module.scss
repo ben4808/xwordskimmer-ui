@@ -1,0 +1,251 @@
+@use "../../styles/theme" as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.modal {
+  background: $secondary-bg;
+  color: $text-color;
+  max-width: 1280px;
+  width: 96%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 12px 16px 16px;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+  color: $text-color;
+}
+
+.close {
+  border: none;
+  background: transparent;
+  color: $light-text-color;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+
+  &:hover {
+    color: $text-color;
+  }
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: $text-color;
+
+  th,
+  td {
+    border: 1px solid $border-color;
+    padding: 4px 6px;
+    vertical-align: middle;
+  }
+
+  th {
+    background: $card-bg;
+    color: $light-text-color;
+    white-space: nowrap;
+  }
+
+  tbody tr:nth-child(even) {
+    background: $card-bg;
+  }
+
+  tbody tr:hover {
+    background: $button-hover-bg;
+  }
+
+  input[type="text"],
+  select {
+    width: 100%;
+    min-width: 110px;
+    background: $primary-bg;
+    color: $text-color;
+    border: 1px solid $border-color;
+    border-radius: 3px;
+    padding: 2px 4px;
+  }
+
+  input[type="text"]:disabled,
+  select:disabled {
+    opacity: 0.55;
+  }
+
+  select option {
+    background: $secondary-bg;
+    color: $text-color;
+  }
+}
+
+.checkCell {
+  text-align: center;
+}
+
+.deleteCell {
+  text-align: center;
+  width: 28px;
+}
+
+.deleteButton {
+  background: transparent;
+  border: none;
+  color: $light-text-color;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    color: $error-color;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.missing {
+  color: $error-color;
+  font-size: 10px;
+}
+
+.footer {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.status {
+  font-size: 13px;
+  color: $light-text-color;
+}
+
+.error {
+  color: $error-color;
+  margin-bottom: 8px;
+}
+
+.saveButton {
+  background: $accent-color;
+  color: $primary-bg;
+  border: 1px solid $accent-color;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: $sun-accent;
+    border-color: $sun-accent;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.addButton {
+  margin-top: 10px;
+  background: $card-bg;
+  color: $text-color;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: $button-hover-bg;
+  }
+}
+
+.confirmOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.confirmPanel {
+  background: $card-bg;
+  color: $text-color;
+  max-width: 420px;
+  width: 100%;
+  padding: 20px 22px;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+.confirmTitle {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.confirmText {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: $light-text-color;
+  line-height: 1.4;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.discardButton,
+.cancelButton {
+  background: $secondary-bg;
+  color: $text-color;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: $button-hover-bg;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
