@@ -11,6 +11,20 @@ export interface AuthVerifyResponse {
   error?: string;
 }
 
+export interface ClassifySenseOption {
+  senseId: string;
+  summary: string;
+  displayText: string;
+  entryType: string;
+  unityBucket: string;
+  familiarityBucket: string;
+  qualityBucket: string;
+  domain: string;
+  regionality: string;
+  isVulgar: boolean;
+  isSensitive: boolean;
+}
+
 export interface ClassifyEntry {
   fillWord: string;
   entry: string | null;
@@ -20,16 +34,22 @@ export interface ClassifyEntry {
   unityBucket: string | null;
   familiarityBucket: string | null;
   qualityBucket: string | null;
+  domain?: string | null;
+  regionality?: string | null;
   isVulgar: boolean | null;
   isCrosswordese?: boolean;
   isBreakfast?: boolean;
+  isSensitive?: boolean;
   baseForm?: string | null;
   nytValue?: string | null;
+  senses?: ClassifySenseOption[];
 }
 
 export interface ClassifyRowPayload {
   rowId: string;
+  kind: 'entry' | 'sense';
   isNew?: boolean;
+  parentRowId?: string;
   fillWord: string;
   entry: string | null;
   lang: string | null;
@@ -39,10 +59,16 @@ export interface ClassifyRowPayload {
   unityBucket: string;
   familiarityBucket: string;
   qualityBucket: string;
+  domain: string;
+  regionality: string;
   isVulgar: boolean;
   isCrosswordese: boolean;
   isBreakfast: boolean;
+  isSensitive: boolean;
   nytValue: string;
+  senseId?: string | null;
+  clueIds?: string[];
+  senses?: ClassifySenseOption[];
 }
 
 export interface ICruziApi {

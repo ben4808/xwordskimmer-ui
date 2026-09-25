@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { ClueCollection, ClueWithProgress } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
@@ -19,20 +19,24 @@ import CrosswordInfoCard from '../CrosswordList/CrosswordInfoCard';
 import { AnswerInput } from './AnswerInput';
 import ClassifyModal from './ClassifyModal';
 import { CrosswordSolverProps } from './CrosswordSolverProps';
+import { EntryDetailsModal } from './EntryDetailsModal';
 import {
   areAllEligibleCluesComplete,
   buildDisplaySlots,
   buildFreshClueState,
   buildSolvedClueState,
+  ClassifyFillItem,
   ClueSolverState,
   fillUserInputToFirstUnsolved,
   getAnswer,
-  getClassifyFillWords,
+  getClassifyFillItems,
   getClueText,
   getDisplayText,
   getEligibleClues,
   getOrderedClues,
   getPuzzleClueColumns,
+  getSenseSummaryBaseDisplay,
+  hasMatchedSense,
   isClueComplete,
   isCluePreviouslyCompleted,
   parseCrosswordSolverDate,
@@ -43,55 +47,15 @@ import {
   classifyDesirability,
   classifyGettableNess,
   getDesirabilityColor,
+  getDisplayFlagLabels,
   getGettableNessColor,
+  hasAvoidDesirabilityFlags,
+  hasDisplayWarningFlags,
+  isLikelyNytDebut,
   isRatingUnset,
   MISSING_RATING_COLOR,
 } from './entryRatings';
 import styles from './CrosswordSolver.module.scss';
-
-function getEntryDisplayText(clue: ClueWithProgress): string {
-  return clue.entry?.displayText?.trim() || getDisplayText(clue);
-}
-
-function EntryDetailsModal({
-  displayText,
-  onClose,
-}: {
-  displayText: string;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
-
-  return (
-    <div className={styles.modalOverlay} onClick={onClose} role="presentation">
-      <div
-        className={styles.modalPanel}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Entry details"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          type="button"
-          className={styles.modalClose}
-          onClick={onClose}
-          aria-label="Close entry details"
-        >
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
-        <p className={styles.modalEntryText}>{displayText}</p>
-      </div>
-    </div>
-  );
-}
 
 function RatingDot({
   label,
@@ -137,16 +101,32 @@ function ClueRow({
   const answer = getAnswer(clue);
   const displayText = getDisplayText(clue);
   const displaySlots = buildDisplaySlots(displayText, answer);
+  const ratingSource = hasMatchedSense(clue) ? clue.sense : clue.entry;
   const gettableMissing =
-    isRatingUnset(clue.entry?.unityBucket) ||
-    isRatingUnset(clue.entry?.familiarityBucket);
-  const desirabilityMissing = isRatingUnset(clue.entry?.qualityBucket);
+    isRatingUnset(ratingSource?.unityBucket) ||
+    isRatingUnset(ratingSource?.familiarityBucket);
+  const desirabilityMissing =
+    isRatingUnset(ratingSource?.qualityBucket) &&
+    !hasAvoidDesirabilityFlags(clue.sense?.tags, clue.entry?.tags);
   const gettableNess = classifyGettableNess(
-    clue.entry?.unityBucket,
-    clue.entry?.familiarityBucket
+    ratingSource?.unityBucket,
+    ratingSource?.familiarityBucket
   );
-  const desirability = classifyDesirability(clue.entry?.qualityBucket);
-  const secondLineOpensDetails = !minigameOn || state.isSolved;
+  const desirability = classifyDesirability(
+    ratingSource?.qualityBucket,
+    clue.sense?.tags,
+    clue.entry?.tags
+  );
+  const warningFlags = getDisplayFlagLabels(clue.sense?.tags, clue.entry?.tags);
+  const showWarning = hasDisplayWarningFlags(clue.sense?.tags, clue.entry?.tags);
+  const nytDebut = isLikelyNytDebut(clue.entry?.tags);
+  const answerLengthLabel = `${answer.length} letter${answer.length === 1 ? '' : 's'}`;
+  const fromBaseDisplay = getSenseSummaryBaseDisplay(clue);
+  const secondLineOpensDetails = hasMatchedSense(clue) && (!minigameOn || state.isSolved);
+  const secondLineActivates = minigameOn && !state.isSolved;
+  const secondLineClickable = secondLineOpensDetails || secondLineActivates;
+  const showSenseSummary = secondLineOpensDetails;
+  const senseSummary = clue.sense?.summary?.trim();
 
   const handleSecondLineKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -159,19 +139,26 @@ function ClueRow({
     <div className={styles.clueItem}>
       <div className={styles.clueHead}>
         <span className={styles.clueNumber}>{item.clueNumber}</span>
-        <span className={styles.cluePrompt}>{getClueText(clue)}</span>
+        <span className={styles.cluePrompt}>
+          {getClueText(clue)}
+          {answer.length > 0 && (
+            <span className={styles.clueLength}>{answerLengthLabel}</span>
+          )}
+        </span>
       </div>
       <div className={styles.answerRow}>
         <div
-          className={`${styles.answerLine} ${secondLineOpensDetails ? styles.answerLineLink : ''}`}
+          className={`${styles.answerLine} ${secondLineOpensDetails ? styles.answerLineLink : ''} ${secondLineClickable ? styles.answerLineClickable : ''}`}
           role={secondLineOpensDetails ? 'button' : undefined}
           tabIndex={secondLineOpensDetails ? 0 : undefined}
-          onClick={onSecondLineClick}
-          onKeyDown={handleSecondLineKeyDown}
+          onClick={secondLineClickable ? onSecondLineClick : undefined}
+          onKeyDown={secondLineOpensDetails ? handleSecondLineKeyDown : undefined}
           aria-label={
             secondLineOpensDetails
               ? `Details for ${displayText}`
-              : `Solve ${displayText}`
+              : secondLineActivates
+                ? `Solve ${displayText}`
+                : undefined
           }
         >
           <span className={styles.dots}>
@@ -192,6 +179,15 @@ function ClueRow({
                   : getDesirabilityColor(desirability)
               }
             />
+            {showWarning && (
+              <span
+                className={styles.warningEmoji}
+                title={warningFlags.join(', ')}
+                aria-label={warningFlags.join(', ')}
+              >
+                ⚠️
+              </span>
+            )}
           </span>
           {minigameOn ? (
             <AnswerInput
@@ -201,6 +197,7 @@ function ClueRow({
               userInput={state.userInput}
               revealedMask={state.revealedMask}
               isSolved={state.isSolved}
+              nytDebut={nytDebut}
               compact
               active={isActive}
               onUserInputChange={onUserInputChange}
@@ -208,7 +205,22 @@ function ClueRow({
               onActivate={onActivate}
             />
           ) : (
-            <span className={styles.answerText}>{displayText}</span>
+            <span
+              className={`${styles.answerText} ${nytDebut ? styles.debutAnswer : ''}`}
+              title={nytDebut ? 'Likely NYT debut' : undefined}
+            >
+              {displayText}
+            </span>
+          )}
+          {showSenseSummary && (fromBaseDisplay || senseSummary) && (
+            <span className={styles.senseSummary}>
+              {fromBaseDisplay && (
+                <span className={styles.fromBasePrefix}>
+                  From <span className={styles.fromBaseEntry}>{fromBaseDisplay}</span>:{' '}
+                </span>
+              )}
+              {senseSummary}
+            </span>
           )}
         </div>
         {minigameOn && !state.isSolved && (
@@ -255,8 +267,9 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const [error, setError] = useState<string | null>(null);
   const [clueStates, setClueStates] = useState<Record<string, ClueSolverState>>({});
   const [activeClueId, setActiveClueId] = useState<string | null>(null);
-  const [detailsDisplayText, setDetailsDisplayText] = useState<string | null>(null);
-  const [classifyFillWords, setClassifyFillWords] = useState<string[] | undefined>(undefined);
+  const [detailsClue, setDetailsClue] = useState<ClueWithProgress | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [classifyFillItems, setClassifyFillItems] = useState<ClassifyFillItem[] | undefined>(undefined);
   const [keyboardPaddingBottom, setKeyboardPaddingBottom] = useState(0);
 
   const collectionCompletedRef = useRef(false);
@@ -500,8 +513,9 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   );
 
   const openClueDetails = (clue: ClueWithProgress) => {
+    if (!hasMatchedSense(clue)) return;
     setActiveClueId(null);
-    setDetailsDisplayText(getEntryDisplayText(clue));
+    setDetailsClue(clue);
   };
 
   const handleSecondLineClick = (clue: ClueWithProgress) => {
@@ -709,7 +723,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
           <button
             type="button"
             className={styles.classifyButton}
-            onClick={() => setClassifyFillWords(getClassifyFillWords(crossword.clues))}
+            onClick={() => setClassifyFillItems(getClassifyFillItems(crossword.clues))}
           >
             Classify
           </button>
@@ -721,18 +735,24 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
         </div>
       </div>
 
-      {detailsDisplayText && (
+      {detailsClue && (
         <EntryDetailsModal
-          displayText={detailsDisplayText}
-          onClose={() => setDetailsDisplayText(null)}
+          clue={detailsClue}
+          onClose={() => setDetailsClue(null)}
+          onPromptCopied={(message) => {
+            setToastMessage(message);
+            window.setTimeout(() => setToastMessage(null), 3000);
+          }}
         />
       )}
 
-      {classifyFillWords && (
+      {toastMessage && <div className={styles.toast}>{toastMessage}</div>}
+
+      {classifyFillItems && (
         <ClassifyModal
-          fillWords={classifyFillWords}
+          fillItems={classifyFillItems}
           api={api}
-          onClose={() => setClassifyFillWords(undefined)}
+          onClose={() => setClassifyFillItems(undefined)}
           onSaved={refreshCrosswordEntries}
         />
       )}

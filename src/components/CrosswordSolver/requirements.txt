@@ -24,15 +24,27 @@ LAYOUT
    - Across and Down in two columns; a single column on mobile.
    - No grid, author block, or extra puzzle chrome — clues and answers only.
    - Each clue is two lines:
-       <number> <clue>
-       <gettability dot> <desirability dot> <answer text / minigame>
+       <number> <clue> <answer length, e.g. "7 letters">
+       <gettability dot> <desirability dot> [warning emoji] <answer text / minigame>
    - Gettability and desirability use the same classification rules as
      cruzi-aws crosswordListExtractor.ts.
+   - Dot colors use the linked sense's unity_bucket, familiarity_bucket, and
+     quality_bucket when a sense is matched; otherwise they use the entry.
    - If unity_bucket or familiarity_bucket is missing, the gettability dot is purple.
    - If quality_bucket is missing, the desirability dot is purple.
+   - Answer length sits immediately after the clue, slightly smaller and grayer.
+   - A yellow warning emoji sits immediately after the two dots (same cluster,
+     like a third dot) when the sense or entry has any display flags
+     (sensitive, vulgar, breakfast_test, crosswordese).
+   - If entry_tags.nyt is missing, 0, or 1, the answer is shown in red instead
+     of blue (likely NYT debut).
 
-Minigame off: answers are shown as text. The second line opens a modal whose only
-content is the entry display_text.
+Minigame off: answers are shown as text using the referenced sense display_text
+when a sense is matched, otherwise the entry/custom display text. If the clue
+has a matched sense, the sense summary is shown after the answer on the same
+line (prefixed with italic "From <BASE FORM>: " when the sense belongs to a
+base entry; the base form is all caps and italic). The answer is a link that opens the
+entry details modal only when a matched sense exists.
 
 Minigame on:
 - Centered above the clue list: "Hints used: <count>" (crossword-wide; the count
@@ -49,5 +61,31 @@ Minigame on:
     are occupied by incorrect user-typed inputs. The first letter starts revealed
     and does not increment Hints used.
   - Reveal reveals the entire answer.
-- After an answer is solved, hovering the dots and letters shows a pointer
-  cursor and a subtle border around that row. Clicking opens the entry details modal.
+- After an answer is solved, the sense summary is shown after the answer when a
+  matched sense exists. Hovering the dots and letters shows a pointer cursor and
+  a subtle border around that row. Clicking opens the entry details modal only
+  if the clue has a matched sense.
+
+ENTRY DETAILS MODAL (matched sense required)
+
+- Top: sense display_text, with the sense summary to its right, first-line
+  baselines aligned. Classification • part of speech • domain sit under the
+  display_text (domain omitted if unset).
+- Two side-by-side boxes with uncolored borders. Only the gettability and
+  desirability class values use the dot colors; labels stay normal text.
+  Unity and Familiarity values align in a second column after the labels.
+  - Gettability: <class> / Unity: <bucket> / Familiarity: <bucket>
+  - Desirability: <class> / Quality: <bucket> / optional flags, each prefixed
+    with a yellow warning emoji:
+      Sensitive (sense_tags.sensitive), Vulgar (sense_tags.vulgar),
+      Breakfast Test (entry_tags.breakfast_test), Crosswordese (entry_tags.crosswordese).
+    Classes follow crosswordListExtractor.ts guidelines.
+- Clue header, then the clue text with "Explain Clue" and "Interesting Fact"
+  buttons to its right. Both copy an AI prompt and toast
+  "AI prompt copied to clipboard".
+  - Explain: Explain the clue "<clue>" was used as a crossword clue for the answer "<answer display_text>".
+  - Interesting Fact depends on classification (Proper Name / Word / Phrase /
+    Acronym/Abbreviation / Prefix/Suffix).
+- Definition, optional Regionality tag, References (text + source linked to URL),
+  Alternatives (•-separated), Spanish translations with Natural and Colloquial
+  subheaders (•-separated).

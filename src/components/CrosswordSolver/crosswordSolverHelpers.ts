@@ -4,6 +4,8 @@ import {
   ClueWithProgress,
   CollectionClue,
   CollectionClueWithProgress,
+  EntryRef,
+  Sense,
 } from 'cruzi-models';
 import { parseCalendarDate } from '../../lib/utils';
 import { normalizeAnswer } from '../CollectionQuiz/quizHelpers';
@@ -112,19 +114,45 @@ export function getAnswer(clue: ClueWithProgress): string {
   return normalizeAnswer(clue.entry?.entry);
 }
 
-/** Unique fill answers in puzzle order, used by the classify modal. */
+/** Unique fill answers in alphabetical order, used by the classify modal. */
+export interface ClassifyFillItem {
+  fillWord: string;
+  clueIds: string[];
+  attachedSenseId: string | null;
+}
+
+export function getClassifyFillItems(
+  clues: CollectionClueItem[] | undefined
+): ClassifyFillItem[] {
+  const byWord = new Map<string, ClassifyFillItem>();
+  for (const { clue } of getOrderedClues(clues)) {
+    const word = getAnswer(clue);
+    if (!word) continue;
+    const clueId = clue.id?.trim();
+    const senseId = clue.sense?.id?.trim() || null;
+    const existing = byWord.get(word);
+    if (!existing) {
+      byWord.set(word, {
+        fillWord: word,
+        clueIds: clueId ? [clueId] : [],
+        attachedSenseId: senseId,
+      });
+      continue;
+    }
+    if (clueId && !existing.clueIds.includes(clueId)) {
+      existing.clueIds.push(clueId);
+    }
+    if (!existing.attachedSenseId && senseId) {
+      existing.attachedSenseId = senseId;
+    }
+  }
+  return [...byWord.values()].sort((a, b) => a.fillWord.localeCompare(b.fillWord));
+}
+
 export function getClassifyFillWords(
   clues: CollectionClueItem[] | undefined
 ): string[] {
-  const seen = new Set<string>();
-  const words: string[] = [];
-  for (const { clue } of getOrderedClues(clues)) {
-    const word = getAnswer(clue);
-    if (!word || seen.has(word)) continue;
-    seen.add(word);
-    words.push(word);
-  }
-  return words;
+  return getClassifyFillItems(clues).map((item) => item.fillWord);
 }
 
 /** Uppercase letters only; punctuation and spacing are preserved. */
@@ -135,7 +163,10 @@ export function formatDisplayText(text: string): string {
 export function getDisplayText(clue: ClueWithProgress): string {
   const answer = getAnswer(clue);
   const raw =
-    clue.customDisplayText?.trim() || clue.entry?.displayText?.trim() || '';
+    clue.sense?.displayText?.trim() ||
+    clue.customDisplayText?.trim() ||
+    clue.entry?.displayText?.trim() ||
+    '';
   if (!raw) return answer;
 
   const formatted = formatDisplayText(raw);
@@ -394,4 +425,101 @@ export function parseCrosswordSolverDate(dateParam: string): Date | null {
     return date;
   }
   return null;
+}
+
+export function hasMatchedSense(clue: ClueWithProgress): boolean {
+  return Boolean(clue.sense?.id);
+}
+
+export function senseBelongsToBaseEntry(clue: ClueWithProgress): boolean {
+  const senseEntry = clue.sense?.entry?.entry;
+  const answerEntry = clue.entry?.entry;
+  return Boolean(senseEntry && answerEntry && senseEntry !== answerEntry);
+}
+
+export function getSenseEntryDisplayText(clue: ClueWithProgress): string {
+  const sense = clue.sense;
+  if (!sense) return '';
+  return sense.entry?.displayText?.trim() || sense.entry?.entry || '';
+}
+
+export function getSenseDisplayText(clue: ClueWithProgress): string {
+  const sense = clue.sense;
+  if (!sense) return getDisplayText(clue);
+  return (
+    sense.displayText?.trim() ||
+    sense.entry?.displayText?.trim() ||
+    getDisplayText(clue)
+  );
+}
+
+export function getSenseSummaryPrefix(clue: ClueWithProgress): string {
+  const baseDisplay = getSenseSummaryBaseDisplay(clue);
+  return baseDisplay ? `From ${baseDisplay}: ` : '';
+}
+
+export function getSenseSummaryBaseDisplay(clue: ClueWithProgress): string {
+  if (!senseBelongsToBaseEntry(clue)) return '';
+  const baseDisplay = getSenseEntryDisplayText(clue);
+  return baseDisplay ? formatDisplayText(baseDisplay) : '';
+}
+
+export function buildExplainCluePrompt(
+  clueText: string,
+  answerDisplayText: string
+): string {
+  return `Explain the clue "${clueText}" was used as a crossword clue for the answer "${answerDisplayText}".`;
+}
+
+export function buildInterestingFactPrompt(
+  displayText: string,
+  classification?: string
+): string {
+  switch ((classification ?? '').trim()) {
+    case 'Proper Name':
+      return `Give an interesting piece of lore about ${displayText}.`;
+    case 'Word':
+      return `Give an interesting piece of lore about the word ${displayText}.`;
+    case 'Phrase':
+      return `Give an interesting piece of lore about the phrase ${displayText}.`;
+    case 'Acronym/Abbreviation':
+      return `Give an interesting piece of lore about the acronym/abbreviation ${displayText}.`;
+    case 'Prefix/Suffix':
+      return `Give an interesting piece of lore about the prefix/suffix ${displayText}.`;
+    default:
+      return `Give an interesting piece of lore about ${displayText}.`;
+  }
+}
+
+export function joinWithBullets(
+  items: Array<string | undefined | null>
+): string {
+  return items
+    .map((item) => item?.trim())
+    .filter((item): item is string => Boolean(item))
+    .join(' • ');
+}
+
+export function translationDisplayText(
+  value: EntryRef | string | undefined | null
+): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  return value.displayText?.trim() || value.entry || '';
+}
+
+export function getSpanishTranslations(sense?: Sense): {
+  natural: string[];
+  colloquial: string[];
+} {
+  const translation = sense?.translations?.es;
+  const toLabels = (values?: EntryRef[]) =>
+    (values ?? [])
+      .map((item) => translationDisplayText(item))
+      .filter(Boolean);
+
+  return {
+    natural: toLabels(translation?.naturalTranslations),
+    colloquial: toLabels(translation?.colloquialTranslations),
+  };
 }

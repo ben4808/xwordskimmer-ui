@@ -55,7 +55,100 @@ export function classifyGettableNess(
   return 'Maybe Gettable';
 }
 
-export function classifyDesirability(qualityBucket: string | null | undefined): Desirability {
+const AVOID_SENSE_TAGS = new Set(['vulgar']);
+const AVOID_ENTRY_TAGS = new Set(['breakfast_test']);
+const SENSE_DISPLAY_FLAGS = ['sensitive', 'vulgar'] as const;
+const ENTRY_DISPLAY_FLAGS = ['breakfast_test', 'crosswordese'] as const;
+const DISPLAY_FLAG_ORDER = [
+  'Sensitive',
+  'Vulgar',
+  'Breakfast Test',
+  'Crosswordese',
+];
+
+function formatFlagLabel(tag: string): string {
+  if (tag === 'breakfast_test') return 'Breakfast Test';
+  return tag.charAt(0).toUpperCase() + tag.slice(1);
+}
+
+function hasTag(
+  tags: Record<string, string> | null | undefined,
+  tag: string
+): boolean {
+  if (!tags) return false;
+  return Object.keys(tags).some((key) => key.toLowerCase() === tag);
+}
+
+export function hasAvoidDesirabilityFlags(
+  senseTags?: Record<string, string> | null,
+  entryTags?: Record<string, string> | null,
+): boolean {
+  return (
+    Object.keys(senseTags ?? {}).some((tag) =>
+      AVOID_SENSE_TAGS.has(tag.toLowerCase())
+    ) ||
+    Object.keys(entryTags ?? {}).some((tag) =>
+      AVOID_ENTRY_TAGS.has(tag.toLowerCase())
+    )
+  );
+}
+
+export function getDisplayFlagLabels(
+  senseTags?: Record<string, string> | null,
+  entryTags?: Record<string, string> | null,
+): string[] {
+  const labels = new Set<string>();
+  for (const tag of SENSE_DISPLAY_FLAGS) {
+    if (hasTag(senseTags, tag)) labels.add(formatFlagLabel(tag));
+  }
+  for (const tag of ENTRY_DISPLAY_FLAGS) {
+    if (hasTag(entryTags, tag)) labels.add(formatFlagLabel(tag));
+  }
+  return DISPLAY_FLAG_ORDER.filter((label) => labels.has(label));
+}
+
+export function hasDisplayWarningFlags(
+  senseTags?: Record<string, string> | null,
+  entryTags?: Record<string, string> | null,
+): boolean {
+  return getDisplayFlagLabels(senseTags, entryTags).length > 0;
+}
+
+function getTagValue(
+  tags: Record<string, string> | null | undefined,
+  tag: string
+): string | undefined {
+  if (!tags) return undefined;
+  const match = Object.entries(tags).find(([key]) => key.toLowerCase() === tag);
+  return match?.[1];
+}
+
+/** NYT crossword appearance count from entry_tags.tag = 'nyt'. */
+export function getNytAppearanceCount(
+  entryTags?: Record<string, string> | null
+): number | null {
+  const raw = getTagValue(entryTags, 'nyt');
+  if (raw == null || raw.trim() === '') return null;
+  const count = Number(raw);
+  return Number.isFinite(count) ? count : null;
+}
+
+/** Missing nyt tag, or 0/1 appearances — this puzzle likely debuted the answer. */
+export function isLikelyNytDebut(
+  entryTags?: Record<string, string> | null
+): boolean {
+  const count = getNytAppearanceCount(entryTags);
+  return count == null || count === 0 || count === 1;
+}
+
+export function classifyDesirability(
+  qualityBucket: string | null | undefined,
+  senseTags?: Record<string, string> | null,
+  entryTags?: Record<string, string> | null,
+): Desirability {
+  if (hasAvoidDesirabilityFlags(senseTags, entryTags)) {
+    return 'Avoid';
+  }
   if (isRatingUnset(qualityBucket)) {
     return 'Normal';
   }

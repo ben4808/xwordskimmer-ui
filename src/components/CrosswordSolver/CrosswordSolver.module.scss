@@ -152,6 +152,14 @@
   line-height: 1.4;
 }
 
+.clueLength {
+  margin-left: 0.45em;
+  font-size: 0.82em;
+  color: $light-text-color;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
 .answerRow {
   display: flex;
   align-items: center;
@@ -163,10 +171,11 @@
 .answerLine {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
   flex: 1;
-  cursor: pointer;
+  cursor: default;
   background: none;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -174,6 +183,10 @@
   margin: -1px -4px;
   color: inherit;
   text-align: left;
+}
+
+.answerLineClickable {
+  cursor: pointer;
 }
 
 .answerRow:has(.inlineActions) .answerLine {
@@ -188,11 +201,19 @@
     color: $accent-color;
   }
 
+  .debutAnswer {
+    color: $incorrect-red;
+  }
+
   &:hover {
     border-color: color.adjust($accent-color, $alpha: -0.55);
 
     .answerText {
       color: $sun-accent;
+    }
+
+    .debutAnswer {
+      color: color.adjust($incorrect-red, $lightness: 8%);
     }
   }
 
@@ -223,11 +244,42 @@
   box-shadow: 0 0 0 1px $light-text-color;
 }
 
+.warningEmoji {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  line-height: 1;
+  margin-left: -1px;
+}
+
 .answerText {
   font-family: 'Roboto Mono', monospace;
   font-size: 0.95rem;
   letter-spacing: 0.04em;
   word-break: break-word;
+}
+
+.debutAnswer {
+  color: $incorrect-red;
+}
+
+.senseSummary {
+  color: $light-text-color;
+  font-family: Arial, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.35;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.fromBasePrefix {
+  font-style: italic;
+}
+
+.fromBaseEntry {
+  font-style: italic;
+  letter-spacing: 0.04em;
 }
 
 .inlineActions {
@@ -351,6 +403,10 @@
   color: $correct-green;
 }
 
+.typedDebut {
+  color: $incorrect-red;
+}
+
 .typedIncorrect {
   color: $incorrect-red;
 }
@@ -387,7 +443,9 @@
 .modalPanel {
   position: relative;
   width: 100%;
-  max-width: 420px;
+  max-width: 720px;
+  max-height: min(90vh, 860px);
+  overflow: auto;
   background-color: $secondary-bg;
   color: $text-color;
   border: 1px solid $border-color;
@@ -395,7 +453,7 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
   padding: 32px 24px 24px;
   box-sizing: border-box;
-  text-align: center;
+  text-align: left;
 }
 
 .modalClose {
@@ -426,6 +484,209 @@
   font-weight: 600;
   font-family: 'Roboto Mono', monospace;
   word-break: break-word;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: baseline;
+  line-height: 1.35;
+}
+
+.detailsHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 4px 24px;
+  align-items: baseline;
+  margin-bottom: 18px;
+  padding-right: 40px;
+}
+
+.detailsMeta {
+  margin: 0;
+  color: $light-text-color;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.detailsSummary {
+  margin: 0;
+  min-width: 0;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: baseline;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.ratingBoxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ratingBox {
+  background-color: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+
+  p {
+    margin: 0 0 4px;
+    color: $text-color;
+    font-size: 0.92rem;
+    line-height: 1.4;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.ratingBoxHeader {
+  margin: 0 0 8px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: $text-color;
+}
+
+.ratingMetric {
+  display: grid;
+  grid-template-columns: 7.25em 1fr;
+  column-gap: 0.75em;
+  align-items: baseline;
+}
+
+.ratingFlags {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ratingFlag {
+  margin: 0;
+  color: $text-color;
+}
+
+.detailsSection {
+  margin-top: 16px;
+}
+
+.detailsSectionTitle {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $light-text-color;
+}
+
+.detailsSubhead {
+  margin: 0 0 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-color;
+}
+
+.detailsBody {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.45;
+  min-width: 0;
+}
+
+.clueBodyRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.clueActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.detailsActionButton {
+  border: 1px solid $border-color;
+  background: $button-bg;
+  color: $text-color;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+}
+
+.translationGroup {
+  margin-top: 8px;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.referenceList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.referenceItem {
+  line-height: 1.4;
+}
+
+.referenceText {
+  color: $text-color;
+}
+
+.referenceSource {
+  color: $light-text-color;
+}
+
+.referenceLink {
+  color: $accent-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $sun-accent;
+    text-decoration: underline;
+  }
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: $dark-green-correct;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 3000;
+  font-weight: bold;
+  animation: toastSlideIn 0.3s ease;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -463,5 +724,39 @@
   .compactAnswerInput .answerDisplay,
   .compactAnswerInput .hiddenInput {
     font-size: 0.85rem;
+  }
+
+  .senseSummary {
+    font-size: 0.8rem;
+  }
+
+  .detailsHeader,
+  .ratingBoxes {
+    grid-template-columns: 1fr;
+  }
+
+  .detailsMeta {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .detailsSummary,
+  .modalEntryText {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .clueBodyRow {
+    flex-direction: column;
+  }
+
+  .clueActions {
+    flex-wrap: wrap;
+  }
+
+  .toast {
+    top: 10px;
+    max-width: calc(100% - 20px);
+    text-align: center;
   }
 }

@@ -1,4 +1,5 @@
 @use "../../styles/theme" as *;
+// Classify table layout: sticky entry column + horizontal scroll
 
 .overlay {
   position: fixed;
@@ -9,16 +10,19 @@
   justify-content: center;
   padding: 16px;
   box-sizing: border-box;
+  overflow: hidden;
   background: rgba(0, 0, 0, 0.72);
 }
 
 .modal {
   background: $secondary-bg;
   color: $text-color;
-  max-width: 1280px;
-  width: 96%;
+  display: flex;
+  flex-direction: column;
+  max-width: 96vw;
+  width: 96vw;
   max-height: 90vh;
-  overflow: auto;
+  overflow: hidden;
   padding: 12px 16px 16px;
   border: 1px solid $border-color;
   border-radius: 8px;
@@ -30,6 +34,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .title {
@@ -52,40 +57,68 @@
 }
 
 .tableWrap {
-  overflow-x: auto;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 12px;
   color: $text-color;
 
   th,
   td {
+    box-sizing: border-box;
     border: 1px solid $border-color;
     padding: 4px 6px;
     vertical-align: middle;
+    background: $secondary-bg;
+    min-width: 88px;
   }
 
   th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
     background: $card-bg;
     color: $light-text-color;
     white-space: nowrap;
   }
 
-  tbody tr:nth-child(even) {
+  th:first-child,
+  td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 132px;
+    max-width: 180px;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.28);
+  }
+
+  th:first-child {
+    z-index: 4;
     background: $card-bg;
   }
 
-  tbody tr:hover {
+  tbody tr:hover td {
+    background: $button-hover-bg;
+  }
+
+  tbody tr:hover td:first-child {
     background: $button-hover-bg;
   }
 
   input[type="text"],
   select {
+    display: block;
+    box-sizing: border-box;
     width: 100%;
-    min-width: 110px;
+    max-width: 100%;
+    min-width: 0;
     background: $primary-bg;
     color: $text-color;
     border: 1px solid $border-color;
@@ -102,10 +135,58 @@
     background: $secondary-bg;
     color: $text-color;
   }
+
+  td.checkCell,
+  td.deleteCell {
+    min-width: 0;
+  }
+}
+
+.entryRow td {
+  background: $secondary-bg;
+}
+
+.senseRow td {
+  background: $card-bg;
+}
+
+.groupOdd.entryRow td,
+.groupOdd.senseRow td {
+  background: $secondary-bg;
+}
+
+.groupEven.entryRow td,
+.groupEven.senseRow td {
+  background: $card-bg;
+}
+
+.groupOdd.senseRow td {
+  background: #182a3b;
+}
+
+.groupEven.senseRow td {
+  background: #172b3a;
+}
+
+.entryCell {
+  white-space: nowrap;
+}
+
+.summaryCell {
+  min-width: 180px;
+}
+
+.summaryCell select {
+  min-width: 0;
+}
+
+.senseLabel {
+  color: $light-text-color;
 }
 
 .checkCell {
   text-align: center;
+  width: 36px;
 }
 
 .deleteCell {
@@ -142,6 +223,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .status {
@@ -175,7 +257,7 @@
 }
 
 .addButton {
-  margin-top: 10px;
+  margin-right: auto;
   background: $card-bg;
   color: $text-color;
   border: 1px solid $border-color;

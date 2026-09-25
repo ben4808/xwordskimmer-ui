@@ -19,6 +19,7 @@ interface AnswerInputProps {
   clueId?: string;
   compact?: boolean;
   active?: boolean;
+  nytDebut?: boolean;
   onUserInputChange: (value: string) => void;
   onHint?: () => void;
   onActivate?: () => void;
@@ -39,6 +40,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
       clueId,
       compact = false,
       active = true,
+      nytDebut = false,
       onUserInputChange,
       onHint,
       onActivate,
@@ -146,7 +148,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
   };
 
   const getLetterCellClassName = (letterIndex: number): string => {
-    if (isSolved) return styles.typedCorrect;
+    if (isSolved) return nytDebut ? styles.typedDebut : styles.typedCorrect;
 
     const typed = userInput[letterIndex];
     if (typed) {
