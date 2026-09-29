@@ -136,80 +136,38 @@
     color: $text-color;
   }
 
-  td.checkCell,
-  td.deleteCell {
+  td.checkCell {
     min-width: 0;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: $card-bg;
+  }
+
+  tbody tr:nth-child(even):hover td {
+    background: $button-hover-bg;
   }
 }
 
-.entryRow td {
-  background: $secondary-bg;
-}
-
-.senseRow td {
-  background: $card-bg;
-}
-
-.groupOdd.entryRow td,
-.groupOdd.senseRow td {
-  background: $secondary-bg;
-}
-
-.groupEven.entryRow td,
-.groupEven.senseRow td {
-  background: $card-bg;
-}
-
-.groupOdd.senseRow td {
-  background: #182a3b;
-}
-
-.groupEven.senseRow td {
-  background: #172b3a;
-}
-
 .entryCell {
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.3;
 }
 
-.summaryCell {
-  min-width: 180px;
+.entryLabel {
+  font-weight: 600;
 }
 
-.summaryCell select {
-  min-width: 0;
-}
-
-.senseLabel {
+.senseSummary {
   color: $light-text-color;
+  font-size: 10px;
+  margin-top: 3px;
+  white-space: normal;
 }
 
 .checkCell {
   text-align: center;
   width: 36px;
-}
-
-.deleteCell {
-  text-align: center;
-  width: 28px;
-}
-
-.deleteButton {
-  background: transparent;
-  border: none;
-  color: $light-text-color;
-  cursor: pointer;
-  padding: 2px 4px;
-  line-height: 1;
-
-  &:hover:not(:disabled) {
-    color: $error-color;
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
 }
 
 .missing {
@@ -253,20 +211,6 @@
   &:disabled {
     opacity: 0.5;
     cursor: default;
-  }
-}
-
-.addButton {
-  margin-right: auto;
-  background: $card-bg;
-  color: $text-color;
-  border: 1px solid $border-color;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-
-  &:hover {
-    background: $button-hover-bg;
   }
 }
 

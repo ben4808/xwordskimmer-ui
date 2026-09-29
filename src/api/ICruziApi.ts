@@ -11,18 +11,9 @@ export interface AuthVerifyResponse {
   error?: string;
 }
 
-export interface ClassifySenseOption {
-  senseId: string;
-  summary: string;
-  displayText: string;
-  entryType: string;
-  unityBucket: string;
-  familiarityBucket: string;
-  qualityBucket: string;
-  domain: string;
-  regionality: string;
-  isVulgar: boolean;
-  isSensitive: boolean;
+export interface ClassifyRequestItem {
+  fillWord: string;
+  senseId?: string | null;
 }
 
 export interface ClassifyEntry {
@@ -30,45 +21,36 @@ export interface ClassifyEntry {
   entry: string | null;
   lang: string | null;
   displayText: string | null;
-  entryType: string | null;
+  classification: string | null;
   unityBucket: string | null;
   familiarityBucket: string | null;
   qualityBucket: string | null;
-  domain?: string | null;
-  regionality?: string | null;
   isVulgar: boolean | null;
   isCrosswordese?: boolean;
   isBreakfast?: boolean;
   isSensitive?: boolean;
-  baseForm?: string | null;
   nytValue?: string | null;
-  senses?: ClassifySenseOption[];
+  senseId?: string | null;
+  senseSummary?: string | null;
 }
 
 export interface ClassifyRowPayload {
   rowId: string;
-  kind: 'entry' | 'sense';
-  isNew?: boolean;
-  parentRowId?: string;
   fillWord: string;
   entry: string | null;
   lang: string | null;
-  baseForm: string;
   displayText: string;
-  entryType: string;
+  classification: string;
   unityBucket: string;
   familiarityBucket: string;
   qualityBucket: string;
-  domain: string;
-  regionality: string;
   isVulgar: boolean;
   isCrosswordese: boolean;
   isBreakfast: boolean;
   isSensitive: boolean;
   nytValue: string;
   senseId?: string | null;
-  clueIds?: string[];
-  senses?: ClassifySenseOption[];
+  senseSummary?: string;
 }
 
 export interface ICruziApi {
@@ -98,9 +80,8 @@ export interface ICruziApi {
   addCluesToCollection(collectionId: string, clues: Clue[]): Promise<void>;
   removeClueFromCollection(collectionId: string, clueId: string): Promise<void>;
   updateClueSense(clueId: string, senseId: string | null): Promise<void>;
-  getClassifyEntries(fillWords: string[]): Promise<ClassifyEntry[]>;
+  getClassifyEntries(items: ClassifyRequestItem[]): Promise<ClassifyEntry[]>;
   saveClassifyEntries(originals: ClassifyRowPayload[], rows: ClassifyRowPayload[]): Promise<void>;
-  deleteClassifyEntry(entry: string, lang: string): Promise<void>;
   authenticateWithGoogle(token: string): Promise<AuthResponse>;
   verifyAuth(): Promise<AuthVerifyResponse>;
 };

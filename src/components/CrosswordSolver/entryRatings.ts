@@ -133,12 +133,20 @@ export function getNytAppearanceCount(
   return Number.isFinite(count) ? count : null;
 }
 
-/** Missing nyt tag, or 0/1 appearances — this puzzle likely debuted the answer. */
+/**
+ * NYT puzzles: missing nyt tag, or 0/1 appearances.
+ * Other publications: only missing nyt tag (a count of 1 is not a debut there).
+ */
 export function isLikelyNytDebut(
-  entryTags?: Record<string, string> | null
+  entryTags?: Record<string, string> | null,
+  publicationId?: string | null
 ): boolean {
   const count = getNytAppearanceCount(entryTags);
-  return count == null || count === 0 || count === 1;
+  const isNytPuzzle = (publicationId ?? '').toUpperCase() === 'NYT';
+  if (isNytPuzzle) {
+    return count == null || count === 0 || count === 1;
+  }
+  return count == null;
 }
 
 export function classifyDesirability(
@@ -179,6 +187,11 @@ export function getGettableNessColor(level: GettableNess): string {
     case 'Not Gettable':
       return '#f59e0b';
   }
+}
+
+export function getGettableNessTextColor(level: GettableNess): string {
+  if (level === 'Not a Thing') return '#ffffff';
+  return getGettableNessColor(level);
 }
 
 export function getDesirabilityColor(level: Desirability): string {

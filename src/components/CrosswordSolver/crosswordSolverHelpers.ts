@@ -471,24 +471,44 @@ export function buildExplainCluePrompt(
   return `Explain the clue "${clueText}" was used as a crossword clue for the answer "${answerDisplayText}".`;
 }
 
-export function buildInterestingFactPrompt(
+function interestingFactSubject(
   displayText: string,
   classification?: string
 ): string {
+  const quoted = `"${displayText}"`;
   switch ((classification ?? '').trim()) {
     case 'Proper Name':
-      return `Give an interesting piece of lore about ${displayText}.`;
+      return quoted;
     case 'Word':
-      return `Give an interesting piece of lore about the word ${displayText}.`;
+      return `the word ${quoted}`;
     case 'Phrase':
-      return `Give an interesting piece of lore about the phrase ${displayText}.`;
+      return `the phrase ${quoted}`;
     case 'Acronym/Abbreviation':
-      return `Give an interesting piece of lore about the acronym/abbreviation ${displayText}.`;
+      return `the acronym/abbreviation ${quoted}`;
     case 'Prefix/Suffix':
-      return `Give an interesting piece of lore about the prefix/suffix ${displayText}.`;
+      return `the prefix/suffix ${quoted}`;
     default:
-      return `Give an interesting piece of lore about ${displayText}.`;
+      return quoted;
   }
+}
+
+export function buildInterestingFactPrompt(
+  displayText: string,
+  classification?: string,
+  senseSummary?: string
+): string {
+  const subject = interestingFactSubject(displayText, classification);
+  const summary = senseSummary?.trim();
+  if (summary) {
+    return `Give an interesting piece of lore about ${subject} in this specific sense: ${summary}.`;
+  }
+  return `Give an interesting piece of lore about ${subject}.`;
+}
+
+export function capitalizeFirst(value: string | null | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed) return '';
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
 export function joinWithBullets(

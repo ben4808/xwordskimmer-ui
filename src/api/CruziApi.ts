@@ -1,5 +1,5 @@
 import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, CrosswordCalendarDay, CrosswordResponse, Entry, UserSettings } from "cruzi-models";
-import { ICruziApi, AuthResponse, AuthVerifyResponse, ClassifyEntry, ClassifyRowPayload } from "./ICruziApi";
+import { ICruziApi, AuthResponse, AuthVerifyResponse, ClassifyEntry, ClassifyRequestItem, ClassifyRowPayload } from "./ICruziApi";
 
 const configuredOrigin = import.meta.env.API_URL?.replace(/\/$/, '');
 const apiOrigin = configuredOrigin || (import.meta.env.DEV ? 'http://localhost:3000' : '');
@@ -312,7 +312,7 @@ class CruziApi implements ICruziApi {
           lang: rawEntry.lang ?? 'en',
           baseForm: rawEntry.baseForm,
           displayText: rawEntry.displayText,
-          entryType: rawEntry.entryType,
+          classification: rawEntry.classification,
           familiarityScore: rawEntry.familiarityScore,
           qualityScore: rawEntry.qualityScore,
           loadingStatus: rawEntry.loadingStatus,
@@ -578,7 +578,7 @@ class CruziApi implements ICruziApi {
     }
   }
 
-  async getClassifyEntries(fillWords: string[]): Promise<ClassifyEntry[]> {
+  async getClassifyEntries(items: ClassifyRequestItem[]): Promise<ClassifyEntry[]> {
     try {
       const token = localStorage.getItem('token');
       const headers: HeadersInit = {
@@ -591,7 +591,7 @@ class CruziApi implements ICruziApi {
       const response = await fetch(`${baseUrl}/classify/entries`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ fillWords }),
+        body: JSON.stringify({ items }),
       });
 
       const body = await response.json().catch(() => ({}));
@@ -628,32 +628,6 @@ class CruziApi implements ICruziApi {
       }
     } catch (error) {
       console.error('Error saving classify entries:', error);
-      throw error;
-    }
-  }
-
-  async deleteClassifyEntry(entry: string, lang: string): Promise<void> {
-    try {
-      const token = localStorage.getItem('token');
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${baseUrl}/classify/delete`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ entry, lang }),
-      });
-
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(body.error || `HTTP error! status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error deleting classify entry:', error);
       throw error;
     }
   }

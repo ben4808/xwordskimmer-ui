@@ -5,6 +5,7 @@ import { ClueWithProgress, SenseReference } from 'cruzi-models';
 import {
   buildExplainCluePrompt,
   buildInterestingFactPrompt,
+  capitalizeFirst,
   getClueText,
   getDisplayText,
   getSenseDisplayText,
@@ -16,15 +17,17 @@ import {
   classifyGettableNess,
   getDesirabilityColor,
   getDisplayFlagLabels,
-  getGettableNessColor,
+  getGettableNessTextColor,
   hasAvoidDesirabilityFlags,
   isRatingUnset,
   MISSING_RATING_COLOR,
 } from './entryRatings';
 import styles from './CrosswordSolver.module.scss';
 
-function bucketLabel(value: string | undefined): string {
-  return value?.trim() || '—';
+function BucketTag({ value }: { value: string | undefined }) {
+  const text = value?.trim();
+  if (!text) return <span>—</span>;
+  return <span className={styles.bucketTag}>{text}</span>;
 }
 
 function ReferenceItem({ reference }: { reference: SenseReference }) {
@@ -70,7 +73,7 @@ export function EntryDetailsModal({
   const metaLine = joinWithBullets([
     sense?.classification,
     sense?.partOfSpeech,
-    sense?.domain,
+    capitalizeFirst(sense?.domain),
   ]);
   const gettableNess = classifyGettableNess(
     sense?.unityBucket,
@@ -88,7 +91,7 @@ export function EntryDetailsModal({
     !hasAvoidDesirabilityFlags(sense?.tags, clue.entry?.tags);
   const gettableColor = gettableMissing
     ? MISSING_RATING_COLOR
-    : getGettableNessColor(gettableNess);
+    : getGettableNessTextColor(gettableNess);
   const desirabilityColor = desirabilityMissing
     ? MISSING_RATING_COLOR
     : getDesirabilityColor(desirability);
@@ -150,26 +153,30 @@ export function EntryDetailsModal({
         <div className={styles.ratingBoxes}>
           <section className={styles.ratingBox}>
             <h3 className={styles.ratingBoxHeader}>
-              Gettability:{' '}
-              <span style={{ color: gettableColor }}>{gettableNess}</span>
+              Gettability:
+              <span className={styles.ratingLevelValue} style={{ color: gettableColor }}>
+                {gettableNess}
+              </span>
             </h3>
             <p className={styles.ratingMetric}>
               <span>Unity:</span>
-              <span>{bucketLabel(sense?.unityBucket)}</span>
+              <BucketTag value={sense?.unityBucket} />
             </p>
             <p className={styles.ratingMetric}>
               <span>Familiarity:</span>
-              <span>{bucketLabel(sense?.familiarityBucket)}</span>
+              <BucketTag value={sense?.familiarityBucket} />
             </p>
           </section>
           <section className={styles.ratingBox}>
             <h3 className={styles.ratingBoxHeader}>
-              Desirability:{' '}
-              <span style={{ color: desirabilityColor }}>{desirability}</span>
+              Desirability:
+              <span className={styles.ratingLevelValue} style={{ color: desirabilityColor }}>
+                {desirability}
+              </span>
             </h3>
             <p className={styles.ratingMetric}>
               <span>Quality:</span>
-              <span>{bucketLabel(sense?.qualityBucket)}</span>
+              <BucketTag value={sense?.qualityBucket} />
             </p>
             {flags.length > 0 && (
               <div className={styles.ratingFlags}>
@@ -204,7 +211,8 @@ export function EntryDetailsModal({
                   copyPrompt(
                     buildInterestingFactPrompt(
                       senseDisplayText,
-                      sense?.classification
+                      sense?.classification,
+                      sense?.summary
                     )
                   )
                 }
@@ -215,10 +223,12 @@ export function EntryDetailsModal({
           </div>
         </section>
 
-        <section className={styles.detailsSection}>
-          <h3 className={styles.detailsSectionTitle}>Definition</h3>
-          {definition && <p className={styles.detailsBody}>{definition}</p>}
-        </section>
+        {definition && (
+          <section className={styles.detailsSection}>
+            <h3 className={styles.detailsSectionTitle}>Definition</h3>
+            <p className={styles.detailsBody}>{definition}</p>
+          </section>
+        )}
 
         {regionality && (
           <section className={styles.detailsSection}>

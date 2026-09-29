@@ -13,7 +13,7 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { ClueCollection, ClueWithProgress } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
-import { getPuzzleExternalLink } from '../../lib/crosswordDisplay';
+import { getPublicationId, getPuzzleExternalLink } from '../../lib/crosswordDisplay';
 import { formatCrosswordDateForQuery, parseCalendarDate } from '../../lib/utils';
 import CrosswordInfoCard from '../CrosswordList/CrosswordInfoCard';
 import { AnswerInput } from './AnswerInput';
@@ -79,6 +79,7 @@ function RatingDot({
 function ClueRow({
   item,
   minigameOn,
+  publicationId,
   state,
   isActive,
   onSecondLineClick,
@@ -89,6 +90,7 @@ function ClueRow({
 }: {
   item: PuzzleClueItem;
   minigameOn: boolean;
+  publicationId?: string | null;
   state: ClueSolverState;
   isActive: boolean;
   onSecondLineClick: () => void;
@@ -119,7 +121,7 @@ function ClueRow({
   );
   const warningFlags = getDisplayFlagLabels(clue.sense?.tags, clue.entry?.tags);
   const showWarning = hasDisplayWarningFlags(clue.sense?.tags, clue.entry?.tags);
-  const nytDebut = isLikelyNytDebut(clue.entry?.tags);
+  const nytDebut = isLikelyNytDebut(clue.entry?.tags, publicationId);
   const answerLengthLabel = `${answer.length} letter${answer.length === 1 ? '' : 's'}`;
   const fromBaseDisplay = getSenseSummaryBaseDisplay(clue);
   const secondLineOpensDetails = hasMatchedSense(clue) && (!minigameOn || state.isSolved);
@@ -621,6 +623,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
               key={clueId}
               item={item}
               minigameOn={minigameOn}
+              publicationId={crossword ? getPublicationId(crossword) : undefined}
               state={state}
               isActive={Boolean(item.clue.id) && item.clue.id === activeClueId}
               onSecondLineClick={() => handleSecondLineClick(item.clue)}
