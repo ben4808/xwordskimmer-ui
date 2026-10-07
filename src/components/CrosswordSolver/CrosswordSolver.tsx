@@ -124,7 +124,7 @@ function ClueRow({
   const nytDebut = isLikelyNytDebut(clue.entry?.tags, publicationId);
   const answerLengthLabel = `${answer.length} letter${answer.length === 1 ? '' : 's'}`;
   const fromBaseDisplay = getSenseSummaryBaseDisplay(clue);
-  const secondLineOpensDetails = hasMatchedSense(clue) && (!minigameOn || state.isSolved);
+  const secondLineOpensDetails = !minigameOn || state.isSolved;
   const secondLineActivates = minigameOn && !state.isSolved;
   const secondLineClickable = secondLineOpensDetails || secondLineActivates;
   const showSenseSummary = secondLineOpensDetails;
@@ -515,7 +515,6 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   );
 
   const openClueDetails = (clue: ClueWithProgress) => {
-    if (!hasMatchedSense(clue)) return;
     setActiveClueId(null);
     setDetailsClue(clue);
   };

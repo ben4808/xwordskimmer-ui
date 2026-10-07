@@ -22,7 +22,7 @@ LAYOUT
 
 2. Clue list modeled after xwordinfo.com
    - Across and Down in two columns; a single column on mobile.
-   - No grid, author block, or extra puzzle chrome — clues and answers only.
+   - No grid, author block, or extra puzzle chrome Ã¢ÂÂ clues and answers only.
    - Each clue is two lines:
        <number> <clue> <answer length, e.g. "7 letters">
        <gettability dot> <desirability dot> [warning emoji] <answer text / minigame>
@@ -44,7 +44,7 @@ when a sense is matched, otherwise the entry/custom display text. If the clue
 has a matched sense, the sense summary is shown after the answer on the same
 line (prefixed with italic "From <BASE FORM>: " when the sense belongs to a
 base entry; the base form is all caps and italic). The answer is a link that opens the
-entry details modal only when a matched sense exists.
+entry details modal for every answer, with or without a matched sense.
 
 Minigame on:
 - Centered above the clue list: "Hints used: <count>" (crossword-wide; the count
@@ -63,13 +63,13 @@ Minigame on:
   - Reveal reveals the entire answer.
 - After an answer is solved, the sense summary is shown after the answer when a
   matched sense exists. Hovering the dots and letters shows a pointer cursor and
-  a subtle border around that row. Clicking opens the entry details modal only
-  if the clue has a matched sense.
+  a subtle border around that row. Clicking opens the entry details modal
+  (whether or not the clue has a matched sense).
 
-ENTRY DETAILS MODAL (matched sense required)
+ENTRY DETAILS MODAL
 
 - Top: sense display_text, with the sense summary to its right, first-line
-  baselines aligned. Classification • part of speech • domain sit under the
+  baselines aligned. Classification Ã¢ÂÂ¢ part of speech Ã¢ÂÂ¢ domain sit under the
   display_text (domain omitted if unset).
 - Two side-by-side boxes with uncolored borders. Only the gettability and
   desirability class values use the dot colors; labels stay normal text.
@@ -80,12 +80,11 @@ ENTRY DETAILS MODAL (matched sense required)
       Sensitive (sense_tags.sensitive), Vulgar (sense_tags.vulgar),
       Breakfast Test (entry_tags.breakfast_test), Crosswordese (entry_tags.crosswordese).
     Classes follow crosswordListExtractor.ts guidelines.
-- Clue header, then the clue text with "Explain Clue" and "Interesting Fact"
-  buttons to its right. Both copy an AI prompt and toast
-  "AI prompt copied to clipboard".
+- Clue header, then the clue text with an "Explain Clue" button to its right.
+  It copies an AI prompt and toasts "AI prompt copied to clipboard".
   - Explain: Explain the clue "<clue>" was used as a crossword clue for the answer "<answer display_text>".
-  - Interesting Fact depends on classification (Proper Name / Word / Phrase /
-    Acronym/Abbreviation / Prefix/Suffix).
-- Definition, optional Regionality tag, References (text + source linked to URL),
-  Alternatives (•-separated), Spanish translations with Natural and Colloquial
-  subheaders (•-separated).
+- Definition, optional Regionality tag, Lore (from sense_lore, shown only when present), References (text + source
+  linked to URL), Alternatives (Ã¢ÂÂ¢-separated), Spanish translations with Natural and Colloquial
+  subheaders (Ã¢ÂÂ¢-separated).
+
+Modal without a matched sense: header shows the answer display text with entry classification Â domain (no part of speech or summary). Gettability, Desirability, and Quality use the entry record's buckets and entry_tags. Explain Clue still works. Definition, Lore, References, Alternatives, and translations are omitted.

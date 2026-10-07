@@ -18,6 +18,7 @@ export const UNITY_OPTIONS = [
   'Formula',
   'Partial',
   'Variant',
+  'Formulaic',
   'Non-unit',
   'Nonsense',
 ];
@@ -38,8 +39,7 @@ export const FAMILIARITY_OPTIONS = [
 export const QUALITY_OPTIONS = [
   'Idiomatic',
   'Interesting',
-  'Appealing',
-  'Positive',
+  'Feel-Good',
   'Trendy',
   'Normal',
   'Sensitive',

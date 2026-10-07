@@ -4,12 +4,12 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { ClueWithProgress, SenseReference } from 'cruzi-models';
 import {
   buildExplainCluePrompt,
-  buildInterestingFactPrompt,
   capitalizeFirst,
   getClueText,
   getDisplayText,
   getSenseDisplayText,
   getSpanishTranslations,
+  hasMatchedSense,
   joinWithBullets,
 } from './crosswordSolverHelpers';
 import {
@@ -69,25 +69,28 @@ export function EntryDetailsModal({
   onPromptCopied: (message: string) => void;
 }) {
   const sense = clue.sense;
+  // Without a matched sense, ratings and metadata come from the entry record instead.
+  const ratingSource = hasMatchedSense(clue) ? sense : clue.entry;
   const senseDisplayText = getSenseDisplayText(clue);
   const metaLine = joinWithBullets([
-    sense?.classification,
+    ratingSource?.classification,
     sense?.partOfSpeech,
-    capitalizeFirst(sense?.domain),
+    capitalizeFirst(ratingSource?.domain),
   ]);
   const gettableNess = classifyGettableNess(
-    sense?.unityBucket,
-    sense?.familiarityBucket
+    ratingSource?.unityBucket,
+    ratingSource?.familiarityBucket
   );
   const desirability = classifyDesirability(
-    sense?.qualityBucket,
+    ratingSource?.qualityBucket,
     sense?.tags,
     clue.entry?.tags
   );
   const gettableMissing =
-    isRatingUnset(sense?.unityBucket) || isRatingUnset(sense?.familiarityBucket);
+    isRatingUnset(ratingSource?.unityBucket) ||
+    isRatingUnset(ratingSource?.familiarityBucket);
   const desirabilityMissing =
-    isRatingUnset(sense?.qualityBucket) &&
+    isRatingUnset(ratingSource?.qualityBucket) &&
     !hasAvoidDesirabilityFlags(sense?.tags, clue.entry?.tags);
   const gettableColor = gettableMissing
     ? MISSING_RATING_COLOR
@@ -99,6 +102,9 @@ export function EntryDetailsModal({
   const spanish = getSpanishTranslations(sense);
   const alternatives = (sense?.similarEntries ?? []).map((item) => item.trim()).filter(Boolean);
   const references = sense?.references ?? [];
+  const lore = (sense?.lore ?? [])
+    .map((item) => item.loreText?.trim())
+    .filter(Boolean);
   const regionality = sense?.tags?.regionality?.trim()
     || Object.entries(sense?.tags ?? {}).find(([tag]) => tag.toLowerCase() === 'regionality')?.[1]?.trim();
   const clueText = getClueText(clue);
@@ -160,11 +166,11 @@ export function EntryDetailsModal({
             </h3>
             <p className={styles.ratingMetric}>
               <span>Unity:</span>
-              <BucketTag value={sense?.unityBucket} />
+              <BucketTag value={ratingSource?.unityBucket} />
             </p>
             <p className={styles.ratingMetric}>
               <span>Familiarity:</span>
-              <BucketTag value={sense?.familiarityBucket} />
+              <BucketTag value={ratingSource?.familiarityBucket} />
             </p>
           </section>
           <section className={styles.ratingBox}>
@@ -176,7 +182,7 @@ export function EntryDetailsModal({
             </h3>
             <p className={styles.ratingMetric}>
               <span>Quality:</span>
-              <BucketTag value={sense?.qualityBucket} />
+              <BucketTag value={ratingSource?.qualityBucket} />
             </p>
             {flags.length > 0 && (
               <div className={styles.ratingFlags}>
@@ -204,21 +210,6 @@ export function EntryDetailsModal({
               >
                 Explain Clue
               </button>
-              <button
-                type="button"
-                className={styles.detailsActionButton}
-                onClick={() =>
-                  copyPrompt(
-                    buildInterestingFactPrompt(
-                      senseDisplayText,
-                      sense?.classification,
-                      sense?.summary
-                    )
-                  )
-                }
-              >
-                Interesting Fact
-              </button>
             </div>
           </div>
         </section>
@@ -234,6 +225,17 @@ export function EntryDetailsModal({
           <section className={styles.detailsSection}>
             <h3 className={styles.detailsSectionTitle}>Regionality</h3>
             <p className={styles.detailsBody}>{regionality}</p>
+          </section>
+        )}
+
+        {lore.length > 0 && (
+          <section className={styles.detailsSection}>
+            <h3 className={styles.detailsSectionTitle}>Lore</h3>
+            {lore.map((text, index) => (
+              <p key={index} className={`${styles.detailsBody} ${styles.loreText}`}>
+                {text}
+              </p>
+            ))}
           </section>
         )}
 

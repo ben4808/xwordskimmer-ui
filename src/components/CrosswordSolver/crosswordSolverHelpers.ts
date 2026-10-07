@@ -471,40 +471,6 @@ export function buildExplainCluePrompt(
   return `Explain the clue "${clueText}" was used as a crossword clue for the answer "${answerDisplayText}".`;
 }
 
-function interestingFactSubject(
-  displayText: string,
-  classification?: string
-): string {
-  const quoted = `"${displayText}"`;
-  switch ((classification ?? '').trim()) {
-    case 'Proper Name':
-      return quoted;
-    case 'Word':
-      return `the word ${quoted}`;
-    case 'Phrase':
-      return `the phrase ${quoted}`;
-    case 'Acronym/Abbreviation':
-      return `the acronym/abbreviation ${quoted}`;
-    case 'Prefix/Suffix':
-      return `the prefix/suffix ${quoted}`;
-    default:
-      return quoted;
-  }
-}
-
-export function buildInterestingFactPrompt(
-  displayText: string,
-  classification?: string,
-  senseSummary?: string
-): string {
-  const subject = interestingFactSubject(displayText, classification);
-  const summary = senseSummary?.trim();
-  if (summary) {
-    return `Give an interesting piece of lore about ${subject} in this specific sense: ${summary}.`;
-  }
-  return `Give an interesting piece of lore about ${subject}.`;
-}
-
 export function capitalizeFirst(value: string | null | undefined): string {
   const trimmed = value?.trim() ?? '';
   if (!trimmed) return '';
