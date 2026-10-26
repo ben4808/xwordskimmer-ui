@@ -2,7 +2,7 @@ import { Clue, ClueCollection, ClueWithProgress, CollectionClueTableRow, Crosswo
 import { ICruziApi, AuthResponse, AuthVerifyResponse, ClassifyEntry, ClassifyRequestItem, ClassifyRowPayload } from "./ICruziApi";
 
 const configuredOrigin = import.meta.env.API_URL?.replace(/\/$/, '');
-const apiOrigin = configuredOrigin || (import.meta.env.DEV ? 'http://localhost:3000' : '');
+const apiOrigin = configuredOrigin || (import.meta.env.DEV ? 'http://localhost:3002' : '');
 const baseUrl = apiOrigin ? `${apiOrigin}/api` : '/api';
 
 class CruziApi implements ICruziApi {

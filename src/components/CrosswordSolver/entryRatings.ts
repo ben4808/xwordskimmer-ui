@@ -18,7 +18,7 @@ const NOT_GETTABLE_FAMILIARITY = new Set(['Obscure', 'Barely Exists']);
 
 const PREFER_QUALITY = new Set(['Idiomatic', 'Interesting', 'Feel-Good', 'Trendy']);
 const NORMAL_QUALITY = new Set(['Normal', 'Sensitive']);
-const AVOID_QUALITY = new Set(['Non-unit', 'Uncommon Inflection', 'Clunky']);
+const AVOID_QUALITY = new Set(['Non-unit', 'Uncommon Derivation', 'Clunky']);
 
 export const MISSING_RATING_COLOR = '#b57edc';
 

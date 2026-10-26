@@ -44,7 +44,7 @@ export const QUALITY_OPTIONS = [
   'Normal',
   'Sensitive',
   'Non-unit',
-  'Uncommon Inflection',
+  'Uncommon Derivation',
   'Clunky',
 ];
 
