@@ -36,7 +36,9 @@ function CollectionList(props: CollectionListProps) {
       setError(null);
       try {
         const response = await api.getCollectionList();
-        const clueCollections = response.filter(collection => !collection.puzzle?.id);
+        const clueCollections = response.filter(
+          collection => !collection.puzzle?.id && !collection.magicPuzzle?.id
+        );
         setCollections(clueCollections);
         
         // Separate collections: "Your Collections" includes collections authored by user or with progress data

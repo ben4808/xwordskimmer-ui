@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useEffect } from 'react';
+import { isRunningLocally } from '../../lib/utils';
 import styles from './SettingsModal.module.scss';
 
 interface SettingsModalProps {
@@ -48,19 +49,21 @@ function SettingsModal({
 
         <h2 id="settings-title" className={styles.title}>Settings</h2>
 
-        <label className={styles.settingRow}>
-          <span className={styles.settingLabel}>Crossword Solver Minigame</span>
-          <button
-            type="button"
-            className={`${styles.slider} ${crosswordSolverMinigame ? styles.sliderOn : ''}`}
-            role="switch"
-            aria-checked={crosswordSolverMinigame}
-            aria-label="Crossword Solver Minigame"
-            onClick={() => onToggleMinigame(!crosswordSolverMinigame)}
-          >
-            <span className={styles.sliderThumb} />
-          </button>
-        </label>
+        {isRunningLocally() && (
+          <label className={styles.settingRow}>
+            <span className={styles.settingLabel}>Crossword Solver Minigame</span>
+            <button
+              type="button"
+              className={`${styles.slider} ${crosswordSolverMinigame ? styles.sliderOn : ''}`}
+              role="switch"
+              aria-checked={crosswordSolverMinigame}
+              aria-label="Crossword Solver Minigame"
+              onClick={() => onToggleMinigame(!crosswordSolverMinigame)}
+            >
+              <span className={styles.sliderThumb} />
+            </button>
+          </label>
+        )}
       </div>
     </div>
   );

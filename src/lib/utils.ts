@@ -252,6 +252,11 @@ function normalizeForComparison(text: string): string {
   return matches ? matches.join('').toLowerCase() : '';
 }
 
+export function isRunningLocally(): boolean {
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+
 export function verifyInputBox(userInput: string, displayText: string): InputBoxState {
   const normalizedInput = normalizeForComparison(userInput);
   const normalizedDisplay = normalizeForComparison(displayText);

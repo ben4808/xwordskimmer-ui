@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { User } from 'cruzi-models';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { isRunningLocally } from '../../lib/utils';
 import SettingsModal from './SettingsModal';
 
 const MENU_ITEMS = ['Crosswords', 'Collections'] as const;
@@ -136,15 +137,17 @@ const Header = ({ onLogout }: HeaderProps) => {
           {isUserMenuOpen && (
             <nav className={styles.userDropdown}>
               <ul className={styles.userDropdownList}>
-                <li className={styles.userDropdownItem}>
-                  <button
-                    className={styles.userDropdownLink}
-                    onClick={handleOpenSettings}
-                  >
-                    <FontAwesomeIcon icon={faGear} className={styles.userDropdownIcon} />
-                    Settings
-                  </button>
-                </li>
+                {isRunningLocally() && (
+                  <li className={styles.userDropdownItem}>
+                    <button
+                      className={styles.userDropdownLink}
+                      onClick={handleOpenSettings}
+                    >
+                      <FontAwesomeIcon icon={faGear} className={styles.userDropdownIcon} />
+                      Settings
+                    </button>
+                  </li>
+                )}
                 <li className={styles.userDropdownItem}>
                   <button
                     className={styles.userDropdownLink}
@@ -260,7 +263,7 @@ const Header = ({ onLogout }: HeaderProps) => {
         </div>
         {renderUserSection()}
       </div>
-      {isSettingsOpen && (
+      {isRunningLocally() && isSettingsOpen && (
         <SettingsModal
           crosswordSolverMinigame={userSettings.crosswordSolverMinigame}
           onToggleMinigame={handleToggleMinigame}

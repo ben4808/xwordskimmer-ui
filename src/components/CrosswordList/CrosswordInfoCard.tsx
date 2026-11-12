@@ -9,32 +9,19 @@ import styles from './CrosswordInfoCard.module.scss';
 
 interface CrosswordInfoCardProps {
   crossword: ClueCollection;
-  showClueCount6Plus?: boolean;
-  showProgress?: boolean;
   puzzleLink?: PuzzleExternalLink | null;
   onClick?: () => void;
 }
 
-function calculateProgressPercentage(value: number, total: number): number {
-  if (total === 0) return 0;
-  return Math.min(100, (value / total) * 100);
-}
-
 function CrosswordInfoCard({
   crossword,
-  showClueCount6Plus = true,
-  showProgress = false,
   puzzleLink,
   onClick,
 }: CrosswordInfoCardProps) {
   const clueCount = crossword.clueCount ?? 0;
-  const clueCount6Plus = crossword.clueCount6Plus ?? 0;
   const author = getCrosswordAuthor(crossword);
   const clickable = Boolean(onClick);
-
-  const meta = showClueCount6Plus
-    ? `By ${author} • ${clueCount} clues (${clueCount6Plus} of at least 6 letters)`
-    : `By ${author} • ${clueCount} clues`;
+  const meta = `By ${author} • ${clueCount} clues`;
 
   const renderPuzzleLink = () => {
     if (!puzzleLink) return null;
@@ -55,35 +42,6 @@ function CrosswordInfoCard({
     );
   };
 
-  const renderProgressBar = () => {
-    if (!showProgress) return null;
-
-    const total = crossword.clueCount6Plus ?? 0;
-    if (total === 0) return null;
-
-    const progress = crossword.progressData;
-    const completed = progress?.completed ?? 0;
-    const inProgress = progress?.inProgress ?? 0;
-    const unseen = Math.max(0, total - completed);
-
-    return (
-      <div className={styles.progressBar}>
-        <div
-          className={styles.progressCompleted}
-          style={{ width: `${calculateProgressPercentage(completed, total)}%` }}
-        />
-        <div
-          className={styles.progressInProgress}
-          style={{ width: `${calculateProgressPercentage(inProgress, total)}%` }}
-        />
-        <div
-          className={styles.progressUnseen}
-          style={{ width: `${calculateProgressPercentage(unseen, total)}%` }}
-        />
-      </div>
-    );
-  };
-
   const content = (
     <>
       <div className={styles.thumbnail}>
@@ -96,7 +54,6 @@ function CrosswordInfoCard({
           {meta}
           {renderPuzzleLink()}
         </p>
-        {renderProgressBar()}
       </div>
     </>
   );

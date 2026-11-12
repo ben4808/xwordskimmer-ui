@@ -18,9 +18,6 @@ Layout
    and the following three lines to the right of it: 
     1. The publication full name (normal letters)
     2. The crossword title (bigger letters)
-    3. "By: <Author> • <Clue Count> clues (<6 plus count> >= 6 letters)"
-    4. A progress bar, with green representing Completed clues and gray otherwise. There are no labels for the bar, 
-       just a rectangular bar. The progress bar does not show up if there is no logged in user. If there is a user but no
-       progress for a clue, it should be considered incomplete.
+    3. "By: <Author> • <Clue Count> clues"
 - The thumbnail will be crossword_thumb.png.
 - Clicking a crossword takes the user to the Crossword Solver page for that crossword. (separate component)

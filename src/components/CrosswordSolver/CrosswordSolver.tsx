@@ -14,7 +14,7 @@ import { ClueCollection, ClueWithProgress } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { getPublicationId, getPuzzleExternalLink } from '../../lib/crosswordDisplay';
-import { formatCrosswordDateForQuery, parseCalendarDate } from '../../lib/utils';
+import { formatCrosswordDateForQuery, isRunningLocally, parseCalendarDate } from '../../lib/utils';
 import CrosswordInfoCard from '../CrosswordList/CrosswordInfoCard';
 import { AnswerInput } from './AnswerInput';
 import ClassifyModal from './ClassifyModal';
@@ -262,7 +262,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const id = dateParam ? undefined : publicationOrId;
   const publication = dateParam ? publicationOrId : undefined;
   const { user, userSettings } = useAuth();
-  const minigameOn = Boolean(user) && userSettings.crosswordSolverMinigame;
+  const minigameOn = isRunningLocally() && Boolean(user) && userSettings.crosswordSolverMinigame;
 
   const [crossword, setCrossword] = useState<ClueCollection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -698,7 +698,6 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
         <div className={styles.puzzleInfo}>
           <CrosswordInfoCard
             crossword={crossword}
-            showClueCount6Plus={false}
             puzzleLink={puzzleLink}
           />
         </div>
@@ -722,13 +721,15 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
               </button>
             </>
           )}
-          <button
-            type="button"
-            className={styles.classifyButton}
-            onClick={() => setClassifyFillItems(getClassifyFillItems(crossword.clues))}
-          >
-            Classify
-          </button>
+          {isRunningLocally() && (
+            <button
+              type="button"
+              className={styles.classifyButton}
+              onClick={() => setClassifyFillItems(getClassifyFillItems(crossword.clues))}
+            >
+              Classify
+            </button>
+          )}
         </div>
 
         <div className={styles.clueColumns}>
@@ -750,7 +751,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
       {toastMessage && <div className={styles.toast}>{toastMessage}</div>}
 
-      {classifyFillItems && (
+      {isRunningLocally() && classifyFillItems && (
         <ClassifyModal
           fillItems={classifyFillItems}
           api={api}

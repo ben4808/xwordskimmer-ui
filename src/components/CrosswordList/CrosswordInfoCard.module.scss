@@ -102,28 +102,3 @@
   font-size: inherit;
   font-weight: 500;
 }
-
-.progressBar {
-  height: 4px;
-  display: flex;
-  background-color: $gray-remaining;
-  margin-top: 8px;
-  width: 100%;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progressCompleted {
-  background-color: $dark-green-correct;
-  height: 100%;
-}
-
-.progressInProgress {
-  background-color: $in-progress-yellow;
-  height: 100%;
-}
-
-.progressUnseen {
-  background-color: $gray-remaining;
-  height: 100%;
-}

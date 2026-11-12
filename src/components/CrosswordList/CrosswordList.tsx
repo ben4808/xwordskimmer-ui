@@ -141,7 +141,6 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
               <CrosswordInfoCard
                 key={crossword.id}
                 crossword={crossword}
-                showProgress={Boolean(user)}
                 onClick={() => handleCrosswordClick(crossword)}
               />
             ))}

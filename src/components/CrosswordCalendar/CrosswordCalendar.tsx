@@ -9,6 +9,7 @@ import {
 import { CrosswordCalendarDay, getSortedPublications, Publications } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { isRunningLocally } from '../../lib/utils';
 import { CrosswordCalendarProps } from './CrosswordCalendarProps';
 import styles from './CrosswordCalendar.module.scss';
 
@@ -231,7 +232,7 @@ function CrosswordCalendar({
             </button>
           </div>
 
-          {user && (
+          {user && isRunningLocally() && (
             <select
               className={styles.publicationSelect}
               value={publicationId}

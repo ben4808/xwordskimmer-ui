@@ -11,7 +11,7 @@ Header:
 - Selected month (e.g. May 2026)
 - Control so the user can select another month.
 - On the right side, a dropdown of supported crossword sources (reference Publication.ts in cruzi-models, show the full
-  source name in the dropdown). If no user logged in, skip this drop-down.
+  source name in the dropdown). Skip this drop-down if no user is logged in or if the app is not running locally.
 
 Calendar: Show a calendar of the selected month.
 - If there is no logged in user, it's not necessary to even call getCrosswordCalendar. Just show a calendar for that month.
