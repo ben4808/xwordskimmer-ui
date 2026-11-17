@@ -120,10 +120,10 @@ function CrosswordList({ api = CruziApi }: CrosswordListProps) {
           type="button"
           className={styles.calendarButton}
           onClick={() => setIsCalendarOpen(true)}
-          aria-label="Open calendar and stats"
+          aria-label="Open calendar"
         >
           <FontAwesomeIcon icon={faCalendarDays} />
-          <span>Calendar/Stats</span>
+          <span>Calendar</span>
         </button>
       </div>
 

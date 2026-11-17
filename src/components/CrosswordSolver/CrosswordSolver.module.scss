@@ -60,6 +60,63 @@
   min-width: 0;
 }
 
+.dayNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.dayNavButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  background-color: $secondary-bg;
+  color: $accent-color;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color $transition-speed;
+
+  &:hover:not(:disabled) {
+    background-color: $button-hover;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.calendarButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background-color: $secondary-bg;
+  color: $accent-color;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color $transition-speed;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  svg {
+    font-size: 1.05rem;
+  }
+}
+
 .minigameToolbar {
   display: flex;
   align-items: center;

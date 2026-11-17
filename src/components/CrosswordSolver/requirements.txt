@@ -1,4 +1,5 @@
 URL Pattern: /crossword/:publication?date=MM/DD/YYYY
+When date is omitted, the page shows that publication's puzzle for today.
 
 Tech Stack: React + TypeScript, SCSS Modules (Dark Mode UI), Google OAuth (JWT).
 

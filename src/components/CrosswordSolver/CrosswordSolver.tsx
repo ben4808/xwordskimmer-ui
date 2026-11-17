@@ -7,14 +7,24 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent,
 } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowLeft,
+  faCalendarDays,
+  faChevronLeft,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
 import { ClueCollection, ClueWithProgress } from 'cruzi-models';
 import CruziApi from '../../api/CruziApi';
 import { useAuth } from '../../contexts/AuthContext';
-import { getPublicationId, getPuzzleExternalLink } from '../../lib/crosswordDisplay';
+import {
+  getPublicationId,
+  getPuzzleExternalLink,
+  resolvePublicationId,
+} from '../../lib/crosswordDisplay';
 import { formatCrosswordDateForQuery, isRunningLocally, parseCalendarDate } from '../../lib/utils';
+import CrosswordCalendar from '../CrosswordCalendar/CrosswordCalendar';
 import CrosswordInfoCard from '../CrosswordList/CrosswordInfoCard';
 import { AnswerInput } from './AnswerInput';
 import ClassifyModal from './ClassifyModal';
@@ -28,6 +38,7 @@ import {
   ClassifyFillItem,
   ClueSolverState,
   fillUserInputToFirstUnsolved,
+  formatCrosswordSolverDateForRoute,
   getAnswer,
   getClassifyFillItems,
   getClueText,
@@ -254,13 +265,41 @@ function ClueRow({
   );
 }
 
+function startOfToday(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function isSameCalendarDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function shiftCalendarDay(date: Date, delta: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta);
+}
+
 function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const navigate = useNavigate();
   const { publicationOrId } = useParams<{ publicationOrId?: string }>();
   const [searchParams] = useSearchParams();
-  const dateParam = searchParams.get('date');
-  const id = dateParam ? undefined : publicationOrId;
-  const publication = dateParam ? publicationOrId : undefined;
+  const dateParam = searchParams.get('date')?.trim() || null;
+  const routePublicationId = useMemo(
+    () => resolvePublicationId(publicationOrId),
+    [publicationOrId]
+  );
+  const today = useMemo(() => startOfToday(), []);
+  const explicitDate = dateParam ? parseCrosswordSolverDate(dateParam) : null;
+  const dateIsInvalid = Boolean(dateParam) && !explicitDate;
+  const effectiveDate = explicitDate ?? (routePublicationId ? today : null);
+  const effectiveDateParam = effectiveDate
+    ? formatCrosswordSolverDateForRoute(effectiveDate)
+    : null;
+  const id = routePublicationId ? undefined : publicationOrId;
+  const publication = routePublicationId;
   const { user, userSettings } = useAuth();
   const minigameOn = isRunningLocally() && Boolean(user) && userSettings.crosswordSolverMinigame;
 
@@ -271,6 +310,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
   const [activeClueId, setActiveClueId] = useState<string | null>(null);
   const [detailsClue, setDetailsClue] = useState<ClueWithProgress | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [classifyFillItems, setClassifyFillItems] = useState<ClassifyFillItem[] | undefined>(undefined);
   const [keyboardPaddingBottom, setKeyboardPaddingBottom] = useState(0);
 
@@ -299,11 +339,11 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     if (crossword?.puzzle?.date) {
       return parseCalendarDate(crossword.puzzle.date);
     }
-    if (dateParam) {
-      return parseCrosswordSolverDate(dateParam) ?? new Date();
+    if (effectiveDate) {
+      return effectiveDate;
     }
-    return new Date();
-  }, [crossword?.metadata1, crossword?.puzzle?.date, dateParam]);
+    return today;
+  }, [crossword?.metadata1, crossword?.puzzle?.date, effectiveDate, today]);
 
   const puzzleLink = useMemo(
     () => (crossword ? getPuzzleExternalLink(crossword) : null),
@@ -352,14 +392,14 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       return;
     }
 
-    if (!publication || !dateParam) {
-      setError('Invalid crossword URL.');
+    if (dateIsInvalid) {
+      setError('Date must be formatted as MM/DD/YYYY.');
       setIsLoading(false);
       return;
     }
 
-    if (!parseCrosswordSolverDate(dateParam)) {
-      setError('Date must be formatted as MM/DD/YYYY.');
+    if (!publication || !effectiveDateParam) {
+      setError('Invalid crossword URL.');
       setIsLoading(false);
       return;
     }
@@ -369,7 +409,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     try {
       const data = await api.getCrossword({
         publicationId: publication,
-        date: dateParam,
+        date: effectiveDateParam,
       });
       setCrossword(data);
       initializeClueStates(data);
@@ -379,14 +419,14 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [api, id, publication, dateParam, initializeClueStates]);
+  }, [api, id, publication, dateIsInvalid, effectiveDateParam, initializeClueStates]);
 
   const refreshCrosswordEntries = useCallback(async () => {
     try {
       const data = id
         ? await api.getCrossword({ id })
-        : publication && dateParam
-          ? await api.getCrossword({ publicationId: publication, date: dateParam })
+        : publication && effectiveDateParam
+          ? await api.getCrossword({ publicationId: publication, date: effectiveDateParam })
           : null;
       if (data) {
         setCrossword(data);
@@ -394,7 +434,7 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
     } catch (err) {
       console.error('Error refreshing crossword entries:', err);
     }
-  }, [api, id, publication, dateParam]);
+  }, [api, id, publication, effectiveDateParam]);
 
   useEffect(() => {
     fetchCrossword();
@@ -492,6 +532,23 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
 
   const handleBack = () => {
     navigate(`/crosswords?date=${formatCrosswordDateForQuery(puzzleDate)}`);
+  };
+
+  const navPublicationId = resolvePublicationId(
+    routePublicationId ?? (crossword ? getPublicationId(crossword) : undefined)
+  );
+  const isPuzzleDateToday = isSameCalendarDay(puzzleDate, today);
+
+  const puzzlePathForDate = (date: Date, publicationId = navPublicationId) => {
+    if (!publicationId) return null;
+    return `/crossword/${publicationId.toLowerCase()}?date=${formatCrosswordSolverDateForRoute(date)}`;
+  };
+
+  const handleCalendarDateSelect = (date: Date, selectedPublicationId: string) => {
+    const path = puzzlePathForDate(date, resolvePublicationId(selectedPublicationId) ?? selectedPublicationId);
+    if (path) {
+      navigate(path);
+    }
   };
 
   const activateClue = useCallback(
@@ -703,6 +760,45 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
         </div>
       </div>
 
+      {navPublicationId && (
+        <div className={styles.dayNav}>
+          <Link
+            className={styles.dayNavButton}
+            to={puzzlePathForDate(shiftCalendarDay(puzzleDate, -1)) ?? '#'}
+            aria-label="Previous day"
+          >
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </Link>
+          <button
+            type="button"
+            className={styles.calendarButton}
+            onClick={() => setIsCalendarOpen(true)}
+            aria-label="Open calendar"
+          >
+            <FontAwesomeIcon icon={faCalendarDays} />
+            <span>Calendar</span>
+          </button>
+          {isPuzzleDateToday ? (
+            <button
+              type="button"
+              className={styles.dayNavButton}
+              disabled
+              aria-label="Next day"
+            >
+              <FontAwesomeIcon icon={faChevronRight} />
+            </button>
+          ) : (
+            <Link
+              className={styles.dayNavButton}
+              to={puzzlePathForDate(shiftCalendarDay(puzzleDate, 1)) ?? '#'}
+              aria-label="Next day"
+            >
+              <FontAwesomeIcon icon={faChevronRight} />
+            </Link>
+          )}
+        </div>
+      )}
+
       <div className={styles.cluesSection}>
         <div className={styles.minigameToolbar}>
           {minigameOn && (
@@ -750,6 +846,16 @@ function CrosswordSolver({ api = CruziApi }: CrosswordSolverProps) {
       )}
 
       {toastMessage && <div className={styles.toast}>{toastMessage}</div>}
+
+      {isCalendarOpen && navPublicationId && (
+        <CrosswordCalendar
+          api={api}
+          selectedDate={puzzleDate}
+          publicationId={navPublicationId}
+          onClose={() => setIsCalendarOpen(false)}
+          onDateSelect={handleCalendarDateSelect}
+        />
+      )}
 
       {isRunningLocally() && classifyFillItems && (
         <ClassifyModal

@@ -25,6 +25,16 @@ export function getPublicationId(crossword: ClueCollection): string | undefined 
   return crossword.puzzle?.publicationId || crossword.source;
 }
 
+/** Match a route or query value to a publication id, ignoring case. */
+export function resolvePublicationId(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const normalized = value.toLowerCase();
+  const match = Object.values(Publications).find(
+    (publication) => publication.id.toLowerCase() === normalized
+  );
+  return match?.id;
+}
+
 export function getXwordinfoSolutionUrl(date: Date): string {
   return `https://www.xwordinfo.com/Crossword?date=${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 }

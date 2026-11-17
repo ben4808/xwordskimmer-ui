@@ -56,6 +56,7 @@ function buildCalendarCells(year: number, month: number): (Date | null)[] {
 function CrosswordCalendar({
   api = CruziApi,
   selectedDate,
+  publicationId: initialPublicationId,
   onClose,
   onDateSelect,
 }: CrosswordCalendarProps) {
@@ -63,7 +64,9 @@ function CrosswordCalendar({
   const [viewDate, setViewDate] = useState(
     () => new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
   );
-  const [publicationId, setPublicationId] = useState(Publications.NYT.id);
+  const [publicationId, setPublicationId] = useState(
+    initialPublicationId ?? Publications.NYT.id
+  );
   const [calendarDays, setCalendarDays] = useState<CrosswordCalendarDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +155,7 @@ function CrosswordCalendar({
 
   const handleDayClick = (date: Date) => {
     if (isFutureDay(date, today)) return;
-    onDateSelect(date);
+    onDateSelect(date, publicationId);
     onClose();
   };
 

@@ -12,7 +12,7 @@ const VERY_GETTABLE_UNITY = new Set(['Concept', 'Formula']);
 const LIKELY_GETTABLE_UNITY = new Set(['Concept', 'Collocation', 'Formula', 'Partial']);
 
 const VERY_GETTABLE_FAMILIARITY = new Set(['Ubiquitous', 'Active']);
-const LIKELY_GETTABLE_FAMILIARITY = new Set(['Literal', 'Common Name', 'Inferred']);
+const LIKELY_GETTABLE_FAMILIARITY = new Set(['Literal', 'Inferred']);
 const MAYBE_GETTABLE_FAMILIARITY = new Set(['General Knowledge', 'Niche', 'Literal']);
 const NOT_GETTABLE_FAMILIARITY = new Set(['Obscure', 'Barely Exists']);
 
